@@ -12,24 +12,49 @@ export type Contact = {
   contacted: boolean; last_contacted_date: string | null; comment: string | null;
 };
 
-export async function listContacts(search: string, page: number) {
-  const term = search.trim().slice(0, 100);
-  const limit = 25;
+export type ContactFilters = {
+  search?: string;
+  region?: string;
+  type?: string;
+  status?: string;
+  contacted?: "" | "yes" | "no";
+};
+
+export async function listContacts(filters: ContactFilters, page: number) {
+  const limit = 15;
   const offset = (page - 1) * limit;
+  const search = (filters.search ?? "").trim().slice(0, 100);
+  const region = (filters.region ?? "").trim().slice(0, 100);
+  const type = (filters.type ?? "").trim().slice(0, 100);
+  const status = (filters.status ?? "").trim().slice(0, 100);
+  const contacted = filters.contacted === "yes" ? true : filters.contacted === "no" ? false : null;
   const result = await getDbPool().query<Contact>(
     `SELECT id, contact_type, first_name, last_name, company_name, email,
        phone, mobile_phone, address_line_1, address_line_2, city, state_region,
        postal_code, country_code, notes, region, type, location, phone_2, website, status,
        contacted, last_contacted_date, comment
      FROM public.contacts WHERE deleted_at IS NULL
-     AND ($1 = '' OR coalesce(first_name, '') ILIKE '%' || $1 || '%'
-       OR coalesce(last_name, '') ILIKE '%' || $1 || '%'
-       OR coalesce(company_name, '') ILIKE '%' || $1 || '%'
-       OR coalesce(email, '') ILIKE '%' || $1 || '%')
-     ORDER BY created_at DESC, id DESC LIMIT $2 OFFSET $3`,
-    [term, limit + 1, offset],
+       AND ($1 = '' OR company_name ILIKE '%' || $1 || '%' OR first_name ILIKE '%' || $1 || '%'
+         OR last_name ILIKE '%' || $1 || '%' OR email ILIKE '%' || $1 || '%')
+       AND ($2 = '' OR region = $2)
+       AND ($3 = '' OR type = $3)
+       AND ($4 = '' OR status = $4)
+       AND ($5::boolean IS NULL OR contacted = $5)
+     ORDER BY company_name ASC NULLS LAST, id ASC
+     LIMIT $6 OFFSET $7`,
+    [search, region, type, status, contacted, limit + 1, offset],
   );
   return { rows: result.rows.slice(0, limit), hasNext: result.rows.length > limit };
+}
+
+export async function getContactFilterOptions() {
+  const result = await getDbPool().query<{
+    regions: string[]; types: string[]; statuses: string[];
+  }>(`SELECT
+    ARRAY(SELECT DISTINCT region FROM public.contacts WHERE deleted_at IS NULL AND nullif(region, '') IS NOT NULL ORDER BY region) AS regions,
+    ARRAY(SELECT DISTINCT type FROM public.contacts WHERE deleted_at IS NULL AND nullif(type, '') IS NOT NULL ORDER BY type) AS types,
+    ARRAY(SELECT DISTINCT status FROM public.contacts WHERE deleted_at IS NULL AND nullif(status, '') IS NOT NULL ORDER BY status) AS statuses`);
+  return result.rows[0];
 }
 
 export async function getContact(id: string): Promise<Contact | null> {
