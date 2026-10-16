@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit --incremental false",
-    "check": "npm run lint && npm run typecheck"
+    "check": "npm run lint && npm run typecheck",
+    "db:migrate": "node --env-file=.env.local scripts/db/migrate.mjs"
   },
   "dependencies": {
     "next": "16.4.2",
