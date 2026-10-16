@@ -41,6 +41,10 @@ export function ContactForm({ contact }: { contact?: Contact }) {
               <option value="business">Business</option>
             </select>
           </label>
+          {input("location", "Location", 200)}
+          {input("region", "Region", 100)}
+          {input("type", "Type", 100)}
+          {input("status", "Status", 100)}
           {input("address_line_1", "Address Line 1", 200)}
           {input("address_line_2", "Address Line 2", 200)}
           {input("city", "City", 100)}
@@ -55,13 +59,18 @@ export function ContactForm({ contact }: { contact?: Contact }) {
           {input("last_name", "Last Name", 150)}
           {input("phone", "Phone", 50, "tel")}
           {input("mobile_phone", "Mobile Phone", 50, "tel")}
+          {input("phone_2", "Secondary Phone", 50, "tel")}
           {input("email", "Email", 254, "email")}
+          {input("website", "Website", 200, "url")}
         </section>
 
         <section className="crm-form-panel crm-form-panel--notes" aria-labelledby="notes-heading">
           <h2 id="notes-heading">Sales Notes</h2>
           <label>Notes
             <textarea name="notes" rows={8} maxLength={10000} key={value("notes")} defaultValue={value("notes")} />
+          </label>
+          <label>Comments
+            <textarea name="comment" rows={5} maxLength={10000} key={value("comment")} defaultValue={value("comment")} />
           </label>
           <p className="contact-help">A first name, last name, or company is required.</p>
           <div className="contact-actions">
