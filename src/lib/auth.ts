@@ -2,6 +2,7 @@ import "server-only";
 
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
+import { admin } from "better-auth/plugins";
 
 import { getDbPool } from "@/lib/db";
 
@@ -12,5 +13,5 @@ export const auth = betterAuth({
     disableSignUp: true,
     minPasswordLength: 12,
   },
-  plugins: [nextCookies()],
+  plugins: [admin(), nextCookies()],
 });
