@@ -141,3 +141,19 @@ a {
 .crm-user-actions { display: flex; align-items: center; gap: 14px; font-size: 13px; }
 .crm-sign-out { padding: 6px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; }
 .crm-sign-out:disabled { cursor: wait; opacity: .7; }
+
+.contact-form { display: grid; gap: 20px; }
+.contact-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.contact-form label { display: grid; gap: 5px; font-size: 14px; }
+.contact-form input,.contact-form select,.contact-form textarea,.contact-search input {
+  width: 100%; padding: 9px; border: 1px solid var(--border); border-radius: 3px;
+  background: var(--surface); color: var(--text);
+}
+.contact-actions { display: flex; align-items: center; gap: 16px; margin-top: 16px; }
+.contact-actions button,.contact-search button { padding: 9px 14px; cursor: pointer; }
+.contact-help { color: var(--muted); font-size: 13px; }
+.contact-search { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.contact-search input { max-width: 350px; }
+.contact-table { width: 100%; border-collapse: collapse; text-align: left; }
+.contact-table td,.contact-table th { padding: 12px; border-bottom: 1px solid var(--border); }
+@media (max-width:760px) { .contact-grid { grid-template-columns: 1fr; } .contact-search { flex-wrap: wrap; } .contact-table { font-size: 13px; } }
