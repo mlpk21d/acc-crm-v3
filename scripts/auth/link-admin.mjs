@@ -28,7 +28,7 @@ try {
     }
     const authUser = account.rows[0];
     const existing = await client.query(
-      "SELECT id, auth_user_id, role FROM public.crm_users WHERE lower(email) = $1 FOR UPDATE",
+      "SELECT id, auth_user_id, role, is_active, deleted_at FROM public.crm_users WHERE lower(email) = $1 FOR UPDATE",
       [email],
     );
     if (existing.rowCount > 1) {
@@ -36,13 +36,18 @@ try {
     }
     if (existing.rowCount === 1) {
       const profile = existing.rows[0];
+      if (!profile.is_active || profile.deleted_at) {
+        throw new Error("Existing CRM profile is disabled or deleted; refusing to reactivate it.");
+      }
+      if (profile.role !== "admin") {
+        throw new Error("Existing CRM profile is not an admin; refusing implicit privilege escalation.");
+      }
       if (profile.auth_user_id && profile.auth_user_id !== authUser.id) {
         throw new Error("CRM profile is already linked to a different authentication account.");
       }
       await client.query(
         `UPDATE public.crm_users
-         SET auth_user_id = $1, role = 'admin', is_active = true, deleted_at = NULL,
-             updated_at = now()
+         SET auth_user_id = $1, updated_at = now()
          WHERE id = $2`,
         [authUser.id, profile.id],
       );
