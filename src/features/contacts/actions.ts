@@ -8,19 +8,31 @@ import { getDbPool } from "@/lib/db";
 
 import { contactFields as fields, parseContactForm, parseContactId } from "@/features/contacts/validation";
 
-export async function saveContact(formData: FormData) {
+export type ContactFormState = {
+  error: string | null;
+  fields: Record<string, string>;
+};
+
+export async function saveContact(_previous: ContactFormState, formData: FormData): Promise<ContactFormState> {
+
   const user = await requirePermission("contacts:write");
   const result = parseContactForm(formData);
-  if (!result.success) throw new Error("Invalid contact data: " + result.error.issues.map((issue) => issue.message).join("; "));
+  if (!result.success) {
+    return {
+      error: result.error.issues.map((issue) => issue.message).join("; "),
+      fields: Object.fromEntries(fields.map((field) => [field, String(formData.get(field) ?? "")])),
+    };
+  }
   const values = result.data;
   const idInput = formData.get("id");
   const validId = parseContactId(idInput);
   const id = validId.success ? String(idInput) : null;
-  if (idInput && !id) throw new Error("Invalid contact identifier.");
+  if (idInput && !id) return { error: "Invalid contact identifier.", fields: {} };
   const nullable = fields.map((field) =>
     field === "contact_type" || field === "country_code" ? values[field] : values[field] || null
   );
   let savedId: string;
+  try {
   if (id) {
     const result = await getDbPool().query<{ id: string }>(
       `UPDATE public.contacts SET
@@ -44,6 +56,10 @@ export async function saveContact(formData: FormData) {
       [...nullable, user.id, user.id],
     );
     savedId = result.rows[0].id;
+  }
+  } catch (error) {
+    console.error("Failed to save contact:", error);
+    return { error: "Unable to save contact. Please try again.", fields: Object.fromEntries(fields.map((field) => [field, values[field]])) };
   }
   revalidatePath("/contacts");
   redirect("/contacts/" + savedId);
