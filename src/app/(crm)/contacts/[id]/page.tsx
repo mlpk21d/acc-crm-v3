@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { requirePermission } from "@/features/auth/session";
 import { can } from "@/features/auth/permissions";
 import { getContact } from "@/features/contacts/data";
-import { deleteContact } from "@/features/contacts/actions";
+import { DeleteContactForm } from "@/features/contacts/delete-contact-form";
 
 export default async function ContactDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requirePermission("contacts:read");
@@ -25,7 +25,7 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
       <div className="contact-actions">
         <Link href="/contacts">Back to contacts</Link>
         {can(user.role, "contacts:write") && <><Link href={`/contacts/${id}/edit`}>Edit</Link>
-          <form action={deleteContact}><input type="hidden" name="id" value={id} /><button type="submit">Delete contact</button></form></>}
+          <DeleteContactForm id={id} /></>}
       </div>
     </section>
   );
