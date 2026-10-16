@@ -21,11 +21,11 @@ export function DropdownSettings({options}: {options:Option[]}) {
   </div>
   <section className="crm-settings-option-panel">
    <div className="crm-settings-option-heading"><h2>{categories.find(c=>c.value===category)?.label} Options</h2><button type="button" onClick={()=>setAdding(!adding)}>+ Add Option</button></div>
-   {adding&&<form action={async data=>{await addDropdownOption(data);setAdding(false)}} className="crm-settings-edit-row">
+   {adding&&<form action={async data=>{await addDropdownOption(data);setAdding(false)}} className="crm-settings-edit-row crm-settings-add-row">
      <input name="category" type="hidden" value={category}/>
      <input name="label" aria-label="New option name" required maxLength={100} placeholder="New option name" autoFocus />
      {showColor&&<label>Color <input name="color" type="color" defaultValue="#e5e7eb"/></label>}
-     <button type="submit">Add</button><button type="button" onClick={()=>setAdding(false)}>Cancel</button>
+     <button type="submit">Add</button><button type="button" className="crm-option-icon" aria-label="Cancel adding" title="Cancel" onClick={()=>setAdding(false)}>×</button>
    </form>}
    {visible.length===0&&<p className="crm-settings-empty">No options yet. Add one to get started.</p>}
    {visible.map((o,i)=><div key={o.id} className="crm-settings-option-row">
@@ -44,11 +44,11 @@ export function DropdownSettings({options}: {options:Option[]}) {
      <div className="crm-option-controls">
       {(["up","down"] as const).map(dir=><form action={moveDropdownOption} key={dir}>
        <input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><input type="hidden" name="id" value={o.id}/><input type="hidden" name="direction" value={dir}/>
-       <button type="submit" title={dir==="up"?"Move up":"Move down"} disabled={dir==="up"?i===0:i===visible.length-1}>{dir==="up"?"↑":"↓"}</button>
+       <button type="submit" className="crm-option-icon" aria-label={(dir==="up"?"Move up ":"Move down ")+o.label} title={dir==="up"?"Move up":"Move down"} disabled={dir==="up"?i===0:i===visible.length-1}>{dir==="up"?"↑":"↓"}</button>
       </form>)}
-      <button type="button" onClick={()=>setEditing(o.id)}>Edit</button>
-      <form action={toggleDropdownOption}><input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><button type="submit">{o.active?"Deactivate":"Activate"}</button></form>
-      <form action={deleteDropdownOption}><input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><button type="submit" title="Retire option">Retire</button></form>
+      <button type="button" className="crm-option-icon" aria-label={"Edit "+o.label} title="Edit" onClick={()=>setEditing(o.id)}>✎</button>
+      <form action={toggleDropdownOption}><input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><button type="submit" className="crm-option-icon" aria-label={(o.active?"Deactivate ":"Activate ")+o.label} title={o.active?"Deactivate":"Activate"}>{o.active?"×":"✓"}</button></form>
+      <form action={deleteDropdownOption}><input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><button type="submit" className="crm-option-icon crm-option-delete" title="Retire option" aria-label={"Retire "+o.label}>♜</button></form>
      </div>
     </>}
    </div>)}
