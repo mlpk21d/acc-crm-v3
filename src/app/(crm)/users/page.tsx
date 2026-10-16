@@ -1,6 +1,9 @@
+import { requirePermission } from "@/features/auth/session";
+
 import { PagePlaceholder } from "@/components/page-placeholder";
 
-export default function UsersPage() {
+export default async function UsersPage() {
+  await requirePermission("users:manage");
   return (
     <PagePlaceholder
       title="Users"
