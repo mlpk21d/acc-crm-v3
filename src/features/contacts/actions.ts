@@ -32,31 +32,28 @@ export async function saveContact(_previous: ContactFormState, formData: FormDat
     field === "contact_type" || field === "country_code" ? values[field] : values[field] || null
   );
   let savedId: string;
+  const columns = [...fields];
+  const quoted = columns.map((field) => '"' + field + '"');
   try {
-  if (id) {
-    const result = await getDbPool().query<{ id: string }>(
-      `UPDATE public.contacts SET
-        contact_type=$1, first_name=$2, last_name=$3, company_name=$4, email=$5,
-        phone=$6, mobile_phone=$7, address_line_1=$8, address_line_2=$9, city=$10,
-        state_region=$11, postal_code=$12, country_code=$13, notes=$14,
-        updated_by=$15, updated_at=now()
-      WHERE id=$16 AND deleted_at IS NULL RETURNING id`,
-      [...nullable, user.id, id],
-    );
-    if (!result.rows[0]) throw new Error("Contact not found.");
-    savedId = result.rows[0].id;
-  } else {
-    const result = await getDbPool().query<{ id: string }>(
-      `INSERT INTO public.contacts
-      (contact_type, first_name, last_name, company_name, email, phone,
-       mobile_phone, address_line_1, address_line_2, city, state_region,
-       postal_code, country_code, notes, created_by, updated_by)
-       VALUES (${Array.from({ length: 16 }, (_, i) => "$" + (i + 1)).join(", ")})
-       RETURNING id`,
-      [...nullable, user.id, user.id],
-    );
-    savedId = result.rows[0].id;
-  }
+    if (id) {
+      const assignments = quoted.map((column, index) => column + "=$" + (index + 1)).join(", ");
+      const result = await getDbPool().query<{ id: string }>(
+        "UPDATE public.contacts SET " + assignments +
+        ", updated_by=$" + (columns.length + 1) + ", updated_at=now()" +
+        " WHERE id=$" + (columns.length + 2) + " AND deleted_at IS NULL RETURNING id",
+        [...nullable, user.id, id],
+      );
+      if (!result.rows[0]) throw new Error("Contact not found.");
+      savedId = result.rows[0].id;
+    } else {
+      const valuesSql = columns.map((_, index) => "$" + (index + 1)).join(", ");
+      const result = await getDbPool().query<{ id: string }>(
+        "INSERT INTO public.contacts (" + quoted.join(", ") + ", created_by, updated_by)" +
+        " VALUES (" + valuesSql + ", $" + (columns.length + 1) + ", $" + (columns.length + 2) + ") RETURNING id",
+        [...nullable, user.id, user.id],
+      );
+      savedId = result.rows[0].id;
+    }
   } catch (error) {
     console.error("Failed to save contact:", error);
     return { error: "Unable to save contact. Please try again.", fields: Object.fromEntries(fields.map((field) => [field, values[field]])) };
