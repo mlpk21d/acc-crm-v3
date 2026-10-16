@@ -57,12 +57,25 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | --- | --- | --- |
 | `/` | `src/app/(crm)/page.tsx` | Scaffolded dashboard |
 | `/invoices` | `src/app/(crm)/invoices/page.tsx` | Scaffolded |
-| `/contacts` | `src/app/(crm)/contacts/page.tsx` | Scaffolded |
+| `/contacts` | `src/app/(crm)/contacts/page.tsx` | Searchable, paginated list |
+| `/contacts/new` | `src/app/(crm)/contacts/new/page.tsx` | Create contact (write permission) |
+| `/contacts/[id]` | `src/app/(crm)/contacts/[id]/page.tsx` | Contact detail + soft-delete |
+| `/contacts/[id]/edit` | `src/app/(crm)/contacts/[id]/edit/page.tsx` | Update contact |
 | `/projects` | `src/app/(crm)/projects/page.tsx` | Scaffolded |
 | `/settings` | `src/app/(crm)/settings/page.tsx` | Scaffolded |
 | `/users` | `src/app/(crm)/users/page.tsx` | Scaffolded |
 
 Additional public pages: `src/app/login/page.tsx` (login) and `src/app/forbidden/page.tsx` (access denied). Route groups do not change public URLs.
+
+## Contacts feature index
+
+| Path | Purpose |
+| --- | --- |
+| `src/features/contacts/data.ts` | Parameterized PostgreSQL contact queries and pagination |
+| `src/features/contacts/actions.ts` | Permission-checked create/update/soft-delete server actions, Zod validation |
+| `src/features/contacts/contact-form.tsx` | Shared creation/editing form based on provisional table fields |
+
+Contacts is the first functional domain scaffold, but has not been build-tested or browser-tested against the local PostgreSQL instance. Forms and field mapping remain provisional pending the original V3 specification and screenshots. List search uses case-insensitive partial matches; pagination is 25 rows per page. No database schema migration was required.
 
 ## Server/database
 
@@ -128,7 +141,7 @@ Next:
 2. Initial development PostgreSQL migrations reported verified by user; verify Better Auth table presence during bootstrap.
 3. Run `npm run auth:bootstrap-admin` once on the local database, validate login and permissions, and add session tests. Keep public registration disabled.
 4. Build shared form/table/modal primitives based on the existing CRM screenshots.
-5. Reconcile Contacts field definitions with the specification, then implement end-to-end.
+5. Build/test Contacts create/read/update/soft-delete flows and reconcile fields with the specification; add focused integration and permission tests.
 6. Implement Projects and room/J&K workflows.
 7. Implement Invoices and invoice calculations/status behavior.
 8. Implement Settings, Users, and Dashboard widgets.
