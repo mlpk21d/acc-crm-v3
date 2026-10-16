@@ -13,8 +13,8 @@
     "typecheck": "tsc --noEmit --incremental false",
     "check": "npm run lint && npm run typecheck",
     "db:migrate": "node --env-file=.env.local scripts/db/migrate.mjs",
-    "auth:schema": "auth generate --config src/lib/auth.ts --output src/db/migrations/0002_better_auth.sql",
-    "auth:admin": "auth create-admin --config src/lib/auth.ts",
+    "auth:schema": "auth generate --config scripts/auth/cli-config.ts --output src/db/migrations/0002_better_auth.sql",
+    "auth:admin": "auth create-admin --config scripts/auth/cli-config.ts",
     "auth:link-admin": "node --env-file=.env.local scripts/auth/link-admin.mjs"
   },
   "dependencies": {
