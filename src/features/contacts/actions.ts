@@ -2,48 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
 
 import { requirePermission } from "@/features/auth/session";
 import { getDbPool } from "@/lib/db";
 
-const contactSchema = z.object({
-  contact_type: z.enum(["person", "business"]),
-  first_name: z.string().trim().max(150),
-  last_name: z.string().trim().max(150),
-  company_name: z.string().trim().max(200),
-  email: z.union([z.email(), z.literal("")]),
-  phone: z.string().trim().max(50),
-  mobile_phone: z.string().trim().max(50),
-  address_line_1: z.string().trim().max(200),
-  address_line_2: z.string().trim().max(200),
-  city: z.string().trim().max(100),
-  state_region: z.string().trim().max(100),
-  postal_code: z.string().trim().max(30),
-  country_code: z.string().trim().regex(/^[A-Z]{2}$/),
-  notes: z.string().trim().max(10000),
-}).refine((value) => !!(value.first_name || value.last_name || value.company_name), {
-  message: "A name or company is required.",
-});
-
-const fields = [
-  "contact_type", "first_name", "last_name", "company_name", "email",
-  "phone", "mobile_phone", "address_line_1", "address_line_2", "city",
-  "state_region", "postal_code", "country_code", "notes",
-] as const;
-
-function parseContact(formData: FormData) {
-  const values = Object.fromEntries(fields.map((field) => [field, String(formData.get(field) ?? "")]));
-  const parsed = contactSchema.safeParse(values);
-  if (!parsed.success) throw new Error("Invalid contact data. Check required fields and email format.");
-  return parsed.data;
-}
+import { contactFields as fields, parseContactForm, parseContactId } from "@/features/contacts/validation";
 
 export async function saveContact(formData: FormData) {
   const user = await requirePermission("contacts:write");
-  const values = parseContact(formData);
+  const result = parseContactForm(formData);
+  if (!result.success) throw new Error("Invalid contact data: " + result.error.issues.map((issue) => issue.message).join("; "));
+  const values = result.data;
   const idInput = formData.get("id");
-  const id = typeof idInput === "string" && z.uuid().safeParse(idInput).success ? idInput : null;
+  const validId = parseContactId(idInput);
+  const id = validId.success ? String(idInput) : null;
   if (idInput && !id) throw new Error("Invalid contact identifier.");
   const nullable = fields.map((field) =>
     field === "contact_type" || field === "country_code" ? values[field] : values[field] || null
@@ -79,7 +51,9 @@ export async function saveContact(formData: FormData) {
 
 export async function deleteContact(formData: FormData) {
   const user = await requirePermission("contacts:write");
-  const id = z.uuid().parse(formData.get("id"));
+  const parsed = parseContactId(formData.get("id"));
+  if (!parsed.success) throw new Error("Invalid contact identifier.");
+  const id = parsed.data;
   await getDbPool().query(
     "UPDATE public.contacts SET deleted_at=now(), updated_at=now(), updated_by=$2 WHERE id=$1 AND deleted_at IS NULL",
     [id, user.id],
