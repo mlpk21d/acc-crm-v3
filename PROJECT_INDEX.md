@@ -58,7 +58,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | --- | --- | --- |
 | `/` | `src/app/(crm)/page.tsx` | Scaffolded dashboard |
 | `/invoices` | `src/app/(crm)/invoices/page.tsx` | Scaffolded |
-| `/contacts` | `src/app/(crm)/contacts/page.tsx` | Searchable, paginated list |
+| `/contacts` | `src/app/(crm)/contacts/page.tsx` | Searchable, paginated legacy-oriented 7-column list; advanced legacy filters pending |
 | `/contacts/new` | `src/app/(crm)/contacts/new/page.tsx` | Create contact (write permission) |
 | `/contacts/[id]` | `src/app/(crm)/contacts/[id]/page.tsx` | Contact detail + soft-delete |
 | `/contacts/[id]/edit` | `src/app/(crm)/contacts/[id]/edit/page.tsx` | Update contact |
@@ -191,3 +191,7 @@ API endpoints, migrations, shared modules, and major feature files must be index
 ## UI follow-up 2026-10-16
 
 The sidebar now includes route highlighting, inline navigation icons, and a mobile drawer. The Contacts list still needs the legacy column/filter fidelity pass; that change has not been committed. Browser and build validation remain outstanding.
+
+## Contacts UI follow-up
+
+On 2026-10-16, the Contacts listing was adjusted to legacy-oriented Company, Contact, Phone, Email, Location, Type and Actions columns. Only fields supported by the V3 database are displayed. Original CRM advanced filters, status rows, contact activity and modal actions are deferred until the supporting schema and permission model are implemented. No migrations were applied. Local lint/typecheck/build and browser visual comparisons remain to be run.
