@@ -14,8 +14,8 @@ if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
   console.error("INITIAL_ADMIN_EMAIL must be a valid email address.");
   process.exit(1);
 }
-if (!password || password.length < 12 || password.trim() !== password) {
-  console.error("INITIAL_ADMIN_PASSWORD must be at least 12 characters without leading/trailing whitespace.");
+if (!password || password.length < 8 || password.trim() !== password) {
+  console.error("INITIAL_ADMIN_PASSWORD must be at least 8 characters without leading/trailing whitespace.");
   process.exit(1);
 }
 if (!process.env.DATABASE_URL || !process.env.BETTER_AUTH_SECRET) {
