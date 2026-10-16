@@ -15,10 +15,10 @@ in client-side environment variables.
 1. Pull `main`, run `npm install`, and configure `.env.local` with
    `DATABASE_URL`, `BETTER_AUTH_URL`, and `BETTER_AUTH_SECRET`. Generate the
    secret using `openssl rand -base64 32`.
-2. From a trusted local terminal, generate the Better Auth SQL with
-   `npm run auth:schema`. **Review the generated SQL carefully** and preserve
-   it under version control as a new numbered `src/db/migrations/` file before
-   applying via `npm run db:migrate`. Do not modify applied migration 0001.
+2. From a trusted local terminal, run `npm run auth:schema`. This writes
+   `src/db/migrations/0002_better_auth.sql`. **Review the generated SQL carefully**
+   and commit it before applying `npm run db:migrate`. Do not modify applied
+   migration 0001. Never overwrite migration 0002 after it has been applied.
    Better Auth may evolve its own schema across package versions.
 3. Run `npm run auth:admin -- --email admin@example.com --name "Administrator" --role admin`
    after schema installation. Follow the command's secure password prompt.
@@ -41,3 +41,10 @@ the GitHub-connected development session.
 - Avoid leaking whether a particular email is registered.
 - Implement logout, session revocation, rate-limiting policy, tests, and
   first-user recovery procedures before production deployment.
+
+## CLI dependency
+
+The deprecated `@better-auth/cli` package was replaced by the `auth` CLI.
+The `auth` executable is provided by the installed `auth` devDependency.
+The `auth` CLI and `better-auth` runtime versions are pinned together to
+avoid drift. Re-run `npm install` after pulling the updated package.json.
