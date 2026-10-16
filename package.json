@@ -13,8 +13,8 @@
     "typecheck": "tsc --noEmit --incremental false",
     "check": "npm run lint && npm run typecheck",
     "db:migrate": "node --env-file=.env.local scripts/db/migrate.mjs",
-    "auth:schema": "npx --no-install auth generate --config src/lib/auth.ts",
-    "auth:admin": "npx --no-install auth create-admin --config src/lib/auth.ts",
+    "auth:schema": "auth generate --config src/lib/auth.ts --output src/db/migrations/0002_better_auth.sql",
+    "auth:admin": "auth create-admin --config src/lib/auth.ts",
     "auth:link-admin": "node --env-file=.env.local scripts/auth/link-admin.mjs"
   },
   "dependencies": {
@@ -24,7 +24,7 @@
     "react-dom": "19.3.1",
     "server-only": "0.0.1",
     "zod": "^4.1.12",
-    "better-auth": "^1.4.0"
+    "better-auth": "1.7.10"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
@@ -34,6 +34,6 @@
     "eslint": "^9.38.0",
     "eslint-config-next": "16.4.2",
     "typescript": "^5.9.3",
-    "@better-auth/cli": "^1.4.0"
+    "auth": "1.7.10"
   }
 }
