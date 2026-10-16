@@ -26,6 +26,8 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `src/db/README.md` | Database setup, migration policy, safety notes |
 | `src/db/migrations/0001_crm_foundation.sql` | CRM users and contacts base tables + partial indexes |
 | `src/lib/auth.ts` | Better Auth server configuration + admin provisioning plugin (no public signup) |
+| `auth` devDependency | Current supported Better Auth CLI, aligned with runtime version |
+| `src/db/migrations/0002_better_auth.sql` | Generated authentication migration (pending local generation/review/commit) |
 | `scripts/auth/link-admin.mjs` | Transactional Better Auth-to-CRM administrator linkage |
 | `docs/authentication.md` | Setup sequence, security constraints, and verification checklist |
 | `src/features/auth/session.ts` | Session-to-CRM-user authorization lookup |
@@ -93,7 +95,7 @@ logic directly in route files:
 
 ## Authentication implementation status
 
-Authentication handlers, login form, gated CRM layout, and role checks are scaffolded. **Not yet operational:** Better Auth's own schema has not been generated/applied, initial administrator CLI provisioning and linkage have not been executed, and no build or integration tests have been run. Never grant access by email match alone; active `crm_users.auth_user_id` linkage is required. The authorization check in the CRM route-group layout does not replace per-handler authorization for future API endpoints/server actions.
+Authentication handlers, login form, gated CRM layout, and role checks are scaffolded. CLI corrected to installed `auth` executable, with runtime and CLI versions aligned. **Not yet operational:** Better Auth's own schema has not been generated/applied, initial administrator CLI provisioning and linkage have not been executed, and no build or integration tests have been run. Never grant access by email match alone; active `crm_users.auth_user_id` linkage is required. The authorization check in the CRM route-group layout does not replace per-handler authorization for future API endpoints/server actions.
 
 ## Bootstrap status
 
