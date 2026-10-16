@@ -25,12 +25,18 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `scripts/db/migrate.mjs` | Versioned, checksummed, locked PostgreSQL migration runner |
 | `src/db/README.md` | Database setup, migration policy, safety notes |
 | `src/db/migrations/0001_crm_foundation.sql` | CRM users and contacts base tables + partial indexes |
+| `src/lib/auth.ts` | Better Auth server configuration (no public signup) |
+| `src/features/auth/session.ts` | Session-to-CRM-user authorization lookup |
+| `src/features/auth/permissions.ts` | Explicit role/permission matrix |
+| `src/features/auth/login-form.tsx` | Email/password sign-in form |
+| `src/app/api/auth/[...all]/route.ts` | Better Auth HTTP endpoints |
 
 ## Application shell
 
 | Path | Purpose |
 | --- | --- |
-| `src/app/layout.tsx` | Root application layout |
+| `src/app/layout.tsx` | Public root HTML layout |
+| `src/app/(crm)/layout.tsx` | Protected CRM shell and authorization boundary |
 | `src/app/globals.css` | Initial CRM layout tokens/styles; avoid redesign drift |
 | `src/components/app-shell.tsx` | Persistent sidebar/header navigation |
 | `src/components/page-placeholder.tsx` | Temporary domain route scaffold |
@@ -39,12 +45,14 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 
 | Route | File | Status |
 | --- | --- | --- |
-| `/` | `src/app/page.tsx` | Scaffolded dashboard |
-| `/invoices` | `src/app/invoices/page.tsx` | Scaffolded |
-| `/contacts` | `src/app/contacts/page.tsx` | Scaffolded |
-| `/projects` | `src/app/projects/page.tsx` | Scaffolded |
-| `/settings` | `src/app/settings/page.tsx` | Scaffolded |
-| `/users` | `src/app/users/page.tsx` | Scaffolded |
+| `/` | `src/app/(crm)/page.tsx` | Scaffolded dashboard |
+| `/invoices` | `src/app/(crm)/invoices/page.tsx` | Scaffolded |
+| `/contacts` | `src/app/(crm)/contacts/page.tsx` | Scaffolded |
+| `/projects` | `src/app/(crm)/projects/page.tsx` | Scaffolded |
+| `/settings` | `src/app/(crm)/settings/page.tsx` | Scaffolded |
+| `/users` | `src/app/(crm)/users/page.tsx` | Scaffolded |
+
+Additional public pages: `src/app/login/page.tsx` (login) and `src/app/forbidden/page.tsx` (access denied). Route groups do not change public URLs.
 
 ## Server/database
 
@@ -81,6 +89,10 @@ logic directly in route files:
 - `src/db/migrations/`
 - `src/db/queries/`
 
+## Authentication implementation status
+
+Authentication handlers, login form, gated CRM layout, and role checks are scaffolded. **Not yet operational:** Better Auth's own schema has not been generated/applied, initial user bootstrap has not been implemented, and no build or integration tests have been run. Never grant access by email match alone; active `crm_users.auth_user_id` linkage is required. The authorization check in the CRM route-group layout does not replace per-handler authorization for future API endpoints/server actions.
+
 ## Bootstrap status
 
 Completed:
@@ -99,7 +111,7 @@ Next:
 
 1. Add the full `acc-crm-v3-specification.md` to this repository as the canonical implementation reference.
 2. Run migrations on an isolated development PostgreSQL database; review SQL and inspect the created indexes.
-3. Select and integrate authentication sessions/permissions; preserve the existing CRM role semantics.
+3. Generate/review/apply Better Auth tables; add secure initial administrator provisioning and end-to-end session tests. Keep public registration disabled.
 4. Build shared form/table/modal primitives based on the existing CRM screenshots.
 5. Reconcile Contacts field definitions with the specification, then implement end-to-end.
 6. Implement Projects and room/J&K workflows.
