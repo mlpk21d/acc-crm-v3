@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit --incremental false",
     "check": "npm run lint && npm run typecheck",
     "db:migrate": "node --env-file=.env.local scripts/db/migrate.mjs",
-    "auth:generate": "npx @better-auth/cli@latest generate --config src/lib/auth.ts"
+    "auth:schema": "npx --no-install auth generate --config src/lib/auth.ts",
+    "auth:admin": "npx --no-install auth create-admin --config src/lib/auth.ts"
   },
   "dependencies": {
     "next": "16.4.2",
@@ -31,6 +32,7 @@
     "@types/react-dom": "^19.2.2",
     "eslint": "^9.38.0",
     "eslint-config-next": "16.4.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@better-auth/cli": "^1.4.0"
   }
 }
