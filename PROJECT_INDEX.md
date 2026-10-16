@@ -30,6 +30,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `scripts/auth/cli-config.ts` | CLI-only Better Auth instance without `server-only` imports |
 | `auth` devDependency | Current supported Better Auth CLI, aligned with runtime version |
 | `src/db/migrations/0002_better_auth.sql` | Committed Better Auth tables and indexes; user reports local migration applied |
+| `src/db/migrations/0004_contacts_legacy_fields.sql` | Additive legacy contact attributes and filtering indexes; NOT applied to local PostgreSQL | 
 | `src/db/migrations/0003_projects_foundation.sql` | Provisional projects table, optional contact FK, statuses, audit fields and indexes (NOT applied) |
 | `scripts/auth/link-admin.mjs` | Transactional Better Auth-to-CRM administrator linkage |
 | `scripts/auth/bootstrap-admin.mjs` | One-time initial administrator from `.env.local`, refuses existing user stores |
@@ -83,7 +84,7 @@ Additional public pages: `src/app/login/page.tsx` (login) and `src/app/forbidden
 | `src/features/contacts/delete-contact-form.tsx` | Confirmation before soft-delete submission |
 | `tests/integration/contact-db.test.mjs` | Transactional PostgreSQL insert/update/delete and constraint tests (rolled back) |
 
-Contacts validation now rejects missing submitted fields and normalizes country code. Form errors are rendered inline and deletion requires confirmation. Unit and database integration tests added (`npm run test:integration`; local DB required). Contacts has not been build-tested or browser-tested against the local PostgreSQL instance. The form now follows the original repository's three-column grouping, but legacy Region, Type, Status, Contacted, Comments rich text, Website and associated field semantics are not yet migrated to V3. Form fidelity is incomplete; screenshot-by-screenshot browser validation remains outstanding. List search uses case-insensitive partial matches; pagination is 25 rows per page. No database schema migration was required.
+Contacts validation now rejects missing submitted fields and normalizes country code. Form errors are rendered inline and deletion requires confirmation. Unit and database integration tests added (`npm run test:integration`; local DB required). Contacts has not been build-tested or browser-tested against the local PostgreSQL instance. The form now follows the original repository's three-column grouping. Legacy Region, Type, Location, Secondary Phone, Website, Status and plain-text Comments fields are supported in source code, conditional on migration 0004. Legacy Contacted toggle, contact timestamp, Settings-managed options, rich-text comment editor and field semantics are still outstanding. Form fidelity is incomplete; screenshot-by-screenshot browser validation remains outstanding. List search uses case-insensitive partial matches; pagination is 25 rows per page. No database schema migration was required.
 
 ## UI preservation audit (2026-10-16)
 
@@ -195,3 +196,9 @@ The sidebar now includes route highlighting, inline navigation icons, and a mobi
 ## Contacts UI follow-up
 
 On 2026-10-16, the Contacts listing was adjusted to legacy-oriented Company, Contact, Phone, Email, Location, Type and Actions columns. Only fields supported by the V3 database are displayed. Original CRM advanced filters, status rows, contact activity and modal actions are deferred until the supporting schema and permission model are implemented. No migrations were applied. Local lint/typecheck/build and browser visual comparisons remain to be run.
+
+## Contacts schema recovery — 2026-10-16
+
+Migration `src/db/migrations/0004_contacts_legacy_fields.sql` restores legacy `region`, `type`, `location`, `phone_2`, `website`, `status`, `contacted`, `last_contacted_date`, and `comment` as additive fields. It creates partial filtering indexes and does not modify existing fields, source data, or permissions. The contact validation, server create/update action, reads and three-column form were updated to include applicable new fields. Existing V3 `contact_type` and `mobile_phone` are separate fields from legacy `type` and `phone_2`; mappings must be reviewed for eventual data imports.
+
+**Deployment dependency:** Run `npm run db:migrate` before running code that queries the new columns. Migration 0003 runs before 0004 if not already applied; review both before deployment. No migrations were applied by this assistant. Local build, lint, typecheck, unit/integration tests and visual comparisons remain unverified. Original settings-driven selectable statuses/types, contacted changes and filtering modal have not yet been implemented.
