@@ -14,7 +14,8 @@
     "check": "npm run lint && npm run typecheck",
     "db:migrate": "node --env-file=.env.local scripts/db/migrate.mjs",
     "auth:schema": "npx --no-install auth generate --config src/lib/auth.ts",
-    "auth:admin": "npx --no-install auth create-admin --config src/lib/auth.ts"
+    "auth:admin": "npx --no-install auth create-admin --config src/lib/auth.ts",
+    "auth:link-admin": "node --env-file=.env.local scripts/auth/link-admin.mjs"
   },
   "dependencies": {
     "next": "16.4.2",
