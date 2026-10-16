@@ -230,3 +230,7 @@ Restored the original CRM dropdown category controls: Type (`type`), Region (`re
 - Explicitly deferred: Export, Import, Signup Links, project-room/manufacturer consumers, fully Settings-driven Contact Type/Status selects, and screenshot-perfect browser acceptance.
 
 Migration 0005 must be applied locally before Settings can load; no migrations, local build, typecheck, lint, or tests were executed in this change set. GitHub CI was not used.
+
+## Screenshot-specific Settings refinement — 2026-10-16
+
+Reference screenshots supplied in conversation: `option1.png` (Type add-option row), `option2.png` (Project Status add-option row). Matched inline add input placement directly beneath category card heading, adjacent color picker for Status/Project Status/Manufacturers, compact dark Add button, cancel X, and right-aligned compact option actions, numeric order, swatches and active status badges. Files: `src/features/settings/dropdown-settings.tsx`, `src/app/globals.css`. Underlying dropdown CRUD behavior unchanged. Export, Import, and Signup Links intentionally deferred. No browser/build validation performed.
