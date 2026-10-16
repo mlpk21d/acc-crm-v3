@@ -137,3 +137,7 @@ a {
 .auth-page input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 3px; }
 .auth-page button { padding: 10px; cursor: pointer; }
 .auth-page [role="alert"] { color: #ad2525; }
+
+.crm-user-actions { display: flex; align-items: center; gap: 14px; font-size: 13px; }
+.crm-sign-out { padding: 6px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; }
+.crm-sign-out:disabled { cursor: wait; opacity: .7; }
