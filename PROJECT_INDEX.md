@@ -48,8 +48,8 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | --- | --- |
 | `src/app/layout.tsx` | Public root HTML layout |
 | `src/app/(crm)/layout.tsx` | Protected CRM shell and authorization boundary |
-| `src/app/globals.css` | Initial CRM layout tokens/styles; avoid redesign drift |
-| `src/components/app-shell.tsx` | Signed-in user toolbar, logout and role-filtered navigation |
+| `src/app/globals.css` | Legacy-derived white sidebar, gray workspace, rounded panels, responsive tables and three-column form CSS |
+| `src/components/app-shell.tsx` | Legacy-derived 256px white sidebar, profile/footer and role-filtered navigation; brand logo and active-route state still pending |
 | `src/components/page-placeholder.tsx` | Temporary domain route scaffold |
 
 ## Page routes
@@ -79,11 +79,28 @@ Additional public pages: `src/app/login/page.tsx` (login) and `src/app/forbidden
 | `src/features/contacts/actions.ts` | Permission-checked create/update/soft-delete server actions |
 | `src/features/contacts/validation.ts` | Shared strict Zod contact parsing and UUID checks |
 | `tests/contact-validation.test.mjs` | Unit coverage for contact validation and normalization |
-| `src/features/contacts/contact-form.tsx` | Client form with `useActionState`, inline error feedback and retained submitted values |
+| `src/features/contacts/contact-form.tsx` | Three-section legacy-style Company / Person & Contact / Sales Notes form with `useActionState`; only currently persisted V3 fields exposed |
 | `src/features/contacts/delete-contact-form.tsx` | Confirmation before soft-delete submission |
 | `tests/integration/contact-db.test.mjs` | Transactional PostgreSQL insert/update/delete and constraint tests (rolled back) |
 
-Contacts validation now rejects missing submitted fields and normalizes country code. Form errors are rendered inline and deletion requires confirmation. Unit and database integration tests added (`npm run test:integration`; local DB required). Contacts has not been build-tested or browser-tested against the local PostgreSQL instance. Forms and field mapping remain provisional pending the original V3 specification and screenshots. List search uses case-insensitive partial matches; pagination is 25 rows per page. No database schema migration was required.
+Contacts validation now rejects missing submitted fields and normalizes country code. Form errors are rendered inline and deletion requires confirmation. Unit and database integration tests added (`npm run test:integration`; local DB required). Contacts has not been build-tested or browser-tested against the local PostgreSQL instance. The form now follows the original repository's three-column grouping, but legacy Region, Type, Status, Contacted, Comments rich text, Website and associated field semantics are not yet migrated to V3. Form fidelity is incomplete; screenshot-by-screenshot browser validation remains outstanding. List search uses case-insensitive partial matches; pagination is 25 rows per page. No database schema migration was required.
+
+## UI preservation audit (2026-10-16)
+
+Reference reviewed: original `mlpk21d/acc-crm` main branch, including `src/components/Layout.tsx`, `src/index.css`, `src/pages/contacts/ContactList.tsx`, `src/pages/contacts/ContactForm.tsx`, and `src/pages/projects/ProjectForm.tsx`. The screenshot archive and full specification are not accessible as files in this repository; visual acceptance is therefore **not yet confirmed**.
+
+Completed in V3 main:
+- Sidebar changed from dark 220px generic navigation to legacy-style white 256px navigation with footer identity and sign-out.
+- Shared page canvas, panel radii, table headers, buttons and typography moved toward source application styles.
+- Contacts create/edit form grouped into Company, Person & Contact and Sales Notes columns without changing supported action/DB field names.
+
+Outstanding fidelity and functional work (do not mark complete):
+- Original logo asset, icon-based navigation, active-route indicator and mobile drawer implementation.
+- Contacts list legacy ten-column structure, advanced filter modal, badges/status row colors, comment modal, contacted toggle and pagination.
+- Contact fields/status option sources and rich text from original schema; preserve semantics rather than invent mapping.
+- Projects list/form: original project fields, contact lookup, room cards/table, room editing modal, J&K cabinet configuration, checklist, pricing and role-limited financial display.
+- Screenshot-based comparison at desktop/mobile widths, build/lint/typecheck/runtime validation.
+- Follow the screenshot ZIP and canonical specification when available. Do not treat source-repository CSS as proof of pixel-perfect screenshot equivalence.
 
 ## Projects feature index
 
