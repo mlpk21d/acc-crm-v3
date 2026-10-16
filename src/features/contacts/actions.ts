@@ -74,3 +74,21 @@ export async function deleteContact(formData: FormData) {
   revalidatePath("/contacts");
   redirect("/contacts");
 }
+
+export async function setContacted(formData: FormData): Promise<void> {
+  const user = await requirePermission("contacts:write");
+  const parsed = parseContactId(formData.get("id"));
+  if (!parsed.success) throw new Error("Invalid contact identifier.");
+  const contacted = formData.get("contacted") === "true";
+  const result = await getDbPool().query(
+    `UPDATE public.contacts
+       SET contacted=$1,
+           last_contacted_date=CASE WHEN $1 THEN now() ELSE NULL END,
+           updated_by=$2, updated_at=now()
+     WHERE id=$3 AND deleted_at IS NULL RETURNING id`,
+    [contacted, user.id, parsed.data],
+  );
+  if (!result.rowCount) throw new Error("Contact not found.");
+  revalidatePath("/contacts");
+  revalidatePath("/contacts/" + parsed.data);
+}
