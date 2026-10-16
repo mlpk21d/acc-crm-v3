@@ -170,3 +170,20 @@ a { color: inherit; text-decoration: none; }
 .crm-settings-edit-row input[type=color] {width:38px;height:34px;}
 .crm-settings-empty {text-align:center;padding:32px;color:#9ca3af;font-size:14px;}
 .crm-settings-tip {color:#9ca3af;font-size:12px;margin-top:16px;}
+
+/* Settings dropdown screenshot acceptance: compact inline add row and small icon actions */
+.crm-settings-option-heading { min-height: 58px; }
+.crm-settings-option-heading button { white-space: nowrap; }
+.crm-settings-add-row { background: #f9fafb; border-bottom: 1px solid #e5e7eb; justify-content: flex-start; padding: 12px 16px; }
+.crm-settings-add-row input:not([type=color]) { flex: 0 1 200px; min-width: 165px; max-width: 240px; height: 38px; }
+.crm-settings-add-row button[type=submit] { background: #111827; color: white; border: 1px solid #111827; border-radius: 8px; padding: 9px 13px; }
+.crm-settings-add-row label { gap: 8px; color: #6b7280; }
+.crm-settings-add-row input[type=color] { height: 36px; width: 36px; padding: 1px; background: transparent; border: 1px solid #9ca3af; border-radius: 2px; }
+.crm-settings-option-row { min-height: 55px; }
+.crm-option-controls { gap: 6px; flex-wrap: nowrap; }
+.crm-option-controls .crm-option-icon, .crm-settings-add-row .crm-option-icon { border: 0; background: transparent; color: #667085; min-width: 26px; height: 28px; padding: 3px; display: inline-grid; place-items: center; font-size: 19px; line-height: 1; }
+.crm-option-controls .crm-option-delete { color: #f43f5e; }
+.crm-option-controls .crm-option-icon:hover, .crm-settings-add-row .crm-option-icon:hover { background: #f3f4f6; }
+.crm-option-active { border: 1px solid #a7f3d0; }
+.crm-option-inactive { border: 1px solid #e5e7eb; }
+@media(max-width: 640px) { .crm-option-controls { flex-wrap: wrap; justify-content: flex-end; } .crm-settings-option-row { gap: 7px; padding: 10px; } }
