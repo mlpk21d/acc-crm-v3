@@ -72,10 +72,12 @@ Additional public pages: `src/app/login/page.tsx` (login) and `src/app/forbidden
 | Path | Purpose |
 | --- | --- |
 | `src/features/contacts/data.ts` | Parameterized PostgreSQL contact queries and pagination |
-| `src/features/contacts/actions.ts` | Permission-checked create/update/soft-delete server actions, Zod validation |
+| `src/features/contacts/actions.ts` | Permission-checked create/update/soft-delete server actions |
+| `src/features/contacts/validation.ts` | Shared strict Zod contact parsing and UUID checks |
+| `tests/contact-validation.test.mjs` | Unit coverage for contact validation and normalization |
 | `src/features/contacts/contact-form.tsx` | Shared creation/editing form based on provisional table fields |
 
-Contacts is the first functional domain scaffold, but has not been build-tested or browser-tested against the local PostgreSQL instance. Forms and field mapping remain provisional pending the original V3 specification and screenshots. List search uses case-insensitive partial matches; pagination is 25 rows per page. No database schema migration was required.
+Contacts validation now rejects missing submitted fields and normalizes country code. Unit tests added. Contacts has not been build-tested or browser-tested against the local PostgreSQL instance. Forms and field mapping remain provisional pending the original V3 specification and screenshots. List search uses case-insensitive partial matches; pagination is 25 rows per page. No database schema migration was required.
 
 ## Server/database
 
