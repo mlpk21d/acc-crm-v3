@@ -18,12 +18,6 @@ const client = new Client({ connectionString, connectionTimeoutMillis: 5000 });
 
 try {
   await client.connect();
-  await client.query(`CREATE TABLE IF NOT EXISTS public.schema_migrations (
-    version text PRIMARY KEY,
-    checksum text NOT NULL,
-    applied_at timestamptz NOT NULL DEFAULT now()
-  )`);
-
   const filenames = (await readdir(migrationsDir))
     .filter((filename) => /^\d{4}_[a-z0-9_]+\.sql$/.test(filename))
     .sort();
@@ -35,12 +29,14 @@ try {
     seen.add(version);
   }
 
-  const applied = await client.query("SELECT version, checksum FROM public.schema_migrations");
-  const appliedByVersion = new Map(applied.rows.map((row) => [row.version, row.checksum]));
-
   // Serialize migration runners using a session-level advisory lock.
   await client.query("SELECT pg_advisory_lock(hashtext('acc-crm-v3-schema-migrations'))");
   try {
+    await client.query(`CREATE TABLE IF NOT EXISTS public.schema_migrations (
+      version text PRIMARY KEY,
+      checksum text NOT NULL,
+      applied_at timestamptz NOT NULL DEFAULT now()
+    )`);
     const lockedApplied = await client.query("SELECT version, checksum FROM public.schema_migrations");
     const lockedMap = new Map(lockedApplied.rows.map((row) => [row.version, row.checksum]));
     for (const filename of filenames) {
