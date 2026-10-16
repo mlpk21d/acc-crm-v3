@@ -36,6 +36,9 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `src/features/auth/session.ts` | Session-to-CRM-user authorization lookup |
 | `src/features/auth/permissions.ts` | Explicit role/permission matrix |
 | `src/features/auth/login-form.tsx` | Email/password sign-in form |
+| `src/features/auth/sign-out-button.tsx` | Session sign-out in CRM header |
+| `src/app/api/auth/access/route.ts` | No-store check of active CRM session authorization |
+| `tests/auth-permissions.test.mjs` | Node test of role permission matrix |
 | `src/app/api/auth/[...all]/route.ts` | Better Auth HTTP endpoints |
 
 ## Application shell
@@ -45,7 +48,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `src/app/layout.tsx` | Public root HTML layout |
 | `src/app/(crm)/layout.tsx` | Protected CRM shell and authorization boundary |
 | `src/app/globals.css` | Initial CRM layout tokens/styles; avoid redesign drift |
-| `src/components/app-shell.tsx` | Persistent sidebar/header navigation |
+| `src/components/app-shell.tsx` | Signed-in user toolbar, logout and role-filtered navigation |
 | `src/components/page-placeholder.tsx` | Temporary domain route scaffold |
 
 ## Page routes
@@ -102,6 +105,8 @@ Minimum password length is 8 characters in shared Better Auth configuration and 
 
 
 Authentication handlers, login form, gated CRM layout, and role checks are scaffolded. CLI corrected to installed `auth` executable, with runtime and CLI versions aligned. CLI reads separate config to avoid the Next.js `server-only` resolution error. **Not yet operational:** Better Auth schema has been committed and user reports its local migration applied; administrator provisioning and CRM linkage have not been executed (environment-driven bootstrap command implemented), and no build or integration tests have been run. Never grant access by email match alone; active `crm_users.auth_user_id` linkage is required. The authorization check in the CRM route-group layout does not replace per-handler authorization for future API endpoints/server actions.
+
+Navigation now filters role-specific links and logout is available. A lightweight `npm run test:unit` checks permission definitions. **Runtime login/logout and the tests have not yet been executed in this session.**
 
 ## Bootstrap status
 
