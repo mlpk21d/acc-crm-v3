@@ -22,6 +22,9 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `next.config.ts` | Next.js application configuration |
 | `eslint.config.mjs` | Next.js + TypeScript linting |
 | `.env.example` | Required local environment variables |
+| `scripts/db/migrate.mjs` | Versioned, checksummed, locked PostgreSQL migration runner |
+| `src/db/README.md` | Database setup, migration policy, safety notes |
+| `src/db/migrations/0001_crm_foundation.sql` | CRM users and contacts base tables + partial indexes |
 
 ## Application shell
 
@@ -51,6 +54,18 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `src/lib/db.ts` | Shared PostgreSQL connection pool |
 | `src/app/api/health/database/route.ts` | Database connectivity health check |
 
+## Current database schema
+
+| Table | Role |
+| --- | --- |
+| `public.schema_migrations` | Tracks applied SQL migration versions and checksums |
+| `public.crm_users` | CRM profiles and roles, distinct from authentication accounts |
+| `public.contacts` | Initial contact details, audit references, and soft deletion |
+
+**Run:** `npm run db:migrate` after copying `.env.example` to `.env.local` and configuring PostgreSQL. Migration has been authored but NOT executed against a database in this session.
+
+**Specification gap:** `acc-crm-v3-specification.md` is not present in the accessible repository. Treat contact fields and roles as preliminary until reconciled; do not infer legacy functionality.
+
 ## Planned domain boundaries
 
 Introduce these folders as each feature is implemented instead of putting business
@@ -78,14 +93,15 @@ Completed:
 - Primary CRM route placeholders
 - Database health endpoint
 - Repository index
+- SQL migration runner and first PostgreSQL CRM migration (not yet executed)
 
 Next:
 
 1. Add the full `acc-crm-v3-specification.md` to this repository as the canonical implementation reference.
-2. Define PostgreSQL schema and migration strategy.
-3. Implement authentication, sessions, and permissions.
+2. Run migrations on an isolated development PostgreSQL database; review SQL and inspect the created indexes.
+3. Select and integrate authentication sessions/permissions; preserve the existing CRM role semantics.
 4. Build shared form/table/modal primitives based on the existing CRM screenshots.
-5. Implement Contacts as the relational foundation.
+5. Reconcile Contacts field definitions with the specification, then implement end-to-end.
 6. Implement Projects and room/J&K workflows.
 7. Implement Invoices and invoice calculations/status behavior.
 8. Implement Settings, Users, and Dashboard widgets.
