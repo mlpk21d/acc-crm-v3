@@ -1,18 +1,35 @@
 import Link from "next/link";
 import { can } from "@/features/auth/permissions";
 import { requirePermission } from "@/features/auth/session";
-import { listContacts } from "@/features/contacts/data";
+import { setContacted } from "@/features/contacts/actions";
+import { getContactFilterOptions, listContacts } from "@/features/contacts/data";
 
-export default async function ContactsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string; page?: string }>;
-}) {
+type Search = { q?: string; page?: string; region?: string; type?: string; status?: string; contacted?: string };
+
+export default async function ContactsPage({ searchParams }: { searchParams: Promise<Search> }) {
   const user = await requirePermission("contacts:read");
-  const { q = "", page: rawPage = "1" } = await searchParams;
-  const page = Math.max(1, Math.min(10000, Number.parseInt(rawPage, 10) || 1));
-  const search = q.slice(0, 100);
-  const { rows, hasNext } = await listContacts(search, page);
+  const params = await searchParams;
+  const search = (params.q ?? "").slice(0, 100);
+  const region = (params.region ?? "").slice(0, 100);
+  const type = (params.type ?? "").slice(0, 100);
+  const status = (params.status ?? "").slice(0, 100);
+  const contacted = params.contacted === "yes" || params.contacted === "no" ? params.contacted : "";
+  const page = Math.max(1, Math.min(10000, Number.parseInt(params.page ?? "1", 10) || 1));
+  const [result, options] = await Promise.all([
+    listContacts({ search, region, type, status, contacted }, page),
+    getContactFilterOptions(),
+  ]);
+  const { rows, hasNext } = result;
+  const paginationUrl = (next: number) => {
+    const qs = new URLSearchParams();
+    if (search) qs.set("q", search);
+    if (region) qs.set("region", region);
+    if (type) qs.set("type", type);
+    if (status) qs.set("status", status);
+    if (contacted) qs.set("contacted", contacted);
+    qs.set("page", String(next));
+    return "/contacts?" + qs.toString();
+  };
 
   return (
     <section>
@@ -20,33 +37,41 @@ export default async function ContactsPage({
         <div><h1>Contacts</h1><p>Customer and business contacts</p></div>
         {can(user.role, "contacts:write") && <Link href="/contacts/new">New Contact</Link>}
       </div>
-      <form method="get" className="contact-search">
-        <label htmlFor="contact-query">Search contacts</label>
-        <input id="contact-query" name="q" defaultValue={search} maxLength={100} />
-        <button type="submit">Search</button>
+      <form method="get" className="contact-filter-form">
+        <label>Search<input name="q" maxLength={100} defaultValue={search} placeholder="Search contacts" /></label>
+        <label>Region<select name="region" defaultValue={region}><option value="">All regions</option>{options.regions.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+        <label>Type<select name="type" defaultValue={type}><option value="">All types</option>{options.types.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+        <label>Status<select name="status" defaultValue={status}><option value="">All statuses</option>{options.statuses.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+        <label>Contacted<select name="contacted" defaultValue={contacted}><option value="">All</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+        <div className="contact-filter-actions"><button type="submit">Apply Filters</button><Link href="/contacts">Clear</Link></div>
       </form>
       <div className="content-card contact-list-card">
-        <table className="contact-table"><thead><tr>
-          <th>Company</th><th>Contact</th><th>Phone</th><th>Email</th><th>Location</th><th>Type</th><th>Actions</th>
-        </tr></thead><tbody>
-          {rows.map((contact) => (
-            <tr key={contact.id}>
+        <table className="contact-table">
+          <thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Region</th><th>Location</th><th>Status</th><th>Contacted</th><th>Actions</th></tr></thead>
+          <tbody>
+            {rows.map(contact => <tr key={contact.id}>
               <td><strong>{contact.company_name || "—"}</strong></td>
               <td>{[contact.first_name, contact.last_name].filter(Boolean).join(" ") || "—"}</td>
-              <td>{contact.phone || "—"}</td>
-              <td>{contact.email || "—"}</td>
-              <td>{[contact.city, contact.state_region].filter(Boolean).join(", ") || "—"}</td>
-              <td><span className="contact-type-badge">{contact.contact_type}</span></td>
-              <td><Link href={`/contacts/${contact.id}`}>View</Link></td>
-            </tr>
-          ))}
-        </tbody></table>
-        {rows.length === 0 && <p>No contacts found.</p>}
+              <td>{contact.phone ? <a href={`tel:${contact.phone}`}>{contact.phone}</a> : "—"}</td>
+              <td>{contact.region || "—"}</td>
+              <td>{contact.location || [contact.city, contact.state_region].filter(Boolean).join(", ") || "—"}</td>
+              <td><span className="contact-type-badge">{contact.status || "—"}</span></td>
+              <td>{can(user.role, "contacts:write") ?
+                <form action={setContacted}>
+                  <input type="hidden" name="id" value={contact.id} />
+                  <input type="hidden" name="contacted" value={String(!contact.contacted)} />
+                  <button className="contact-toggle" type="submit" aria-label={contact.contacted ? "Mark not contacted" : "Mark contacted"}>{contact.contacted ? "Yes" : "No"}</button>
+                </form> : contact.contacted ? "Yes" : "No"}</td>
+              <td><Link href={`/contacts/${contact.id}`}>View</Link>{can(user.role, "contacts:write") && <Link className="contact-edit-link" href={`/contacts/${contact.id}/edit`}>Edit</Link>}</td>
+            </tr>)}
+          </tbody>
+        </table>
+        {rows.length === 0 && <p className="contact-empty">No contacts found.</p>}
       </div>
       <nav className="contact-actions contact-list-pagination" aria-label="Contacts pagination">
-        {page > 1 && <Link href={`/contacts?q=${encodeURIComponent(search)}&page=${page - 1}`}>Previous</Link>}
+        {page > 1 && <Link href={paginationUrl(page - 1)}>Previous</Link>}
         <span>Page {page}</span>
-        {hasNext && <Link href={`/contacts?q=${encodeURIComponent(search)}&page=${page + 1}`}>Next</Link>}
+        {hasNext && <Link href={paginationUrl(page + 1)}>Next</Link>}
       </nav>
     </section>
   );
