@@ -24,7 +24,9 @@ in client-side environment variables.
    after schema installation. Follow the command's secure password prompt.
    Never paste passwords into shell commands, source files, or SQL scripts.
 4. Link that verified auth account to the CRM profile, using the exact same email:
-   `ADMIN_EMAIL=admin@example.com npm run auth:link-admin`.
+   `ADMIN_EMAIL=admin@example.com npm run auth:link-admin`. Existing CRM profiles that
+   are inactive, deleted, already linked elsewhere, or not admins will be rejected
+   instead of silently reactivated or promoted.
 5. Run `npm run check`, `npm run build`, start locally and confirm that
    an anonymous request to `/` redirects to `/login`, valid admin credentials
    permit access, and a disabled CRM profile is rejected.
