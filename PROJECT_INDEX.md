@@ -29,7 +29,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `src/lib/auth-options.ts` | Shared, CLI-safe Better Auth options and plugins |
 | `scripts/auth/cli-config.ts` | CLI-only Better Auth instance without `server-only` imports |
 | `auth` devDependency | Current supported Better Auth CLI, aligned with runtime version |
-| `src/db/migrations/0002_better_auth.sql` | Generated authentication migration (pending local generation/review/commit) |
+| `src/db/migrations/0002_better_auth.sql` | Committed Better Auth tables and indexes; user reports local migration applied |
 | `scripts/auth/link-admin.mjs` | Transactional Better Auth-to-CRM administrator linkage |
 | `docs/authentication.md` | Setup sequence, security constraints, and verification checklist |
 | `src/features/auth/session.ts` | Session-to-CRM-user authorization lookup |
@@ -97,7 +97,7 @@ logic directly in route files:
 
 ## Authentication implementation status
 
-Authentication handlers, login form, gated CRM layout, and role checks are scaffolded. CLI corrected to installed `auth` executable, with runtime and CLI versions aligned. CLI reads separate config to avoid the Next.js `server-only` resolution error. **Not yet operational:** Better Auth's own schema has not been generated/applied, initial administrator CLI provisioning and linkage have not been executed, and no build or integration tests have been run. Never grant access by email match alone; active `crm_users.auth_user_id` linkage is required. The authorization check in the CRM route-group layout does not replace per-handler authorization for future API endpoints/server actions.
+Authentication handlers, login form, gated CRM layout, and role checks are scaffolded. CLI corrected to installed `auth` executable, with runtime and CLI versions aligned. CLI reads separate config to avoid the Next.js `server-only` resolution error. **Not yet operational:** Better Auth schema has been committed and user reports its local migration applied; administrator CLI provisioning and CRM linkage have not been executed, and no build or integration tests have been run. Never grant access by email match alone; active `crm_users.auth_user_id` linkage is required. The authorization check in the CRM route-group layout does not replace per-handler authorization for future API endpoints/server actions.
 
 ## Bootstrap status
 
@@ -116,8 +116,8 @@ Completed:
 Next:
 
 1. Add the full `acc-crm-v3-specification.md` to this repository as the canonical implementation reference.
-2. Run migrations on an isolated development PostgreSQL database; review SQL and inspect the created indexes.
-3. Generate/review/commit/apply Better Auth schema through versioned migrations, provision the first administrator via the CLI, link it to CRM, and run end-to-end session tests. Keep public registration disabled.
+2. Initial development PostgreSQL migrations reported verified by user; verify Better Auth table presence during bootstrap.
+3. Provision the first administrator via the CLI, link it to CRM, and run end-to-end session tests. Keep public registration disabled.
 4. Build shared form/table/modal primitives based on the existing CRM screenshots.
 5. Reconcile Contacts field definitions with the specification, then implement end-to-end.
 6. Implement Projects and room/J&K workflows.
