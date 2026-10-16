@@ -68,3 +68,10 @@ export async function getContact(id: string): Promise<Contact | null> {
   );
   return result.rows[0] ?? null;
 }
+
+export async function getRegionOptions() {
+  const result = await getDbPool().query<{value:string;label:string}>(
+    "SELECT value, label FROM public.crm_settings_options WHERE category='region' AND active=true ORDER BY sort_order, label"
+  );
+  return result.rows;
+}
