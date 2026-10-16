@@ -7,6 +7,9 @@ export type Contact = {
   phone: string | null; mobile_phone: string | null; address_line_1: string | null;
   address_line_2: string | null; city: string | null; state_region: string | null;
   postal_code: string | null; country_code: string; notes: string | null;
+  region: string | null; type: string | null; location: string | null;
+  phone_2: string | null; website: string | null; status: string | null;
+  contacted: boolean; last_contacted_date: string | null; comment: string | null;
 };
 
 export async function listContacts(search: string, page: number) {
@@ -16,7 +19,8 @@ export async function listContacts(search: string, page: number) {
   const result = await getDbPool().query<Contact>(
     `SELECT id, contact_type, first_name, last_name, company_name, email,
        phone, mobile_phone, address_line_1, address_line_2, city, state_region,
-       postal_code, country_code, notes
+       postal_code, country_code, notes, region, type, location, phone_2, website, status,
+       contacted, last_contacted_date, comment
      FROM public.contacts WHERE deleted_at IS NULL
      AND ($1 = '' OR coalesce(first_name, '') ILIKE '%' || $1 || '%'
        OR coalesce(last_name, '') ILIKE '%' || $1 || '%'
@@ -32,7 +36,8 @@ export async function getContact(id: string): Promise<Contact | null> {
   const result = await getDbPool().query<Contact>(
     `SELECT id, contact_type, first_name, last_name, company_name, email,
        phone, mobile_phone, address_line_1, address_line_2, city, state_region,
-       postal_code, country_code, notes
+       postal_code, country_code, notes, region, type, location, phone_2, website, status,
+       contacted, last_contacted_date, comment
      FROM public.contacts WHERE id = $1 AND deleted_at IS NULL`,
     [id],
   );
