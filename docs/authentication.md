@@ -34,6 +34,35 @@ in client-side environment variables.
 Authentication schema generation and user provisioning are **not yet run** by
 the GitHub-connected development session.
 
+## Preferred one-time .env.local bootstrap
+
+Configure these values in `.env.local` (never commit this file):
+
+```dotenv
+INITIAL_ADMIN_EMAIL=admin@example.com
+INITIAL_ADMIN_PASSWORD=use-a-long-random-private-password
+INITIAL_ADMIN_NAME=Administrator
+```
+
+Then run `npm run auth:bootstrap-admin`. This command refuses to operate if
+either Better Auth users or CRM users already exist. It creates the
+Better Auth administrator through the supported CLI, verifies the account,
+and links it into `crm_users`. There is no automatic admin creation when
+the web server starts.
+
+**Security limitation:** The Better Auth CLI accepts unattended passwords
+as an argument, meaning the password can briefly appear in local process
+argument listings. Run only on a trusted local machine; secure `.env.local`
+(permission `chmod 600 .env.local`) and delete the
+`INITIAL_ADMIN_PASSWORD` line after a successful bootstrap. Do not store
+the actual password in Git. For higher-security environments, use the
+interactive `npm run auth:admin` workflow and then `auth:link-admin`.
+
+If Better Auth account creation succeeds but CRM linkage fails, do not rerun
+the bootstrap or reset records blindly. Inspect the existing records and use
+the separate `auth:link-admin` recovery command only after verifying the
+authentication account and expected authorization.
+
 ## Security checklist
 
 - Keep the PostgreSQL role limited to the `acc_crm` database, not superuser.
