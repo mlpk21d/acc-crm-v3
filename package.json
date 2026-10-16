@@ -17,7 +17,8 @@
     "auth:admin": "node --env-file=.env.local --run auth:admin:cli",
     "auth:link-admin": "node --env-file=.env.local scripts/auth/link-admin.mjs",
     "auth:schema:cli": "auth generate --config scripts/auth/cli-config.ts --output src/db/migrations/0002_better_auth.sql",
-    "auth:admin:cli": "auth create-admin --config scripts/auth/cli-config.ts"
+    "auth:admin:cli": "auth create-admin --config scripts/auth/cli-config.ts",
+    "auth:bootstrap-admin": "node --env-file=.env.local scripts/auth/bootstrap-admin.mjs"
   },
   "dependencies": {
     "next": "16.4.2",
