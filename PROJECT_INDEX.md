@@ -67,7 +67,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `/projects/new` | `src/app/(crm)/projects/new/page.tsx` | Create project |
 | `/projects/[id]` | `src/app/(crm)/projects/[id]/page.tsx` | Project detail |
 | `/projects/[id]/edit` | `src/app/(crm)/projects/[id]/edit/page.tsx` | Edit project |
-| `/settings` | `src/app/(crm)/settings/page.tsx` | Region option management (additional settings sections pending) |
+| `/settings` | `src/app/(crm)/settings/page.tsx` | Five legacy dropdown categories: Type, Region, Status, Project Status, Manufacturers |
 | `/users` | `src/app/(crm)/users/page.tsx` | Scaffolded |
 
 Additional public pages: `src/app/login/page.tsx` (login) and `src/app/forbidden/page.tsx` (access denied). Route groups do not change public URLs.
@@ -217,3 +217,16 @@ This is an incremental functional match, **not** full UI parity: the legacy moda
 - Added migration `src/db/migrations/0005_settings_options.sql` to define configurable Settings values. `/settings` now provides add/reactivate/deactivate controls for Region entries using permission-protected server actions in `src/features/contacts/region-settings-actions.ts`. No options are fabricated or seeded; configure them in Settings after migration.
 - Added `src/features/contacts/contact-filters.tsx`: Contacts filters now open from a top-right **Filters** button immediately before **Create Contact**, in a right-side slide-in panel. Existing URL-based filters and server-side query semantics remain intact. Styling lives in `src/app/globals.css`.
 - **Migration prerequisite:** apply 0005 after earlier pending migrations before loading the updated Region form and Settings page. GitHub code changes only; no database migration or local build/test/browser verification performed.
+
+## Settings dropdowns — 2026-10-16
+
+Restored the original CRM dropdown category controls: Type (`type`), Region (`region`), Status (`status`), Project Status (`project_status`), and Manufacturers (`manufacturer`). Original source reference: `mlpk21d/acc-crm/src/pages/admin/Settings.tsx`. V3 uses the existing `public.crm_settings_options` catalog introduced by migration 0005. No further migrations were added.
+
+- `src/features/settings/dropdown-settings.tsx`: category tabs, add, inline label/color editing, enable/disable, stable ordering controls and retirement.
+- `src/features/settings/dropdown-actions.ts`: permission-checked parameterized SQL writes and transactional reorder, with cache revalidation.
+- `src/app/(crm)/settings/page.tsx`: loads all five categories on the Dropdown Options tab.
+- `src/app/globals.css`: original-style tab, list, swatch, and action styling.
+- Colors apply to Status, Project Status and Manufacturers. Retirement is soft (inactive) to preserve historical references. No bulk legacy option values were invented or seeded.
+- Explicitly deferred: Export, Import, Signup Links, project-room/manufacturer consumers, fully Settings-driven Contact Type/Status selects, and screenshot-perfect browser acceptance.
+
+Migration 0005 must be applied locally before Settings can load; no migrations, local build, typecheck, lint, or tests were executed in this change set. GitHub CI was not used.
