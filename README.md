@@ -25,7 +25,14 @@ npm install
 npm run dev
 ```
 
-Before running the database health route, update `DATABASE_URL` in `.env.local`.
+Before running the database health route, update `DATABASE_URL` in `.env.local`. Then create the PostgreSQL database under your development role and apply the schema:
+
+```bash
+npm run db:migrate
+```
+
+This creates `public.schema_migrations`, `public.crm_users`, and `public.contacts`.
+See `src/db/README.md` for migration guarantees and limitations.
 
 ## Validation
 
