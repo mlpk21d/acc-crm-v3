@@ -48,3 +48,11 @@ The deprecated `@better-auth/cli` package was replaced by the `auth` CLI.
 The `auth` executable is provided by the installed `auth` devDependency.
 The `auth` CLI and `better-auth` runtime versions are pinned together to
 avoid drift. Re-run `npm install` after pulling the updated package.json.
+
+## CLI and server-only imports
+
+Use `scripts/auth/cli-config.ts` for schema generation rather than
+`src/lib/auth.ts`. The runtime auth module and database client retain their
+`server-only` guards. The CLI uses shared `src/lib/auth-options.ts` so plugin
+and password settings remain aligned. `npm run auth:schema` reads `.env.local`
+with Node 24 before invoking the CLI. Do not remove `server-only` imports.
