@@ -67,7 +67,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `/projects/new` | `src/app/(crm)/projects/new/page.tsx` | Create project |
 | `/projects/[id]` | `src/app/(crm)/projects/[id]/page.tsx` | Project detail |
 | `/projects/[id]/edit` | `src/app/(crm)/projects/[id]/edit/page.tsx` | Edit project |
-| `/settings` | `src/app/(crm)/settings/page.tsx` | Scaffolded |
+| `/settings` | `src/app/(crm)/settings/page.tsx` | Region option management (additional settings sections pending) |
 | `/users` | `src/app/(crm)/users/page.tsx` | Scaffolded |
 
 Additional public pages: `src/app/login/page.tsx` (login) and `src/app/forbidden/page.tsx` (access denied). Route groups do not change public URLs.
@@ -208,3 +208,12 @@ Migration `src/db/migrations/0004_contacts_legacy_fields.sql` restores legacy `r
 Implemented on `main`: Contacts now supports server-side filtering on company/name/email search, region, legacy type, status, and contacted state. Filter values are derived from persisted contact records and passed through bound PostgreSQL parameters. Paging is 15 records and retains filters across pages. Added a permission-checked contacted toggle which sets/clears `last_contacted_date`, updates audit fields and revalidates list/detail paths. Contacts table now presents Company, Contact, Phone, Region, Location, Status, Contacted and View/Edit actions. New styles are in `src/app/globals.css`.
 
 This is an incremental functional match, **not** full UI parity: the legacy modal-based filter layout, controlled status color settings, comment modal, rich text, exact ten-column list and Settings-managed option catalog are still pending. Migration 0004 is a required prerequisite for querying these fields. No migration, local build, lint, tests or screenshot comparison was run through this GitHub-only change set. Tests must be run locally, not via GitHub CI.
+
+## Contact UI refinements — 2026-10-16
+
+- Renamed display label `Contact Type` to `Type` (underlying `contact_type` remains unchanged). The separate legacy `type` field is labeled `Category` to avoid duplicate Type labels.
+- Removed the visible required-name help text; existing validation remains enforced.
+- Contacts Region uses a select fed from `public.crm_settings_options` (`category='region'`, active options, configured labels/order), with an inactive legacy value retained when editing.
+- Added migration `src/db/migrations/0005_settings_options.sql` to define configurable Settings values. `/settings` now provides add/reactivate/deactivate controls for Region entries using permission-protected server actions in `src/features/contacts/region-settings-actions.ts`. No options are fabricated or seeded; configure them in Settings after migration.
+- Added `src/features/contacts/contact-filters.tsx`: Contacts filters now open from a top-right **Filters** button immediately before **Create Contact**, in a right-side slide-in panel. Existing URL-based filters and server-side query semantics remain intact. Styling lives in `src/app/globals.css`.
+- **Migration prerequisite:** apply 0005 after earlier pending migrations before loading the updated Region form and Settings page. GitHub code changes only; no database migration or local build/test/browser verification performed.
