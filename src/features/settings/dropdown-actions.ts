@@ -53,7 +53,6 @@ export async function toggleDropdownOption(formData: FormData) {
 export async function moveDropdownOption(formData: FormData) {
   await requirePermission("settings:manage");
   const category=categoryOf(formData.get("category"));
-  const value=textValue(formData.get("value"));
   const direction=formData.get("direction")==="up"?"up":"down";
   const client=await getDbPool().connect();
   try {
@@ -62,9 +61,6 @@ export async function moveDropdownOption(formData: FormData) {
     const idx=result.rows.findIndex(row=>row.id===String(formData.get("id") ?? ""));
     const target=idx+(direction==="up"?-1:1);
     if(idx>=0 && target>=0 && target<result.rows.length) {
-      const first=result.rows[idx], second=result.rows[target];
-      const order=target<idx?target:idx;
-      await client.query("UPDATE public.crm_settings_options SET sort_order=$1,updated_at=now() WHERE id=$2",[order,first.id]);
       // Reassign stable unique sequence to avoid duplicate order values.
       const ids=[...result.rows.map(row=>row.id)];
       [ids[idx],ids[target]]=[ids[target],ids[idx]];
