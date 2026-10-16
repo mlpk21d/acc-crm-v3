@@ -1,43 +1,61 @@
-import Link from "next/link";
-import type { ReactNode } from "react";
+"use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState, type ReactNode } from "react";
 import { can } from "@/features/auth/permissions";
 import type { CurrentCrmUser } from "@/features/auth/session";
 import { SignOutButton } from "@/features/auth/sign-out-button";
 
+type IconName = "dashboard" | "contacts" | "projects" | "invoices" | "users" | "settings" | "menu" | "close";
 const navigation = [
-  { href: "/", label: "Dashboard" },
-  { href: "/contacts", label: "Contacts", permission: "contacts:read" },
-  { href: "/projects", label: "Projects", permission: "projects:read" },
-  { href: "/invoices", label: "Invoices", permission: "invoices:read" },
-  { href: "/users", label: "Users", permission: "users:manage" },
-  { href: "/settings", label: "Settings", permission: "settings:manage" },
+  { href: "/", label: "Dashboard", icon: "dashboard" },
+  { href: "/contacts", label: "Contacts", icon: "contacts", permission: "contacts:read" },
+  { href: "/projects", label: "Projects", icon: "projects", permission: "projects:read" },
+  { href: "/invoices", label: "Invoices", icon: "invoices", permission: "invoices:read" },
+  { href: "/users", label: "Users", icon: "users", permission: "users:manage" },
+  { href: "/settings", label: "Settings", icon: "settings", permission: "settings:manage" },
 ] as const;
 
+function NavIcon({ name }: { name: IconName }) {
+  const common = { width: 19, height: 19, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true as const };
+  switch (name) {
+    case "dashboard": return <svg {...common}><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>;
+    case "contacts": return <svg {...common}><rect x="5" y="3" width="16" height="18" rx="2"/><path d="M9 3v18M13 9h4M13 13h4"/></svg>;
+    case "projects": return <svg {...common}><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M3 10h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/></svg>;
+    case "invoices": return <svg {...common}><path d="M7 3h8l4 4v14H5V3h2zM15 3v5h4M8 12h8M8 16h8"/></svg>;
+    case "users": return <svg {...common}><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></svg>;
+    case "settings": return <svg {...common}><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9 7 7m10 10 2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>;
+    case "menu": return <svg {...common}><path d="M4 6h16M4 12h16M4 18h16"/></svg>;
+    case "close": return <svg {...common}><path d="M5 5l14 14M19 5 5 19"/></svg>;
+  }
+}
+
 export function AppShell({ children, user }: { children: ReactNode; user: CurrentCrmUser }) {
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const links = navigation.filter((item) => !("permission" in item) || can(user.role, item.permission));
-  return (
-    <div className="crm-shell">
-      <aside className="crm-sidebar">
-        <div className="crm-brand"><span className="crm-brand-title">ACC CRM</span></div>
-        <nav aria-label="Primary navigation" className="crm-nav">
-          {links.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
-        </nav>
-        <div className="crm-sidebar-footer">
-          <div className="crm-profile">
-            <span className="crm-avatar" aria-hidden="true">{user.displayName.slice(0, 1).toUpperCase()}</span>
-            <div><strong>{user.displayName}</strong><small>{user.role}</small></div>
-          </div>
-          <SignOutButton />
-        </div>
-      </aside>
-      <div className="crm-main">
-        <header className="crm-mobile-header">
-          <strong>ACC CRM</strong>
-          <span>{user.displayName}</span>
-        </header>
-        <main className="crm-content">{children}</main>
+
+  const sidebar = (mobile: boolean) => (
+    <>
+      <div className="crm-brand"><span className="crm-brand-title">ACC CRM</span>{mobile && <button className="crm-menu-toggle" aria-label="Close navigation" onClick={() => setMobileOpen(false)}><NavIcon name="close"/></button>}</div>
+      <nav aria-label={mobile ? "Mobile navigation" : "Primary navigation"} className="crm-nav">
+        {links.map(item => {
+          const active = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(item.href + "/");
+          return <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} onClick={() => setMobileOpen(false)}><NavIcon name={item.icon}/><span>{item.label}</span></Link>;
+        })}
+      </nav>
+      <div className="crm-sidebar-footer">
+        <div className="crm-profile"><span className="crm-avatar" aria-hidden="true">{user.displayName.slice(0,1).toUpperCase()}</span><div><strong>{user.displayName}</strong><small>{user.role}</small></div></div>
+        <SignOutButton/>
       </div>
-    </div>
+    </>
   );
+
+  return <div className="crm-shell">
+    <aside className="crm-sidebar">{sidebar(false)}</aside>
+    <header className="crm-mobile-header"><strong>ACC CRM</strong><button className="crm-menu-toggle" aria-label="Open navigation" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><NavIcon name="menu"/></button></header>
+    {mobileOpen && <div className="crm-mobile-overlay"><button className="crm-mobile-backdrop" aria-label="Close navigation" onClick={() => setMobileOpen(false)}/><aside className="crm-mobile-drawer">{sidebar(true)}</aside></div>}
+    <div className="crm-main"><main className="crm-content">{children}</main></div>
+  </div>;
 }
