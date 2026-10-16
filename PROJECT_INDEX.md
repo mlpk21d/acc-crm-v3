@@ -187,3 +187,7 @@ Next:
 
 Every structural change must be reflected here in the same change set. New routes,
 API endpoints, migrations, shared modules, and major feature files must be indexed.
+
+## UI follow-up 2026-10-16
+
+The sidebar now includes route highlighting, inline navigation icons, and a mobile drawer. The Contacts list still needs the legacy column/filter fidelity pass; that change has not been committed. Browser and build validation remain outstanding.
