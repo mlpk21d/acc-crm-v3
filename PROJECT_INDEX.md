@@ -25,7 +25,9 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `scripts/db/migrate.mjs` | Versioned, checksummed, locked PostgreSQL migration runner |
 | `src/db/README.md` | Database setup, migration policy, safety notes |
 | `src/db/migrations/0001_crm_foundation.sql` | CRM users and contacts base tables + partial indexes |
-| `src/lib/auth.ts` | Better Auth server configuration (no public signup) |
+| `src/lib/auth.ts` | Better Auth server configuration + admin provisioning plugin (no public signup) |
+| `scripts/auth/link-admin.mjs` | Transactional Better Auth-to-CRM administrator linkage |
+| `docs/authentication.md` | Setup sequence, security constraints, and verification checklist |
 | `src/features/auth/session.ts` | Session-to-CRM-user authorization lookup |
 | `src/features/auth/permissions.ts` | Explicit role/permission matrix |
 | `src/features/auth/login-form.tsx` | Email/password sign-in form |
@@ -91,7 +93,7 @@ logic directly in route files:
 
 ## Authentication implementation status
 
-Authentication handlers, login form, gated CRM layout, and role checks are scaffolded. **Not yet operational:** Better Auth's own schema has not been generated/applied, initial user bootstrap has not been implemented, and no build or integration tests have been run. Never grant access by email match alone; active `crm_users.auth_user_id` linkage is required. The authorization check in the CRM route-group layout does not replace per-handler authorization for future API endpoints/server actions.
+Authentication handlers, login form, gated CRM layout, and role checks are scaffolded. **Not yet operational:** Better Auth's own schema has not been generated/applied, initial administrator CLI provisioning and linkage have not been executed, and no build or integration tests have been run. Never grant access by email match alone; active `crm_users.auth_user_id` linkage is required. The authorization check in the CRM route-group layout does not replace per-handler authorization for future API endpoints/server actions.
 
 ## Bootstrap status
 
@@ -111,7 +113,7 @@ Next:
 
 1. Add the full `acc-crm-v3-specification.md` to this repository as the canonical implementation reference.
 2. Run migrations on an isolated development PostgreSQL database; review SQL and inspect the created indexes.
-3. Generate/review/apply Better Auth tables; add secure initial administrator provisioning and end-to-end session tests. Keep public registration disabled.
+3. Generate/review/commit/apply Better Auth schema through versioned migrations, provision the first administrator via the CLI, link it to CRM, and run end-to-end session tests. Keep public registration disabled.
 4. Build shared form/table/modal primitives based on the existing CRM screenshots.
 5. Reconcile Contacts field definitions with the specification, then implement end-to-end.
 6. Implement Projects and room/J&K workflows.
