@@ -44,6 +44,8 @@ INITIAL_ADMIN_PASSWORD=use-a-long-random-private-password
 INITIAL_ADMIN_NAME=Administrator
 ```
 
+The minimum password length is **8 characters** for both Better Auth and the bootstrap script. Use a longer, unique password for any real deployment.
+
 Then run `npm run auth:bootstrap-admin`. This command refuses to operate if
 either Better Auth users or CRM users already exist. It creates the
 Better Auth administrator through the supported CLI, verifies the account,
