@@ -16,12 +16,12 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
   if (rawId && !id) return { error: "Invalid project identifier." };
   const {name,contact_id,status,description} = parsed.data;
   const pool = getDbPool();
+  let saved: string;
   try {
     if (contact_id) {
       const valid = await pool.query("SELECT 1 FROM public.contacts WHERE id=$1 AND deleted_at IS NULL", [contact_id]);
       if (!valid.rowCount) return {error:"Choose an active contact."};
     }
-    let saved: string;
     if (id) {
       const updated = await pool.query<{id:string}>(`UPDATE public.projects SET name=$1,contact_id=$2,status=$3,description=$4,
         updated_by=$5,updated_at=now() WHERE id=$6 AND deleted_at IS NULL RETURNING id`,
@@ -35,12 +35,10 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
         [name,contact_id||null,status,description||null,user.id]);
       saved = inserted.rows[0].id;
     }
-    revalidatePath("/projects");
-    redirect("/projects/"+saved);
   } catch (error) {
-    // Re-throw Next.js navigation control flow; do not turn successful saves into errors.
-    if (error && typeof error === "object" && "digest" in error && String(error.digest).startsWith("NEXT_REDIRECT")) throw error;
     console.error("Project save failed", error);
     return {error:"Unable to save project."};
   }
+  revalidatePath("/projects");
+  redirect("/projects/"+saved);
 }
