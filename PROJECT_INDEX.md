@@ -59,7 +59,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | --- | --- | --- |
 | `/` | `src/app/(crm)/page.tsx` | Scaffolded dashboard |
 | `/invoices` | `src/app/(crm)/invoices/page.tsx` | Scaffolded |
-| `/contacts` | `src/app/(crm)/contacts/page.tsx` | Searchable, paginated legacy-oriented 7-column list; advanced legacy filters pending |
+| `/contacts` | `src/app/(crm)/contacts/page.tsx` | Legacy-style list, parameterized search/filter controls, 15-row pagination, contacted toggle and View/Edit links |
 | `/contacts/new` | `src/app/(crm)/contacts/new/page.tsx` | Create contact (write permission) |
 | `/contacts/[id]` | `src/app/(crm)/contacts/[id]/page.tsx` | Contact detail + soft-delete |
 | `/contacts/[id]/edit` | `src/app/(crm)/contacts/[id]/edit/page.tsx` | Update contact |
@@ -202,3 +202,9 @@ On 2026-10-16, the Contacts listing was adjusted to legacy-oriented Company, Con
 Migration `src/db/migrations/0004_contacts_legacy_fields.sql` restores legacy `region`, `type`, `location`, `phone_2`, `website`, `status`, `contacted`, `last_contacted_date`, and `comment` as additive fields. It creates partial filtering indexes and does not modify existing fields, source data, or permissions. The contact validation, server create/update action, reads and three-column form were updated to include applicable new fields. Existing V3 `contact_type` and `mobile_phone` are separate fields from legacy `type` and `phone_2`; mappings must be reviewed for eventual data imports.
 
 **Deployment dependency:** Run `npm run db:migrate` before running code that queries the new columns. Migration 0003 runs before 0004 if not already applied; review both before deployment. No migrations were applied by this assistant. Local build, lint, typecheck, unit/integration tests and visual comparisons remain unverified. Original settings-driven selectable statuses/types, contacted changes and filtering modal have not yet been implemented.
+
+## Contacts workflow update — 2026-10-16
+
+Implemented on `main`: Contacts now supports server-side filtering on company/name/email search, region, legacy type, status, and contacted state. Filter values are derived from persisted contact records and passed through bound PostgreSQL parameters. Paging is 15 records and retains filters across pages. Added a permission-checked contacted toggle which sets/clears `last_contacted_date`, updates audit fields and revalidates list/detail paths. Contacts table now presents Company, Contact, Phone, Region, Location, Status, Contacted and View/Edit actions. New styles are in `src/app/globals.css`.
+
+This is an incremental functional match, **not** full UI parity: the legacy modal-based filter layout, controlled status color settings, comment modal, rich text, exact ten-column list and Settings-managed option catalog are still pending. Migration 0004 is a required prerequisite for querying these fields. No migration, local build, lint, tests or screenshot comparison was run through this GitHub-only change set. Tests must be run locally, not via GitHub CI.
