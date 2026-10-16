@@ -2,6 +2,7 @@ import Link from "next/link";
 import { can } from "@/features/auth/permissions";
 import { requirePermission } from "@/features/auth/session";
 import { setContacted } from "@/features/contacts/actions";
+import { ContactFilters } from "@/features/contacts/contact-filters";
 import { getContactFilterOptions, listContacts } from "@/features/contacts/data";
 
 type Search = { q?: string; page?: string; region?: string; type?: string; status?: string; contacted?: string };
@@ -35,16 +36,8 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
     <section>
       <div className="page-heading">
         <div><h1>Contacts</h1><p>Customer and business contacts</p></div>
-        {can(user.role, "contacts:write") && <Link href="/contacts/new">New Contact</Link>}
+        <div className="crm-heading-actions"><ContactFilters filters={{search,region,type,status,contacted}} options={options} />{can(user.role, "contacts:write") && <Link className="crm-create-contact" href="/contacts/new">Create Contact</Link>}</div>
       </div>
-      <form method="get" className="contact-filter-form">
-        <label>Search<input name="q" maxLength={100} defaultValue={search} placeholder="Search contacts" /></label>
-        <label>Region<select name="region" defaultValue={region}><option value="">All regions</option>{options.regions.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
-        <label>Type<select name="type" defaultValue={type}><option value="">All types</option>{options.types.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
-        <label>Status<select name="status" defaultValue={status}><option value="">All statuses</option>{options.statuses.map(value => <option key={value} value={value}>{value}</option>)}</select></label>
-        <label>Contacted<select name="contacted" defaultValue={contacted}><option value="">All</option><option value="yes">Yes</option><option value="no">No</option></select></label>
-        <div className="contact-filter-actions"><button type="submit">Apply Filters</button><Link href="/contacts">Clear</Link></div>
-      </form>
       <div className="content-card contact-list-card">
         <table className="contact-table">
           <thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Region</th><th>Location</th><th>Status</th><th>Contacted</th><th>Actions</th></tr></thead>
