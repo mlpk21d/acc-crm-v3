@@ -1,11 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { createAuthClient } from "better-auth/react";
 
 const authClient = createAuthClient();
 
 export function LoginForm() {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -23,7 +25,8 @@ export function LoginForm() {
         setError("Invalid credentials or account unavailable.");
         return;
       }
-      window.location.assign("/");
+      router.replace("/");
+      router.refresh();
     } catch {
       setError("Unable to sign in. Try again.");
     } finally {
