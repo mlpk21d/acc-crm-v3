@@ -1,11 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createAuthClient } from "better-auth/react";
 
 const authClient = createAuthClient();
 
 export function SignOutButton() {
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
 
   async function signOut() {
@@ -13,7 +15,8 @@ export function SignOutButton() {
     try {
       const { error } = await authClient.signOut();
       if (error) throw new Error("Sign out failed");
-      window.location.assign("/login");
+      router.replace("/login");
+      router.refresh();
     } catch {
       setBusy(false);
       window.alert("Unable to sign out. Please try again.");
