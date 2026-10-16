@@ -75,9 +75,11 @@ Additional public pages: `src/app/login/page.tsx` (login) and `src/app/forbidden
 | `src/features/contacts/actions.ts` | Permission-checked create/update/soft-delete server actions |
 | `src/features/contacts/validation.ts` | Shared strict Zod contact parsing and UUID checks |
 | `tests/contact-validation.test.mjs` | Unit coverage for contact validation and normalization |
-| `src/features/contacts/contact-form.tsx` | Shared creation/editing form based on provisional table fields |
+| `src/features/contacts/contact-form.tsx` | Client form with `useActionState`, inline error feedback and retained submitted values |
+| `src/features/contacts/delete-contact-form.tsx` | Confirmation before soft-delete submission |
+| `tests/integration/contact-db.test.mjs` | Transactional PostgreSQL insert/update/delete and constraint tests (rolled back) |
 
-Contacts validation now rejects missing submitted fields and normalizes country code. Unit tests added. Contacts has not been build-tested or browser-tested against the local PostgreSQL instance. Forms and field mapping remain provisional pending the original V3 specification and screenshots. List search uses case-insensitive partial matches; pagination is 25 rows per page. No database schema migration was required.
+Contacts validation now rejects missing submitted fields and normalizes country code. Form errors are rendered inline and deletion requires confirmation. Unit and database integration tests added (`npm run test:integration`; local DB required). Contacts has not been build-tested or browser-tested against the local PostgreSQL instance. Forms and field mapping remain provisional pending the original V3 specification and screenshots. List search uses case-insensitive partial matches; pagination is 25 rows per page. No database schema migration was required.
 
 ## Server/database
 
@@ -143,7 +145,7 @@ Next:
 2. Initial development PostgreSQL migrations reported verified by user; verify Better Auth table presence during bootstrap.
 3. Run `npm run auth:bootstrap-admin` once on the local database, validate login and permissions, and add session tests. Keep public registration disabled.
 4. Build shared form/table/modal primitives based on the existing CRM screenshots.
-5. Build/test Contacts create/read/update/soft-delete flows and reconcile fields with the specification; add focused integration and permission tests.
+5. Run local build and `npm run test:integration`, verify Contacts in the browser, test denied writes, then reconcile fields with the specification.
 6. Implement Projects and room/J&K workflows.
 7. Implement Invoices and invoice calculations/status behavior.
 8. Implement Settings, Users, and Dashboard widgets.
