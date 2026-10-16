@@ -36,7 +36,7 @@ export const contactSchema = z.object({
 
 export function parseContactForm(formData: FormData) {
   const values = Object.fromEntries(
-    contactFields.map((field) => [field, formData.get(field)]),
+    contactFields.map((field) => [field, formData.get(field) ?? (["region", "type", "location", "phone_2", "website", "status", "comment"].includes(field) ? "" : null)]),
   );
   return contactSchema.safeParse(values);
 }
