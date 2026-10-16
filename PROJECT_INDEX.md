@@ -30,6 +30,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `scripts/auth/cli-config.ts` | CLI-only Better Auth instance without `server-only` imports |
 | `auth` devDependency | Current supported Better Auth CLI, aligned with runtime version |
 | `src/db/migrations/0002_better_auth.sql` | Committed Better Auth tables and indexes; user reports local migration applied |
+| `src/db/migrations/0003_projects_foundation.sql` | Provisional projects table, optional contact FK, statuses, audit fields and indexes (NOT applied) |
 | `scripts/auth/link-admin.mjs` | Transactional Better Auth-to-CRM administrator linkage |
 | `scripts/auth/bootstrap-admin.mjs` | One-time initial administrator from `.env.local`, refuses existing user stores |
 | `docs/authentication.md` | Setup sequence, security constraints, and verification checklist |
@@ -61,7 +62,10 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `/contacts/new` | `src/app/(crm)/contacts/new/page.tsx` | Create contact (write permission) |
 | `/contacts/[id]` | `src/app/(crm)/contacts/[id]/page.tsx` | Contact detail + soft-delete |
 | `/contacts/[id]/edit` | `src/app/(crm)/contacts/[id]/edit/page.tsx` | Update contact |
-| `/projects` | `src/app/(crm)/projects/page.tsx` | Scaffolded |
+| `/projects` | `src/app/(crm)/projects/page.tsx` | Searchable paginated list |
+| `/projects/new` | `src/app/(crm)/projects/new/page.tsx` | Create project |
+| `/projects/[id]` | `src/app/(crm)/projects/[id]/page.tsx` | Project detail |
+| `/projects/[id]/edit` | `src/app/(crm)/projects/[id]/edit/page.tsx` | Edit project |
 | `/settings` | `src/app/(crm)/settings/page.tsx` | Scaffolded |
 | `/users` | `src/app/(crm)/users/page.tsx` | Scaffolded |
 
@@ -80,6 +84,17 @@ Additional public pages: `src/app/login/page.tsx` (login) and `src/app/forbidden
 | `tests/integration/contact-db.test.mjs` | Transactional PostgreSQL insert/update/delete and constraint tests (rolled back) |
 
 Contacts validation now rejects missing submitted fields and normalizes country code. Form errors are rendered inline and deletion requires confirmation. Unit and database integration tests added (`npm run test:integration`; local DB required). Contacts has not been build-tested or browser-tested against the local PostgreSQL instance. Forms and field mapping remain provisional pending the original V3 specification and screenshots. List search uses case-insensitive partial matches; pagination is 25 rows per page. No database schema migration was required.
+
+## Projects feature index
+
+| Path | Purpose |
+| --- | --- |
+| `src/features/projects/data.ts` | Parameterized project listing/detail and active contact choices |
+| `src/features/projects/actions.ts` | Server-side permission checked create/update actions |
+| `src/features/projects/validation.ts` | Project input validation |
+| `src/features/projects/project-form.tsx` | Shared provisional create/edit project form |
+
+**Important:** Migration 0003 is authored but has not been executed or build-tested here. Review it before `npm run db:migrate`. Room records, J&K workflow, final statuses and legacy field mapping require the canonical specification; do not assume that this is the final project schema.
 
 ## Server/database
 
@@ -146,7 +161,7 @@ Next:
 3. Run `npm run auth:bootstrap-admin` once on the local database, validate login and permissions, and add session tests. Keep public registration disabled.
 4. Build shared form/table/modal primitives based on the existing CRM screenshots.
 5. Run local build and `npm run test:integration`, verify Contacts in the browser, test denied writes, then reconcile fields with the specification.
-6. Implement Projects and room/J&K workflows.
+6. Review/apply migration 0003, build and test Projects CRUD, then define room/J&K workflows from the source specification.
 7. Implement Invoices and invoice calculations/status behavior.
 8. Implement Settings, Users, and Dashboard widgets.
 9. Add unit, integration, and end-to-end coverage as each domain becomes functional.
