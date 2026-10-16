@@ -7,7 +7,7 @@ import type { Contact } from "@/features/contacts/data";
 
 const initialState: ContactFormState = { error: null, fields: {} };
 
-export function ContactForm({ contact }: { contact?: Contact }) {
+export function ContactForm({ contact, regions }: { contact?: Contact; regions: {value:string;label:string}[] }) {
   const [state, action, pending] = useActionState(saveContact, initialState);
   const value = (key: keyof Contact) =>
     state.error && key in state.fields
@@ -35,15 +35,15 @@ export function ContactForm({ contact }: { contact?: Contact }) {
         <section className="crm-form-panel" aria-labelledby="company-heading">
           <h2 id="company-heading">Company</h2>
           {input("company_name", "Company Name", 200)}
-          <label>Contact Type
+          <label>Type
             <select name="contact_type" key={value("contact_type")} defaultValue={value("contact_type") || "person"}>
               <option value="person">Person</option>
               <option value="business">Business</option>
             </select>
           </label>
           {input("location", "Location", 200)}
-          {input("region", "Region", 100)}
-          {input("type", "Type", 100)}
+          <label>Region<select name="region" defaultValue={value("region")} key={value("region")}><option value="">Select...</option>{regions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}{value("region") && !regions.some(option => option.value === value("region")) && <option value={value("region")}>{value("region")} (inactive)</option>}</select></label>
+          {input("type", "Category", 100)}
           {input("status", "Status", 100)}
           {input("address_line_1", "Address Line 1", 200)}
           {input("address_line_2", "Address Line 2", 200)}
@@ -72,7 +72,6 @@ export function ContactForm({ contact }: { contact?: Contact }) {
           <label>Comments
             <textarea name="comment" rows={5} maxLength={10000} key={value("comment")} defaultValue={value("comment")} />
           </label>
-          <p className="contact-help">A first name, last name, or company is required.</p>
           <div className="contact-actions">
             <button type="submit" disabled={pending}>{pending ? "Saving…" : contact ? "Save Changes" : "Create Contact"}</button>
             <Link href="/contacts">Cancel</Link>
