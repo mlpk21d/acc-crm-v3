@@ -3,7 +3,7 @@ import { getDbPool } from "@/lib/db";
 
 export type Project = {
   id: string; name: string; contact_id: string | null; contact_name: string | null;
-  status: "planned" | "active" | "on_hold" | "completed" | "cancelled";
+  status: string;
   description: string | null;
 };
 const selection = `SELECT p.id, p.name, p.contact_id, p.status, p.description,
@@ -25,5 +25,12 @@ export async function contactChoices() {
   const result = await getDbPool().query<{id:string; label:string}>(`
     SELECT id, COALESCE(NULLIF(trim(concat_ws(' ',first_name,last_name)),''), company_name) AS label
     FROM public.contacts WHERE deleted_at IS NULL ORDER BY label, id LIMIT 500`);
+  return result.rows;
+}
+
+export async function projectStatusOptions() {
+  const result = await getDbPool().query<{value:string;label:string;color:string|null}>(
+    "SELECT value,label,color FROM public.crm_settings_options WHERE category='project_status' AND active=true ORDER BY sort_order,label"
+  );
   return result.rows;
 }
