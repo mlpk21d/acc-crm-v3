@@ -30,7 +30,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `scripts/auth/cli-config.ts` | CLI-only Better Auth instance without `server-only` imports |
 | `auth` devDependency | Current supported Better Auth CLI, aligned with runtime version |
 | `src/db/migrations/0002_better_auth.sql` | Committed Better Auth tables and indexes; user reports local migration applied |
-| `src/db/migrations/0008_permanent_project_statuses.sql` | Seeds and protects permanent Cancelled and Archived Project Status options (NOT applied) |
+| `src/db/migrations/0009_protect_permanent_status_insert.sql` | Forward-only protection against duplicate/converted permanent statuses (NOT applied) |\n| `src/db/migrations/0008_permanent_project_statuses.sql` | Seeds and protects permanent Cancelled and Archived Project Status options (NOT applied) |
 | `src/db/migrations/0006_project_status_options.sql` | Allow managed project status strings while retaining existing project statuses (NOT applied) |\n| `src/db/migrations/0004_contacts_legacy_fields.sql` | Additive legacy contact attributes and filtering indexes; NOT applied to local PostgreSQL | 
 | `src/db/migrations/0003_projects_foundation.sql` | Provisional projects table, optional contact FK, statuses, audit fields and indexes (NOT applied) |
 | `scripts/auth/link-admin.mjs` | Transactional Better Auth-to-CRM administrator linkage |
@@ -268,3 +268,9 @@ The Contact form displays exactly one **Type** selector, sourced from Settings c
 - `src/features/settings/dropdown-actions.ts` blocks deactivation and retirement for these two options and permits color edits while retaining the fixed names; reorder actions remain available.
 - `src/features/settings/dropdown-settings.tsx` marks these two options Permanent, shows their names read-only while editing colors, and removes deactivate and retire actions. CSS styling in `src/app/globals.css`.
 - No application-side hard delete is used for other options. Migration 0008 must be applied locally after earlier numbered migrations; no database changes were executed by this assistant. Build and browser tests remain unverified.
+
+## Permanent status hardening — 2026-10-17
+
+- `src/db/migrations/0009_protect_permanent_status_insert.sql` is a forward-only migration (does **not** modify the checksummed 0008 migration). It extends the PostgreSQL permanent-status trigger to prevent inserts or conversions that would create case-variant `Cancelled`/`Archived` values, while preserving permitted color and sort-order updates.
+- `src/features/settings/dropdown-actions.ts` now rejects attempts to add permanent statuses through the generic Add Option action; rename/deactivate/retire remain blocked.
+- Existing permanent statuses stay active, sortable and color-editable. Apply migrations through 0009 in version order locally. No migration or automated/browser tests were executed here. Export, Import and Signup Links remain deferred.
