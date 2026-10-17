@@ -30,7 +30,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `scripts/auth/cli-config.ts` | CLI-only Better Auth instance without `server-only` imports |
 | `auth` devDependency | Current supported Better Auth CLI, aligned with runtime version |
 | `src/db/migrations/0002_better_auth.sql` | Committed Better Auth tables and indexes; user reports local migration applied |
-| `src/db/migrations/0004_contacts_legacy_fields.sql` | Additive legacy contact attributes and filtering indexes; NOT applied to local PostgreSQL | 
+| `src/db/migrations/0006_project_status_options.sql` | Allow managed project status strings while retaining existing project statuses (NOT applied) |\n| `src/db/migrations/0004_contacts_legacy_fields.sql` | Additive legacy contact attributes and filtering indexes; NOT applied to local PostgreSQL | 
 | `src/db/migrations/0003_projects_foundation.sql` | Provisional projects table, optional contact FK, statuses, audit fields and indexes (NOT applied) |
 | `scripts/auth/link-admin.mjs` | Transactional Better Auth-to-CRM administrator linkage |
 | `scripts/auth/bootstrap-admin.mjs` | One-time initial administrator from `.env.local`, refuses existing user stores |
@@ -242,3 +242,12 @@ The Contacts create/edit pages now load the active `type`, `region`, and `status
 ## Contact Type ambiguity resolved — 2026-10-16
 
 The Contact form displays exactly one **Type** selector, sourced from Settings category `type` and persisted to `contacts.type`. The original Person/Business `contacts.contact_type` field is no longer visible; the form submits its existing value on edits, defaulting to `business` on creates to satisfy the existing schema without a new migration. This internal compatibility field must not be confused with the user-facing legacy Type options. No database migration was changed. Export/Import/Signup Links remain deferred. This commit was not locally built or browser tested.
+
+## Projects status integration — 2026-10-16
+
+- Migration `src/db/migrations/0006_project_status_options.sql` removes the provisional fixed-enum CHECK and replaces it with a nonblank/length CHECK. Existing statuses remain intact. Migration 0005 is prerequisite.
+- `src/features/projects/data.ts` loads active `project_status` options from `public.crm_settings_options`, ordered by configured sort order, and treats the project status as a string.
+- `src/features/projects/project-form.tsx` now uses the Settings → Project Status dropdown; stored inactive statuses are retained for existing projects.
+- `src/features/projects/validation.ts` permits safe-length status values; `src/features/projects/actions.ts` checks that new selections are active in Settings, or an unchanged legacy value on edit. Project create/edit route files pass option lists to the form.
+- Manufacturer selection remains deferred until project rooms are implemented and matched to the legacy UI. No changes made to Export, Import, or Signup Links.
+- **Local action required:** Review and apply pending migrations (including 0006) before running this Projects code; no local migrations, build, typecheck, tests or screenshot comparisons were performed.
