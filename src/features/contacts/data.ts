@@ -69,9 +69,14 @@ export async function getContact(id: string): Promise<Contact | null> {
   return result.rows[0] ?? null;
 }
 
-export async function getRegionOptions() {
-  const result = await getDbPool().query<{value:string;label:string}>(
-    "SELECT value, label FROM public.crm_settings_options WHERE category='region' AND active=true ORDER BY sort_order, label"
+export type ContactDropdownOptions = Record<"type" | "region" | "status", { value: string; label: string }[]>;
+
+export async function getContactDropdownOptions(): Promise<ContactDropdownOptions> {
+  const result = await getDbPool().query<{ category: "type" | "region" | "status"; value: string; label: string }>(
+    "SELECT category, value, label FROM public.crm_settings_options WHERE category = ANY($1::text[]) AND active = true ORDER BY category, sort_order, label",
+    [["type", "region", "status"]],
   );
-  return result.rows;
+  const options: ContactDropdownOptions = { type: [], region: [], status: [] };
+  for (const row of result.rows) options[row.category].push({ value: row.value, label: row.label });
+  return options;
 }
