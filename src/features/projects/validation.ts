@@ -3,7 +3,7 @@ import { z } from "zod";
 export const projectSchema = z.object({
   name: z.string().trim().min(1).max(200),
   contact_id: z.union([z.uuid(), z.literal("")]),
-  status: z.enum(["planned", "active", "on_hold", "completed", "cancelled"]),
+  status: z.string().trim().min(1).max(100),
   description: z.string().trim().max(10000),
 });
 export type ProjectInput = z.infer<typeof projectSchema>;
