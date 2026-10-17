@@ -281,3 +281,12 @@ The Contact form displays exactly one **Type** selector, sourced from Settings c
 - `src/features/projects/rooms-actions.ts`: server-side project-writer authorization for insert, update and delete, room/project association checks on update/delete, and manufacturer validation that permits the unchanged previously stored inactive manufacturer.
 - `src/app/(crm)/projects/[id]/page.tsx`: delegates room list and actions to the interactive component. Modal CSS is in `src/app/globals.css`.
 - **Not yet complete:** keyboard focus trapping, room reordering, Rev-A-Shelf, J&K configuration, financial values restricted to admins and browser screenshot acceptance. Migration 0007 is required for rooms. No local build, migrations or tests were run; GitHub CI not used. Export/Import/Signup Links remain untouched.
+
+## Room ordering and Rev-A-Shelf — 2026-10-17
+
+- `src/db/migrations/0010_rev_a_shelf_items.sql`: new Rev-A-Shelf accessory table with ordered items, cascading room relationship, and index (NOT applied locally).
+- `src/features/projects/rooms-data.ts`: rooms now include ordered `ras_items` via a JSON aggregation. The `manufacturer` Settings catalog remains the room dropdown source.
+- `src/features/projects/rooms-actions.ts`: permission-protected up/down movement using a project-scoped row lock and transactional sort order writes; validated add/remove accessory actions restricted to the matching active project and room.
+- `src/features/projects/project-rooms.tsx`: up/down controls appear in the room table; Rev-A-Shelf counts appear below room names and stored item management appears in the Add/Edit Room modal for existing rooms. Room details are saved separately from accessories in this iteration.
+- `src/app/globals.css`: compact legacy-like controls without changing navigation or page layout.
+- **Remaining:** Rev-A-Shelf item editing/reordering, keyboard focus trap for modal, J&K configuration, admin-only room cost, full screenshot acceptance and QA. Migrations must be applied in order through 0010. Local build, tests and browser verification not run; no GitHub CI.
