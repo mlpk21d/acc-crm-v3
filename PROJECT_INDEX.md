@@ -251,3 +251,12 @@ The Contact form displays exactly one **Type** selector, sourced from Settings c
 - `src/features/projects/validation.ts` permits safe-length status values; `src/features/projects/actions.ts` checks that new selections are active in Settings, or an unchanged legacy value on edit. Project create/edit route files pass option lists to the form.
 - Manufacturer selection remains deferred until project rooms are implemented and matched to the legacy UI. No changes made to Export, Import, or Signup Links.
 - **Local action required:** Review and apply pending migrations (including 0006) before running this Projects code; no local migrations, build, typecheck, tests or screenshot comparisons were performed.
+
+## Room/manufacturer foundation — 2026-10-16
+
+- Migration `src/db/migrations/0007_project_rooms_foundation.sql` adds **nonfinancial** project rooms including ordered room details and manufacturer string. This is a new, unapplied migration.
+- `src/features/projects/rooms-data.ts` reads rooms with manufacturer colors and loads active `manufacturer` Settings entries.
+- `src/features/projects/rooms-actions.ts` adds server-authorized room inserts with active manufacturer validation. No costs or admin-only financial data are present.
+- `src/app/(crm)/projects/[id]/page.tsx` displays room rows and offers an initial Add Room form for project writers. `src/app/globals.css` styles the section.
+- **Known fidelity gap:** this initial nonfinancial add form is not yet the original RoomEditorModal. Editing, deletion, ordering controls, Rev-A-Shelf, J&K cabinet configuration and administrator-only costs remain to be implemented; follow screenshot acceptance references.
+- Migration order: 0005, 0006, 0007 after earlier pending migrations. No local migrations or build/browser tests executed, and GitHub CI not used.
