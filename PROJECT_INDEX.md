@@ -274,3 +274,10 @@ The Contact form displays exactly one **Type** selector, sourced from Settings c
 - `src/db/migrations/0009_protect_permanent_status_insert.sql` is a forward-only migration (does **not** modify the checksummed 0008 migration). It extends the PostgreSQL permanent-status trigger to prevent inserts or conversions that would create case-variant `Cancelled`/`Archived` values, while preserving permitted color and sort-order updates.
 - `src/features/settings/dropdown-actions.ts` now rejects attempts to add permanent statuses through the generic Add Option action; rename/deactivate/retire remain blocked.
 - Existing permanent statuses stay active, sortable and color-editable. Apply migrations through 0009 in version order locally. No migration or automated/browser tests were executed here. Export, Import and Signup Links remain deferred.
+
+## Project Room modal iteration — 2026-10-17
+
+- `src/features/projects/project-rooms.tsx`: replaces the temporary inline Add Room form with an Add/Edit Room modal, preserves the original room field groupings, uses Settings-managed Manufacturers (including existing inactive selection), and adds delete confirmation. The room table is retained on project details.
+- `src/features/projects/rooms-actions.ts`: server-side project-writer authorization for insert, update and delete, room/project association checks on update/delete, and manufacturer validation that permits the unchanged previously stored inactive manufacturer.
+- `src/app/(crm)/projects/[id]/page.tsx`: delegates room list and actions to the interactive component. Modal CSS is in `src/app/globals.css`.
+- **Not yet complete:** keyboard focus trapping, room reordering, Rev-A-Shelf, J&K configuration, financial values restricted to admins and browser screenshot acceptance. Migration 0007 is required for rooms. No local build, migrations or tests were run; GitHub CI not used. Export/Import/Signup Links remain untouched.
