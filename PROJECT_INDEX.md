@@ -234,3 +234,7 @@ Migration 0005 must be applied locally before Settings can load; no migrations, 
 ## Screenshot-specific Settings refinement — 2026-10-16
 
 Reference screenshots supplied in conversation: `option1.png` (Type add-option row), `option2.png` (Project Status add-option row). Matched inline add input placement directly beneath category card heading, adjacent color picker for Status/Project Status/Manufacturers, compact dark Add button, cancel X, and right-aligned compact option actions, numeric order, swatches and active status badges. Files: `src/features/settings/dropdown-settings.tsx`, `src/app/globals.css`. Underlying dropdown CRUD behavior unchanged. Export, Import, and Signup Links intentionally deferred. No browser/build validation performed.
+
+## Settings-driven Contact dropdown integration — 2026-10-16
+
+The Contacts create/edit pages now load the active `type`, `region`, and `status` categories through `getContactDropdownOptions()` from `src/features/contacts/data.ts`; `ContactForm` renders select controls and preserves a currently stored inactive value when editing. The separate foundational `contact_type` (Person/Business) remains unchanged and labeled `Type`, while the legacy Settings-managed `type` catalog is displayed as `Category` to avoid two controls with the same label. Underlying column semantics must be reconciled before import. The migration prerequisite is still 0005. This change has not been locally compiled or browser tested. Export, Import, and Signup Links remain out of scope.
