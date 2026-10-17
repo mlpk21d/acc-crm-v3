@@ -30,6 +30,7 @@ export async function addDropdownOption(formData: FormData) {
   await requirePermission("settings:manage");
   const category=categoryOf(formData.get("category"));
   const label=textValue(formData.get("label"));
+  if (permanent(category, label)) throw new Error("Cancelled and Archived are permanent Project Status options already managed by the system.");
   const color=colorOf(category,formData.get("color"));
   await getDbPool().query(
     `INSERT INTO public.crm_settings_options (category,value,label,color,sort_order)
