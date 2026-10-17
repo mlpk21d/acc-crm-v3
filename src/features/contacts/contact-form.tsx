@@ -42,20 +42,15 @@ export function ContactForm({ contact, options }: { contact?: Contact; options: 
   return (
     <form action={action} className="contact-form">
       {contact && <input type="hidden" name="id" value={contact.id} />}
+      <input type="hidden" name="contact_type" value={contact?.contact_type ?? "business"} />
       {state.error && <p className="contact-form-error" role="alert">{state.error}</p>}
       <div className="crm-form-panels">
         <section className="crm-form-panel" aria-labelledby="company-heading">
           <h2 id="company-heading">Company</h2>
           {input("company_name", "Company Name", 200)}
-          <label>Type
-            <select name="contact_type" key={value("contact_type")} defaultValue={value("contact_type") || "person"}>
-              <option value="person">Person</option>
-              <option value="business">Business</option>
-            </select>
-          </label>
+          {choice("type", "Type")}
           {input("location", "Location", 200)}
           {choice("region", "Region")}
-          {choice("type", "Category")}
           {choice("status", "Status")}
           {input("address_line_1", "Address Line 1", 200)}
           {input("address_line_2", "Address Line 2", 200)}
