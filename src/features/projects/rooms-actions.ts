@@ -44,3 +44,48 @@ export async function deleteProjectRoom(form:FormData) {
  await getDbPool().query("DELETE FROM public.project_rooms WHERE id=$1 AND project_id=$2 AND EXISTS (SELECT 1 FROM public.projects WHERE id=$2 AND deleted_at IS NULL)",[id,projectId]);
  revalidatePath("/projects/"+projectId);
 }
+
+export async function moveProjectRoom(form:FormData) {
+ await requirePermission("projects:write");
+ const projectId=z.uuid().parse(form.get("project_id"));
+ const roomId=z.uuid().parse(form.get("id"));
+ const direction=form.get("direction")==="up"?-1:1;
+ const client=await getDbPool().connect();
+ try {
+  await client.query("BEGIN");
+  const existing=await client.query("SELECT 1 FROM public.projects WHERE id=$1 AND deleted_at IS NULL FOR UPDATE",[projectId]);
+  if(!existing.rowCount) throw new Error("Project not found.");
+  const result=await client.query<{id:string}>("SELECT id FROM public.project_rooms WHERE project_id=$1 ORDER BY sort_order,id FOR UPDATE",[projectId]);
+  const ids=result.rows.map(r=>r.id);
+  const idx=ids.indexOf(roomId),to=idx+direction;
+  if(idx>=0&&to>=0&&to<ids.length) {
+   [ids[idx],ids[to]]=[ids[to],ids[idx]];
+   for(let i=0;i<ids.length;i++) await client.query("UPDATE public.project_rooms SET sort_order=$1,updated_at=now() WHERE id=$2 AND project_id=$3",[i+1,ids[i],projectId]);
+  }
+  await client.query("COMMIT");
+ } catch(e){await client.query("ROLLBACK");throw e;}finally{client.release();}
+ revalidatePath("/projects/"+projectId);
+}
+const rasSchema=z.object({
+ project_id:z.uuid(),room_id:z.uuid(),item_name:z.string().trim().min(1).max(200),
+ code:z.string().trim().max(100),link:z.union([z.literal(""),z.url().refine(v=>v.startsWith("https://")||v.startsWith("http://"))])
+});
+export async function addRoomAccessory(form:FormData) {
+ await requirePermission("projects:write");
+ const v=rasSchema.parse(Object.fromEntries(["project_id","room_id","item_name","code","link"].map(k=>[k,form.get(k)])));
+ const result=await getDbPool().query(`INSERT INTO public.rev_a_shelf_items(room_id,item_name,code,link,sort_order)
+ SELECT r.id,$3,$4,$5,(SELECT COALESCE(MAX(i.sort_order)+1,1) FROM public.rev_a_shelf_items i WHERE i.room_id=r.id)
+ FROM public.project_rooms r JOIN public.projects p ON p.id=r.project_id
+ WHERE r.id=$1 AND r.project_id=$2 AND p.deleted_at IS NULL RETURNING id`,[v.room_id,v.project_id,v.item_name,v.code||null,v.link||null]);
+ if(!result.rowCount) throw new Error("Room not found.");
+ revalidatePath("/projects/"+v.project_id);
+}
+export async function deleteRoomAccessory(form:FormData) {
+ await requirePermission("projects:write");
+ const projectId=z.uuid().parse(form.get("project_id"));
+ const roomId=z.uuid().parse(form.get("room_id"));
+ const id=z.uuid().parse(form.get("id"));
+ await getDbPool().query(`DELETE FROM public.rev_a_shelf_items i USING public.project_rooms r,public.projects p
+ WHERE i.id=$1 AND i.room_id=$2 AND r.id=i.room_id AND r.project_id=$3 AND p.id=r.project_id AND p.deleted_at IS NULL`,[id,roomId,projectId]);
+ revalidatePath("/projects/"+projectId);
+}
