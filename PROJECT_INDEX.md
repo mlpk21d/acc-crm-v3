@@ -30,6 +30,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `scripts/auth/cli-config.ts` | CLI-only Better Auth instance without `server-only` imports |
 | `auth` devDependency | Current supported Better Auth CLI, aligned with runtime version |
 | `src/db/migrations/0002_better_auth.sql` | Committed Better Auth tables and indexes; user reports local migration applied |
+| `src/db/migrations/0008_permanent_project_statuses.sql` | Seeds and protects permanent Cancelled and Archived Project Status options (NOT applied) |
 | `src/db/migrations/0006_project_status_options.sql` | Allow managed project status strings while retaining existing project statuses (NOT applied) |\n| `src/db/migrations/0004_contacts_legacy_fields.sql` | Additive legacy contact attributes and filtering indexes; NOT applied to local PostgreSQL | 
 | `src/db/migrations/0003_projects_foundation.sql` | Provisional projects table, optional contact FK, statuses, audit fields and indexes (NOT applied) |
 | `scripts/auth/link-admin.mjs` | Transactional Better Auth-to-CRM administrator linkage |
@@ -260,3 +261,10 @@ The Contact form displays exactly one **Type** selector, sourced from Settings c
 - `src/app/(crm)/projects/[id]/page.tsx` displays room rows and offers an initial Add Room form for project writers. `src/app/globals.css` styles the section.
 - **Known fidelity gap:** this initial nonfinancial add form is not yet the original RoomEditorModal. Editing, deletion, ordering controls, Rev-A-Shelf, J&K cabinet configuration and administrator-only costs remain to be implemented; follow screenshot acceptance references.
 - Migration order: 0005, 0006, 0007 after earlier pending migrations. No local migrations or build/browser tests executed, and GitHub CI not used.
+
+## Permanent Project Statuses — 2026-10-16
+
+- `src/db/migrations/0008_permanent_project_statuses.sql` seeds **Cancelled** and **Archived** in `crm_settings_options` under `project_status`, reuses existing case-insensitive matches, marks them active, and adds a PostgreSQL trigger protecting them against deletion, deactivation and renaming. Configured colors and order are preserved for existing rows.
+- `src/features/settings/dropdown-actions.ts` blocks deactivation and retirement for these two options and permits color edits while retaining the fixed names; reorder actions remain available.
+- `src/features/settings/dropdown-settings.tsx` marks these two options Permanent, shows their names read-only while editing colors, and removes deactivate and retire actions. CSS styling in `src/app/globals.css`.
+- No application-side hard delete is used for other options. Migration 0008 must be applied locally after earlier numbered migrations; no database changes were executed by this assistant. Build and browser tests remain unverified.
