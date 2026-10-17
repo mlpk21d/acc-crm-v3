@@ -227,3 +227,18 @@ a { color: inherit; text-decoration: none; }
 .crm-room-confirm p{color:#4b5563;font-size:14px}
 .crm-room-confirm form{display:flex;justify-content:flex-end;gap:10px}
 @media(max-width:640px){.crm-room-modal-form .crm-room-fields{grid-template-columns:1fr}.crm-room-modal-form{padding:16px}}
+
+/* Room ordering and Rev-A-Shelf editor */
+.crm-room-order-controls{display:flex;flex-direction:column;gap:2px}
+.crm-room-order-controls button{border:0;background:transparent;color:#6b7280;cursor:pointer;padding:1px 6px}
+.crm-room-order-controls button:disabled{opacity:.25;cursor:not-allowed}
+.crm-room-accessory-preview{font-size:11px;color:#6b7280;margin-top:4px}
+.crm-room-accessory-notice{font-size:12px;color:#6b7280;margin-top:16px}
+.crm-room-ras-section{padding:18px 24px 24px;border-top:1px solid #e5e7eb}
+.crm-room-ras-section h3{font-size:14px;margin:0 0 12px}
+.crm-room-ras-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px}
+.crm-room-ras-item a{margin-left:12px;text-decoration:underline}
+.crm-room-ras-item button{border:0;background:none;color:#e11d48;cursor:pointer}
+.crm-room-ras-add{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.crm-room-ras-add input{flex:1 1 140px;min-width:100px;padding:9px;border:1px solid #d1d5db;border-radius:8px}
+.crm-room-ras-add button{padding:9px 12px;background:#111827;color:white;border:0;border-radius:8px;cursor:pointer}
