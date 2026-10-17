@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requirePermission } from "@/features/auth/session";
-import { getProject, contactChoices } from "@/features/projects/data";
+import { getProject, contactChoices, projectStatusOptions } from "@/features/projects/data";
 import { ProjectForm } from "@/features/projects/project-form";
 export default async function EditProject({params}:{params:Promise<{id:string}>}) {
  await requirePermission("projects:write");
@@ -9,5 +9,5 @@ export default async function EditProject({params}:{params:Promise<{id:string}>}
  const project=await getProject(id);
  if(!project) notFound();
  return <section><div className="page-heading"><h1>Edit project</h1></div>
- <ProjectForm project={project} contacts={await contactChoices()}/></section>;
+ <ProjectForm project={project} contacts={await contactChoices()} statuses={await projectStatusOptions()}/></section>;
 }
