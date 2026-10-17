@@ -15,6 +15,7 @@ export function DropdownSettings({options}: {options:Option[]}) {
  const [editing,setEditing]=useState<string|null>(null);
  const visible=options.filter(o=>o.category===category);
  const showColor=colored.has(category);
+ const isPermanent=(o:Option)=>o.category==="project_status" && ["cancelled","archived"].includes(o.value.toLowerCase());
  return <div className="crm-settings-dropdowns">
   <div className="crm-settings-tabs" role="tablist" aria-label="Dropdown categories">
    {categories.map(c=><button key={c.value} type="button" role="tab" aria-selected={category===c.value} className={category===c.value?"selected":""} onClick={()=>{setCategory(c.value);setAdding(false);setEditing(null)}}>{c.label}</button>)}
@@ -32,14 +33,14 @@ export function DropdownSettings({options}: {options:Option[]}) {
     {editing===o.id?
      <form action={async data=>{await editDropdownOption(data);setEditing(null)}} className="crm-settings-edit-row">
       <input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/>
-      <input name="label" aria-label="Edit label" required maxLength={100} defaultValue={o.label} autoFocus/>
+      <input name="label" aria-label="Edit label" required maxLength={100} defaultValue={o.label} readOnly={isPermanent(o)} autoFocus={!isPermanent(o)}/>
       {showColor&&<label>Color <input type="color" name="color" defaultValue={o.color??"#e5e7eb"}/></label>}
       <button type="submit">Save</button><button type="button" onClick={()=>setEditing(null)}>Cancel</button>
      </form>
     :<>
      <span className="crm-option-order">{i+1}</span>
      {showColor&&<span className="crm-option-swatch" style={{backgroundColor:o.color??"#e5e7eb"}}/>}
-     <span className={o.active?"crm-option-label":"crm-option-label inactive"}>{o.label}</span>
+     <span className={o.active?"crm-option-label":"crm-option-label inactive"}>{o.label}{isPermanent(o)&&<small className="crm-permanent-tag">Permanent</small>}</span>
      <span className={o.active?"crm-option-active":"crm-option-inactive"}>{o.active?"Active":"Inactive"}</span>
      <div className="crm-option-controls">
       {(["up","down"] as const).map(dir=><form action={moveDropdownOption} key={dir}>
@@ -47,8 +48,8 @@ export function DropdownSettings({options}: {options:Option[]}) {
        <button type="submit" className="crm-option-icon" aria-label={(dir==="up"?"Move up ":"Move down ")+o.label} title={dir==="up"?"Move up":"Move down"} disabled={dir==="up"?i===0:i===visible.length-1}>{dir==="up"?"↑":"↓"}</button>
       </form>)}
       <button type="button" className="crm-option-icon" aria-label={"Edit "+o.label} title="Edit" onClick={()=>setEditing(o.id)}>✎</button>
-      <form action={toggleDropdownOption}><input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><button type="submit" className="crm-option-icon" aria-label={(o.active?"Deactivate ":"Activate ")+o.label} title={o.active?"Deactivate":"Activate"}>{o.active?"×":"✓"}</button></form>
-      <form action={deleteDropdownOption}><input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><button type="submit" className="crm-option-icon crm-option-delete" title="Retire option" aria-label={"Retire "+o.label}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6"/></svg></button></form>
+      {!isPermanent(o)&&<form action={toggleDropdownOption}><input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><button type="submit" className="crm-option-icon" aria-label={(o.active?"Deactivate ":"Activate ")+o.label} title={o.active?"Deactivate":"Activate"}>{o.active?"×":"✓"}</button></form>}
+      {!isPermanent(o)&&<form action={deleteDropdownOption}><input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><button type="submit" className="crm-option-icon crm-option-delete" title="Retire option" aria-label={"Retire "+o.label}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6"/></svg></button></form>}
      </div>
     </>}
    </div>)}
