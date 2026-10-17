@@ -187,3 +187,17 @@ a { color: inherit; text-decoration: none; }
 .crm-option-active { border: 1px solid #a7f3d0; }
 .crm-option-inactive { border: 1px solid #e5e7eb; }
 @media(max-width: 640px) { .crm-option-controls { flex-wrap: wrap; justify-content: flex-end; } .crm-settings-option-row { gap: 7px; padding: 10px; } }
+
+/* Project room foundation: use legacy table visual grammar */
+.crm-project-rooms { margin-top:24px; }
+.crm-project-rooms h2 {font-size:16px;margin:0 0 16px;}
+.crm-rooms-scroll {overflow-x:auto;}
+.crm-rooms-scroll table {min-width:800px;}
+.crm-manufacturer-chip {display:inline-block;border-radius:6px;padding:4px 8px;}
+.crm-room-add {border-top:1px solid var(--border);margin-top:16px;padding-top:16px;}
+.crm-room-add summary {cursor:pointer;font-size:14px;font-weight:600;}
+.crm-room-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px;}
+.crm-room-fields label {display:grid;gap:6px;font-size:14px;}
+.crm-room-fields input,.crm-room-fields select {width:100%;border:1px solid #d1d5db;border-radius:8px;padding:10px;background:white;}
+.crm-room-fields button {background:#111827;color:white;border:0;border-radius:8px;padding:10px 16px;cursor:pointer;justify-self:start;}
+@media(max-width:640px){.crm-room-fields{grid-template-columns:1fr;}}
