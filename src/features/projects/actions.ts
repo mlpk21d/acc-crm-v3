@@ -18,6 +18,17 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
   const pool = getDbPool();
   let saved: string;
   try {
+    const allowedStatus = await pool.query(
+      "SELECT 1 FROM public.crm_settings_options WHERE category = $1 AND value = $2 AND active = true LIMIT 1",
+      ["project_status", status],
+    );
+    if (!allowedStatus.rowCount) {
+      const unchanged = id ? await pool.query(
+        "SELECT 1 FROM public.projects WHERE id=$1 AND status=$2 AND deleted_at IS NULL",
+        [id, status],
+      ) : null;
+      if (!unchanged?.rowCount) return { error: "Choose an active Project Status from Settings." };
+    }
     if (contact_id) {
       const valid = await pool.query("SELECT 1 FROM public.contacts WHERE id=$1 AND deleted_at IS NULL", [contact_id]);
       if (!valid.rowCount) return {error:"Choose an active contact."};
