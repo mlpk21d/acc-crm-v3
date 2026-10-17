@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { saveContact, type ContactFormState } from "@/features/contacts/actions";
-import type { Contact } from "@/features/contacts/data";
+import type { Contact, ContactDropdownOptions } from "@/features/contacts/data";
 
 const initialState: ContactFormState = { error: null, fields: {} };
 
-export function ContactForm({ contact, regions }: { contact?: Contact; regions: {value:string;label:string}[] }) {
+export function ContactForm({ contact, options }: { contact?: Contact; options: ContactDropdownOptions }) {
   const [state, action, pending] = useActionState(saveContact, initialState);
   const value = (key: keyof Contact) =>
     state.error && key in state.fields
@@ -27,6 +27,18 @@ export function ContactForm({ contact, regions }: { contact?: Contact; regions: 
     </label>
   );
 
+  const choice = (name: "type" | "region" | "status", title: string) => {
+    const current = value(name);
+    const choices = options[name];
+    return <label key={name}>{title}
+      <select name={name} key={name + current} defaultValue={current}>
+        <option value="">Select...</option>
+        {choices.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+        {current && !choices.some(option => option.value === current) && <option value={current}>{current} (inactive)</option>}
+      </select>
+    </label>;
+  };
+
   return (
     <form action={action} className="contact-form">
       {contact && <input type="hidden" name="id" value={contact.id} />}
@@ -42,9 +54,9 @@ export function ContactForm({ contact, regions }: { contact?: Contact; regions: 
             </select>
           </label>
           {input("location", "Location", 200)}
-          <label>Region<select name="region" defaultValue={value("region")} key={value("region")}><option value="">Select...</option>{regions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}{value("region") && !regions.some(option => option.value === value("region")) && <option value={value("region")}>{value("region")} (inactive)</option>}</select></label>
-          {input("type", "Category", 100)}
-          {input("status", "Status", 100)}
+          {choice("region", "Region")}
+          {choice("type", "Category")}
+          {choice("status", "Status")}
           {input("address_line_1", "Address Line 1", 200)}
           {input("address_line_2", "Address Line 2", 200)}
           {input("city", "City", 100)}
