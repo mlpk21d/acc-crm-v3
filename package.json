@@ -11,7 +11,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit --incremental false",
-    "check": "npm run lint && npm run typecheck",
+    "check": "npm run lint && npm run typecheck && node --experimental-strip-types --test tests/*.test.mjs",
     "db:migrate": "node --env-file=.env.local scripts/db/migrate.mjs",
     "auth:schema": "node --env-file=.env.local --run auth:schema:cli",
     "auth:admin": "node --env-file=.env.local --run auth:admin:cli",
