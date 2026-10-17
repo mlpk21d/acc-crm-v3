@@ -20,6 +20,9 @@ function colorOf(category: Category, value: FormDataEntryValue | null): string |
   const color = typeof value === "string" && /^#[\da-fA-F]{6}$/.test(value) ? value : "#e5e7eb";
   return color;
 }
+function permanent(category: Category, value: string) {
+  return category === "project_status" && ["cancelled", "archived"].includes(value.toLowerCase());
+}
 function refresh() {
   for (const route of ["/settings","/contacts","/contacts/new","/projects","/projects/new"]) revalidatePath(route);
 }
@@ -39,6 +42,7 @@ export async function editDropdownOption(formData: FormData) {
   const category=categoryOf(formData.get("category"));
   const value=textValue(formData.get("value"));
   const label=textValue(formData.get("label"));
+  if (permanent(category, value) && label !== (value.toLowerCase() === "cancelled" ? "Cancelled" : "Archived")) throw new Error("Permanent status names cannot be changed.");
   const color=colorOf(category,formData.get("color"));
   await getDbPool().query("UPDATE public.crm_settings_options SET label=$1,color=$2,updated_at=now() WHERE category=$3 AND value=$4",[label,color,category,value]);
   refresh();
@@ -47,6 +51,7 @@ export async function toggleDropdownOption(formData: FormData) {
   await requirePermission("settings:manage");
   const category=categoryOf(formData.get("category"));
   const value=textValue(formData.get("value"));
+  if (permanent(category, value)) throw new Error("Permanent project statuses cannot be deactivated.");
   await getDbPool().query("UPDATE public.crm_settings_options SET active=NOT active,updated_at=now() WHERE category=$1 AND value=$2",[category,value]);
   refresh();
 }
@@ -74,6 +79,7 @@ export async function deleteDropdownOption(formData: FormData) {
   await requirePermission("settings:manage");
   const category=categoryOf(formData.get("category"));
   const value=textValue(formData.get("value"));
+  if (permanent(category, value)) throw new Error("Permanent project statuses cannot be retired.");
   // Retire rather than erase values that historical records may reference.
   await getDbPool().query("UPDATE public.crm_settings_options SET active=false,updated_at=now() WHERE category=$1 AND value=$2",[category,value]);
   refresh();
