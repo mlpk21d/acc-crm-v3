@@ -290,3 +290,7 @@ The Contact form displays exactly one **Type** selector, sourced from Settings c
 - `src/features/projects/project-rooms.tsx`: up/down controls appear in the room table; Rev-A-Shelf counts appear below room names and stored item management appears in the Add/Edit Room modal for existing rooms. Room details are saved separately from accessories in this iteration.
 - `src/app/globals.css`: compact legacy-like controls without changing navigation or page layout.
 - **Remaining:** Rev-A-Shelf item editing/reordering, keyboard focus trap for modal, J&K configuration, admin-only room cost, full screenshot acceptance and QA. Migrations must be applied in order through 0010. Local build, tests and browser verification not run; no GitHub CI.
+
+## Migration troubleshooting — 2026-10-17
+
+User reports `npm run db:migrate` skips 0001–0007 and then fails with PostgreSQL `syntax error at end of input`. Because 0008 is the next version, it is the first suspect, but the prior output did **not** identify a filename or SQL location. Updated `scripts/db/migrate.mjs` to log each pending filename before execution and wrap SQL errors with filename, PostgreSQL character position and diagnostic context. Existing applied migration checksums and transactional rollback behavior remain unchanged. **Await new runner output before editing a versioned migration.** No local PostgreSQL execution or remote migration was performed.
