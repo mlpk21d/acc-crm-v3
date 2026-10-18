@@ -49,6 +49,7 @@ try {
         console.log(`skip ${filename}`);
         continue;
       }
+      console.log(`applying ${filename}`);
       await client.query("BEGIN");
       try {
         await client.query(sql);
@@ -59,7 +60,8 @@ try {
         await client.query("ROLLBACK");
         const details = error instanceof Error ? error.message : String(error);
         const position = error && typeof error === "object" && "position" in error ? ` (SQL character ${error.position})` : "";
-        throw new Error(`Migration ${filename} failed${position}: ${details}`, { cause: error });
+        const pgContext = error && typeof error === "object" && "where" in error ? ` Context: ${error.where}` : "";
+        throw new Error(`Migration ${filename} failed${position}: ${details}${pgContext}`, { cause: error });
       }
     }
   } finally {
