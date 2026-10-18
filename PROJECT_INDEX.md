@@ -298,3 +298,10 @@ User reports `npm run db:migrate` skips 0001–0007 and then fails with PostgreS
 ## Migration SQL fix — 2026-10-17
 
 Local migration output located syntax failure in `0008_permanent_project_statuses.sql` at character 1410, at the `CASE WHEN ... THEN` expression embedded inside a PL/pgSQL `IF` predicate. Replaced it with `initcap(lower(OLD.value))` in the protection check to avoid parser ambiguity; applied the same fix proactively to unapplied migration 0009. Migration 0008 had failed and rolled back, so its checksum has **not** been recorded; updating its file is safe for this reported database, but environments where 0008 was applied must not silently modify recorded history. No local PostgreSQL run was available. Run `npm run db:migrate` after pulling and report any subsequent failure.
+
+## J&K cabinet configurator foundation — 2026-10-17
+
+- New pending migration `0011_jk_cabinet_foundation.sql` adds `jk_price_items` (confidential catalog), `jk_room_configs` (per-room assembly count and lock flag) and `jk_room_cabinet_items` (ordered per-room price snapshots with hinge direction, quantity, custom item flag). The foreign keys cascade cabinet configurations and selections when a room is deleted.
+- `src/features/projects/jk-data.ts` adds server-only, **administrator-gated** catalog search and room-config reads using `requirePermission("settings:manage")` (admin-only in current role matrix). The generic Project read path never returns pricing.
+- Original `src/pages/projects/JkConfigModal.tsx` is the reference for future UI: catalog search, custom items, 20% catalog discount, hinge selection, quantities, item ordering, $20 per assembly, and apply/locked room-cost calculations.
+- **Not implemented yet:** catalog import, admin write API/configurator modal, financial synchronization and server-owned cost calculation. Do not expose pricing through client props for non-admin users. Migration 0011 has NOT been run; status of preceding 0008–0010 after the reported SQL syntax correction has not been confirmed by user. No build/typecheck/QA performed, no GitHub CI.
