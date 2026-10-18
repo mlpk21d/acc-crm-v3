@@ -21,7 +21,7 @@ BEGIN
     IF NEW.category IS DISTINCT FROM OLD.category
       OR NEW.value IS DISTINCT FROM OLD.value
       OR NEW.active IS DISTINCT FROM true
-      OR NEW.label IS DISTINCT FROM CASE lower(OLD.value) WHEN 'cancelled' THEN 'Cancelled' ELSE 'Archived' END THEN
+      OR NEW.label IS DISTINCT FROM initcap(lower(OLD.value)) THEN
       RAISE EXCEPTION 'Permanent project status cannot be renamed or deactivated';
     END IF;
   ELSIF NEW.category = 'project_status' AND lower(NEW.value) IN ('cancelled', 'archived') THEN
