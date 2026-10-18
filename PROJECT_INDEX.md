@@ -294,3 +294,7 @@ The Contact form displays exactly one **Type** selector, sourced from Settings c
 ## Migration troubleshooting — 2026-10-17
 
 User reports `npm run db:migrate` skips 0001–0007 and then fails with PostgreSQL `syntax error at end of input`. Because 0008 is the next version, it is the first suspect, but the prior output did **not** identify a filename or SQL location. Updated `scripts/db/migrate.mjs` to log each pending filename before execution and wrap SQL errors with filename, PostgreSQL character position and diagnostic context. Existing applied migration checksums and transactional rollback behavior remain unchanged. **Await new runner output before editing a versioned migration.** No local PostgreSQL execution or remote migration was performed.
+
+## Migration SQL fix — 2026-10-17
+
+Local migration output located syntax failure in `0008_permanent_project_statuses.sql` at character 1410, at the `CASE WHEN ... THEN` expression embedded inside a PL/pgSQL `IF` predicate. Replaced it with `initcap(lower(OLD.value))` in the protection check to avoid parser ambiguity; applied the same fix proactively to unapplied migration 0009. Migration 0008 had failed and rolled back, so its checksum has **not** been recorded; updating its file is safe for this reported database, but environments where 0008 was applied must not silently modify recorded history. No local PostgreSQL run was available. Run `npm run db:migrate` after pulling and report any subsequent failure.
