@@ -57,7 +57,9 @@ try {
         console.log(`applied ${filename}`);
       } catch (error) {
         await client.query("ROLLBACK");
-        throw error;
+        const details = error instanceof Error ? error.message : String(error);
+        const position = error && typeof error === "object" && "position" in error ? ` (SQL character ${error.position})` : "";
+        throw new Error(`Migration ${filename} failed${position}: ${details}`, { cause: error });
       }
     }
   } finally {
