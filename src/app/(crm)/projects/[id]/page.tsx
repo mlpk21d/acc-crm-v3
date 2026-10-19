@@ -16,7 +16,7 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
  {can(user.role,"projects:write") && <Link href={`/projects/${id}/edit`}>Edit project</Link>}</div>
  <div className="content-card"><p>Contact: {project.contact_id?<Link href={`/contacts/${project.contact_id}`}>{project.contact_name??"Contact"}</Link>:"—"}</p>
  <p>Description: {project.description??"—"}</p></div>
- <section className="content-card crm-project-rooms"><ProjectRooms projectId={id} rooms={rooms} manufacturers={manufacturers} canEdit={can(user.role,"projects:write")}/></section>
+ <section className="content-card crm-project-rooms"><ProjectRooms projectId={id} rooms={rooms} manufacturers={manufacturers} canEdit={can(user.role,"projects:write")} isAdmin={user.role==="admin"}/></section>
  <div className="contact-actions"><Link href="/projects">Back to projects</Link></div>
  </section>;
 }
