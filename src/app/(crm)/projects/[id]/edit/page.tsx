@@ -17,5 +17,5 @@ export default async function EditProject({params}:{params:Promise<{id:string}>}
  return <section><div className="page-heading"><h1>Edit project</h1></div>
  <ProjectForm project={project} contacts={await contactChoices()} statuses={await projectStatusOptions()}
  financialPanel={financials?<ProjectFinancialPanel editable projectId={id} financials={financials.project} rooms={financials.rooms} roomNames={Object.fromEntries(rooms.map(r=>[r.id,r.room_name]))}/>:undefined}
- initialRoomsPanel={<section className="content-card crm-project-rooms"><ProjectRooms projectId={id} rooms={rooms} manufacturers={manufacturers} canEdit isAdmin={user.role==="admin"}/></section>}/></section>;
+ initialRoomsPanel={<section className="content-card crm-project-rooms"><ProjectRooms projectId={id} rooms={rooms} manufacturers={manufacturers} canEdit isAdmin={user.role==="admin"} roomFinancials={financials?.rooms??[]}/></section>}/></section>;
 }
