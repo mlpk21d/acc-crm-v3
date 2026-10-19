@@ -395,3 +395,12 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 ## Project Contact icon dependency fix — 2026-10-19
 
 - `src/features/projects/project-contact-picker.tsx` no longer imports unavailable `lucide-react`; the Link button uses an inline accessible magnifying-glass SVG, preserving the existing visual and avoiding a new package dependency. Resolves reported TS2307. Local typecheck still needs user verification.
+
+## Project form parity follow-up — 2026-10-19
+
+- `src/features/projects/project-form.tsx`: Project Name now spans two of four desktop columns (50%); Project Address label; both Project Status and Next Step use the same Settings-driven project-status option list, with a project-specific Custom... modal; Sample Signoff Status is Select... / Pending / Approved; Description is no longer displayed.
+- `src/features/projects/actions.ts` and `validation.ts`: allow project-specific custom statuses after explicit modal selection, retain existing inactive statuses, and validate Sample Signoff. Custom statuses are stored on the project, **not** added to the global Settings option catalog. No schema change.
+- `src/features/projects/project-financial-panel.tsx`: New/Edit Project financial fields submit with the main Project form. Removed separate Save Financials button and duplicate Room Costs section beneath financial cards. On Project View, financial inputs are read-only and edited via Edit Project. Room cost editing remains in room-specific workflows and needs parity QA.
+- `src/features/projects/project-rooms.tsx` and `new-project-rooms.tsx`: centered italic empty-state text appears instead of table headers when there are no rooms; Add Room button uses lighter charcoal background.
+- `src/app/globals.css`: scoped styling for the above; `src/app/(crm)/projects/[id]/edit/page.tsx` passes editable financial mode; details view labels standardized.
+- No migration required. Local typecheck, build, browser tests, financial persistence and visual fidelity are **not yet verified**. User runs tests locally without GitHub CI.
