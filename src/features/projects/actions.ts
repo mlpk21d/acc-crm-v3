@@ -33,6 +33,28 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
   const finance=hasFinance?financeSchema.safeParse(Object.fromEntries(
     financeKeys.filter(k=>form.has(k)).map(k=>[k,form.get(k)]))):null;
   if(finance&&!finance.success)return {error:"Invalid financial values."};
+  const roomSchema=z.object({
+    room_name:z.string().trim().min(1).max(200),door_style:z.string().trim().max(200),
+    drawer_style:z.string().trim().max(200),species:z.string().trim().max(200),
+    finish:z.string().trim().max(200),construction:z.string().trim().max(200),
+    manufacturer:z.string().trim().max(100),
+    room_cost:money,manufacturer_discount:z.coerce.number().finite().min(0).max(100),
+    ras_items:z.array(z.object({item_name:z.string().trim().min(1).max(200),
+      code:z.string().trim().max(100),link:z.union([z.literal(""),z.url().refine(u=>u.startsWith("https://")||u.startsWith("http://"))])})).max(100)
+  });
+  let initialRooms:z.infer<typeof roomSchema>[]=[];
+  if(form.has("initial_rooms")){
+    if(id)return {error:"Initial rooms may only be submitted when creating a project."};
+    try {
+      const raw=form.get("initial_rooms");
+      if(typeof raw!=="string"||raw.length>200000)throw new Error("Invalid rooms");
+      const parsedRooms=z.array(roomSchema).max(100).safeParse(JSON.parse(raw));
+      if(!parsedRooms.success)return {error:"Invalid room details."};
+      initialRooms=parsedRooms.data;
+    }catch{return {error:"Invalid rooms payload."};}
+    if(!can(user.role,"settings:manage")&&initialRooms.some(r=>r.room_cost!==0||r.manufacturer_discount!==0))
+      return {error:"Room financial fields require administrator access."};
+  }
   let saved: string;
   const client=await pool.connect();
   try {
@@ -78,6 +100,30 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
        v.margin_type,v.margin_type==="other"?(v.custom_margin_percent??0)/100:0]);
     }
     await client.query(`INSERT INTO public.project_checklist (project_id,drawing_approved,appliance_specs,ceiling_height,floor_thickness,hardware,door_styles,finishes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(project_id) DO UPDATE SET drawing_approved=$2,appliance_specs=$3,ceiling_height=$4,floor_thickness=$5,hardware=$6,door_styles=$7,finishes=$8,updated_at=now()`,[saved,...checklist]);
+    if(initialRooms.length){
+      const allowed=await client.query<{value:string}>(
+        "SELECT value FROM public.crm_settings_options WHERE category='manufacturer' AND active=true");
+      const choices=new Set(allowed.rows.map(row=>row.value));
+      for(let i=0;i<initialRooms.length;i++){
+        const r=initialRooms[i];
+        if(r.manufacturer&&!choices.has(r.manufacturer))throw new Error("Invalid room manufacturer.");
+        const created=await client.query<{id:string}>(`INSERT INTO public.project_rooms
+          (project_id,room_name,door_style,drawer_style,species,finish,construction,manufacturer,sort_order)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+          [saved,r.room_name,r.door_style||null,r.drawer_style||null,r.species||null,
+            r.finish||null,r.construction||null,r.manufacturer||null,i+1]);
+        const roomId=created.rows[0].id;
+        if(can(user.role,"settings:manage")){
+          await client.query(`INSERT INTO public.project_room_financials(room_id,room_cost,manufacturer_discount)
+            VALUES($1,$2,$3)`,[roomId,r.room_cost,r.manufacturer_discount]);
+        }
+        for(let j=0;j<r.ras_items.length;j++){
+          const item=r.ras_items[j];
+          await client.query(`INSERT INTO public.rev_a_shelf_items(room_id,item_name,code,link,sort_order)
+           VALUES($1,$2,$3,$4,$5)`,[roomId,item.item_name,item.code||null,item.link||null,j+1]);
+        }
+      }
+    }
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");
