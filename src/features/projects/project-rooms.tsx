@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import type { ProjectRoom } from "@/features/projects/rooms-data";
+import type { RoomFinancial } from "@/features/projects/financial-data";
 import { JkConfigurator } from "@/features/projects/jk-configurator";
 import { addProjectRoom, deleteProjectRoom, moveProjectRoom, addRoomAccessory, deleteRoomAccessory } from "@/features/projects/rooms-actions";
 
 const fields=[["room_name","Room Name"],["door_style","Door Style"],["species","Species"],["drawer_style","Drawer Style"],["finish","Finish"]] as const;
 const construction=["Inset","Inset Beaded","Full Overlay","Frameless"];
-export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin}:{
- projectId:string;rooms:ProjectRoom[];manufacturers:{value:string;label:string}[];canEdit:boolean;isAdmin:boolean;
+export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,roomFinancials=[]}:{
+ projectId:string;rooms:ProjectRoom[];manufacturers:{value:string;label:string}[];canEdit:boolean;isAdmin:boolean;roomFinancials?:RoomFinancial[];
 }) {
  const [current,setCurrent]=useState<ProjectRoom|null|undefined>(undefined);
  const [jkRoom,setJkRoom]=useState<string|null>(null);
@@ -39,6 +40,10 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin}:{
       <input type="hidden" name="project_id" value={projectId}/>
       <input type="hidden" name="id" value={current?.id??""}/>
       <div className="crm-room-fields">
+       {isAdmin&&<div className="crm-existing-room-cost-pair">
+        <label>Room Cost<input key={current?.id??"new"} name="room_cost" type="number" min="0" max="99999999" step="0.01" required defaultValue={roomFinancials.find(r=>r.room_id===current?.id)?.room_cost??"0"} disabled={roomFinancials.some(r=>r.room_id===current?.id&&r.jk_locked)}/></label>
+        <label>Mfr Discount %<input key={current?.id??"new"} name="manufacturer_discount" type="number" min="0" max="100" step="0.001" required defaultValue={roomFinancials.find(r=>r.room_id===current?.id)?.manufacturer_discount??"0"} disabled={roomFinancials.some(r=>r.room_id===current?.id&&r.jk_locked)}/></label>
+       </div>}
        {fields.map(([name,label])=><label key={name}>{label}<input name={name} maxLength={200} required={name==="room_name"} defaultValue={current?.[name]??""}/></label>)}
        <label>Construction<select name="construction" defaultValue={current?.construction??""}><option value="">Select...</option>{construction.map(v=><option key={v} value={v}>{v}</option>)}</select></label>
        <label>Manufacturer<select name="manufacturer" defaultValue={current?.manufacturer??""}><option value="">Select...</option>{manufacturers.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}{current?.manufacturer&&!manufacturers.some(m=>m.value===current.manufacturer)&&<option value={current.manufacturer}>{current.manufacturer} (inactive)</option>}</select></label>
