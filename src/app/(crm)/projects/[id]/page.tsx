@@ -5,6 +5,8 @@ import { can } from "@/features/auth/permissions";
 import { getProject,checklistFields } from "@/features/projects/data";
 import { listProjectRooms, manufacturerChoices } from "@/features/projects/rooms-data";
 import { ProjectRooms } from "@/features/projects/project-rooms";
+import { getProjectFinancials } from "@/features/projects/financial-data";
+import { ProjectFinancialPanel } from "@/features/projects/project-financial-panel";
 
 const labels:Record<(typeof checklistFields)[number],string>={
  drawing_approved:"Drawing Approved",appliance_specs:"Appliance Specs",ceiling_height:"Ceiling Height",
@@ -19,6 +21,7 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
  const project=await getProject(id);
  if(!project)notFound();
  const [rooms,manufacturers]=await Promise.all([listProjectRooms(id),manufacturerChoices()]);
+ const financials=user.role==="admin"?await getProjectFinancials(id):null;
  const details=[
   ["Address",project.project_address],["Designer",project.project_designer],["Current Status",project.status],
   ["Next Step",project.next_step],["Sample Signoff Status",project.sample_signoff_status],
@@ -41,7 +44,7 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
    </div>
   </section>
   <div className="crm-project-three-panels">
-   <section className="content-card"><h2>Project Information</h2><p>{display(project.description)}</p></section>
+   {financials?<ProjectFinancialPanel projectId={id} financials={financials.project} rooms={financials.rooms} roomNames={Object.fromEntries(rooms.map(r=>[r.id,r.room_name]))}/>:<section className="content-card"><h2>Project Information</h2><p>{display(project.description)}</p></section>}
    <section className="content-card"><h2>Notes</h2><p className="crm-project-notes-display">{display(project.notes)}</p></section>
    <section className="content-card"><h2>Checklist</h2><div className="crm-project-checklist">
     {checklistFields.map(key=><div className="crm-project-check-row" key={key}><input type="checkbox" checked={project.checklist[key]} disabled readOnly/><span>{labels[key]}</span></div>)}
