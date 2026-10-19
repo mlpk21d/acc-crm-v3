@@ -1,12 +1,19 @@
 import "server-only";
 import { getDbPool } from "@/lib/db";
 
+export const checklistFields = ["drawing_approved","appliance_specs","ceiling_height","floor_thickness","hardware","door_styles","finishes"] as const;
+export type ProjectChecklist=Record<(typeof checklistFields)[number],boolean>;
 export type Project = {
   id: string; name: string; contact_id: string | null; contact_name: string | null;
   status: string;
   description: string | null;
+  project_address:string|null;project_contact_name:string|null;project_contact_phone:string|null;project_designer:string|null;
+  next_step:string|null;sample_signoff_status:string|null;order_by_date:string|null;official_start_date:string|null;install_date:string|null;notes:string|null;
+  checklist:ProjectChecklist;
 };
 const selection = `SELECT p.id, p.name, p.contact_id, p.status, p.description,
+ p.project_address,p.project_contact_name,p.project_contact_phone,p.project_designer,p.next_step,p.sample_signoff_status,
+ p.order_by_date::text,p.official_start_date::text,p.install_date::text,p.notes,
   COALESCE(NULLIF(trim(concat_ws(' ', c.first_name, c.last_name)), ''), c.company_name) AS contact_name
   FROM public.projects p LEFT JOIN public.contacts c ON c.id = p.contact_id`;
 export async function listProjects(search: string, page: number) {
@@ -19,7 +26,12 @@ export async function listProjects(search: string, page: number) {
 }
 export async function getProject(id: string) {
   const result = await getDbPool().query<Project>(`${selection} WHERE p.id=$1 AND p.deleted_at IS NULL`, [id]);
-  return result.rows[0] ?? null;
+  const project=result.rows[0];
+  if(!project)return null;
+  const checklist=await getDbPool().query<ProjectChecklist>(
+   "SELECT drawing_approved,appliance_specs,ceiling_height,floor_thickness,hardware,door_styles,finishes FROM public.project_checklist WHERE project_id=$1",[id]);
+  project.checklist=checklist.rows[0]??Object.fromEntries(checklistFields.map(k=>[k,false])) as ProjectChecklist;
+  return project;
 }
 export async function contactChoices() {
   const result = await getDbPool().query<{id:string; label:string}>(`
