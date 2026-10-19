@@ -53,13 +53,13 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
       if (!valid.rowCount) {await client.query("ROLLBACK");return {error:"Choose an active contact."};}
     }
     if (id) {
-      const updated = await pool.query<{id:string}>(`UPDATE public.projects SET name=$1,contact_id=$2,status=$3,description=$4,
+      const updated = await client.query<{id:string}>(`UPDATE public.projects SET name=$1,contact_id=$2,status=$3,description=$4,
         updated_by=$5,updated_at=now(),project_address=$7,project_contact_name=$8,project_contact_phone=$9,project_designer=$10,next_step=$11,sample_signoff_status=$12,order_by_date=$13,official_start_date=$14,install_date=$15,notes=$16 WHERE id=$6 AND deleted_at IS NULL RETURNING id`,
         [name, contact_id||null,status,description||null,user.id,id,...extra]);
       if (!updated.rows[0]) {await client.query("ROLLBACK");return {error:"Project not found."};}
       saved = updated.rows[0].id;
     } else {
-      const inserted = await pool.query<{id:string}>(`INSERT INTO public.projects
+      const inserted = await client.query<{id:string}>(`INSERT INTO public.projects
         (name,contact_id,status,description,created_by,updated_by,project_address,project_contact_name,project_contact_phone,project_designer,next_step,sample_signoff_status,order_by_date,official_start_date,install_date,notes)
         VALUES($1,$2,$3,$4,$5,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING id`,
         [name,contact_id||null,status,description||null,user.id,...extra]);
