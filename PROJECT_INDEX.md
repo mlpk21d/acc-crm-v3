@@ -323,3 +323,12 @@ Local migration output located syntax failure in `0008_permanent_project_statuse
 ## J&K search lint correction — 2026-10-19
 
 Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projects/jk-configurator.tsx`: the search effect no longer clears results synchronously; the input change handler clears prior matches immediately and the results list is hidden for an empty query. This retains debounced lookup and stale-result cleanup. Local lint/typecheck not executed; user should rerun `npm run check`.
+
+## Project View/Edit layout restoration — 2026-10-19
+
+- Compared the V3 Project View/Edit routes with the legacy `mlpk21d/acc-crm` source `src/pages/projects/ProjectView.tsx` and `ProjectForm.tsx` (the original screenshot ZIP was not available in the current file context).
+- `0012_project_details_checklist.sql` extends `public.projects` with nonfinancial address, project contact name/phone, designer, next step, sample signoff status, order/start/install dates and notes; adds seven-field `public.project_checklist` keyed by project with cascading delete.
+- `src/features/projects/data.ts` reads those details and joins checklist through a scoped separate query. `validation.ts`, `actions.ts` and `project-form.tsx` accept and persist the same field set, with the original Project Details card, Notes and Checklist hierarchy.
+- `src/app/(crm)/projects/[id]/page.tsx` uses legacy Project View hierarchy: back/title/edit, status, full-width 4-column details, 50/30/20 section area, rooms last. `src/app/globals.css` provides responsive card/field styles in the established palette.
+- **Not yet parity complete:** old project's admin-only Financial Summary, room costs, rich-text Notes editor, PDF actions and screenshot-by-screenshot comparison require separate protected implementation. V3 currently shows a nonfinancial Project Information card in the first 50%-width slot instead; this must be revisited with the screenshots. Also review project creation/edit saves and migration 0012 during QA.
+- No database migrations, local builds, lint/typecheck or browser visual acceptance run from this assistant session. Earlier migrations 0008–0011 are not confirmed applied. No Github CI. Export/Import/Signup Links untouched.
