@@ -383,3 +383,11 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - Rev-A-Shelf `+ Add Item` appends an editable row immediately with Item Name, Code, Link, and red × remove control. No Save Item or Cancel controls. A single `Save Room` persists all room/accessory draft values; blank item names and malformed nonempty links block draft save (backend independently validates them).
 - `src/app/globals.css`: scoped two-column cost grouping and responsive three-input accessory-row styling, preserving original room dialog visual language and untouched sidebar/navigation.
 - Local lint, build and browser visual QA still pending.
+
+## Project Contact link modal — 2026-10-19
+
+- `src/features/projects/project-contact-picker.tsx` supplies a Project Contact text input plus magnifying-glass **Link** button, matching `project-form-1.png` and `project-form-2.png`. Clicking opens a contact search dialog with name/company substring autocomplete, selection, Escape dismissal, and a 25-result display cap. Selecting a CRM contact fills the displayed name, linked contact UUID, and phone; editing text clears the UUID and previously linked phone.
+- `src/features/projects/project-form.tsx` integrates the picker for New Project and Edit Project, replacing the Contact dropdown and separate Contact Name / Contact Phone fields. The existing project financials, schedule fields, notes, and checklist are preserved.
+- `src/features/projects/data.ts` extends `contactChoices` to provide phone along with ID and label. Lookup currently loads the first 500 contacts; database-driven search beyond that limit remains a follow-up for large lists.
+- `src/app/globals.css` provides scoped picker and modal styling without changes to general layout/navigation. No migration needed; existing `contact_id`, `project_contact_name`, `project_contact_phone` persistence continues unchanged.
+- Local lint/build and browser screenshot QA not yet run.
