@@ -15,5 +15,5 @@ export default async function EditProject({params}:{params:Promise<{id:string}>}
  const rooms=financials?await listProjectRooms(id):[];
  return <section><div className="page-heading"><h1>Edit project</h1></div>
  <ProjectForm project={project} contacts={await contactChoices()} statuses={await projectStatusOptions()}
- financialPanel={financials?<ProjectFinancialPanel projectId={id} financials={financials.project} rooms={financials.rooms} roomNames={Object.fromEntries(rooms.map(r=>[r.id,r.room_name]))}/>:undefined}/></section>;
+ financialPanel={financials?<ProjectFinancialPanel editable projectId={id} financials={financials.project} rooms={financials.rooms} roomNames={Object.fromEntries(rooms.map(r=>[r.id,r.room_name]))}/>:undefined}/></section>;
 }
