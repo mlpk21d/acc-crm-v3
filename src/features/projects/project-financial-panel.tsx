@@ -37,10 +37,10 @@ export function ProjectFinancialPanel({projectId,financials,rooms,roomNames}:Pro
   {roomRows.length===0?<p>No rooms added.</p>:<div className="crm-project-room-financials">
    {roomRows.map(row=><form action={submitRoom} key={row.room_id} className="crm-project-room-financial-row">
     <input name="project_id" type="hidden" value={projectId}/><input name="room_id" type="hidden" value={row.room_id}/>
-    <strong>{roomNames[row.room_id]??"Room"}</strong>
-    <label>Room Cost<input type="number" name="room_cost" min="0" step="0.01" required value={row.room_cost} onChange={e=>setRoomRows(prev=>prev.map(r=>r.room_id===row.room_id?{...r,room_cost:e.target.value}:r))}/></label>
-    <label>Manufacturer Discount (%)<input type="number" name="manufacturer_discount" min="0" max="100" step="0.001" required value={row.manufacturer_discount} onChange={e=>setRoomRows(prev=>prev.map(r=>r.room_id===row.room_id?{...r,manufacturer_discount:e.target.value}:r))}/></label>
-    <button type="submit" disabled={busy}>Save Room Cost</button>
+    <strong>{roomNames[row.room_id]??"Room"}{row.jk_locked&&<small className="crm-jk-cost-locked">J&K configured · Cost locked</small>}</strong>
+    <label>Room Cost<input type="number" name="room_cost" min="0" step="0.01" required disabled={row.jk_locked} value={row.room_cost} onChange={e=>setRoomRows(prev=>prev.map(r=>r.room_id===row.room_id?{...r,room_cost:e.target.value}:r))}/></label>
+    <label>Manufacturer Discount (%)<input type="number" name="manufacturer_discount" min="0" max="100" step="0.001" required disabled={row.jk_locked} value={row.manufacturer_discount} onChange={e=>setRoomRows(prev=>prev.map(r=>r.room_id===row.room_id?{...r,manufacturer_discount:e.target.value}:r))}/></label>
+    <button type="submit" disabled={busy||row.jk_locked}>Save Room Cost</button>
    </form>)}
   </div>}
  </section>;
