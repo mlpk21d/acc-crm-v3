@@ -34,8 +34,8 @@ export async function getProject(id: string) {
   return project;
 }
 export async function contactChoices() {
-  const result = await getDbPool().query<{id:string; label:string}>(`
-    SELECT id, COALESCE(NULLIF(trim(concat_ws(' ',first_name,last_name)),''), company_name) AS label
+  const result = await getDbPool().query<{id:string; label:string;phone:string|null}>(`
+    SELECT id, phone, COALESCE(NULLIF(trim(concat_ws(' ',first_name,last_name)),''), company_name) AS label
     FROM public.contacts WHERE deleted_at IS NULL ORDER BY label, id LIMIT 500`);
   return result.rows;
 }
