@@ -319,3 +319,7 @@ Local migration output located syntax failure in `0008_permanent_project_statuse
 - `src/features/projects/project-rooms.tsx` and `src/app/(crm)/projects/[id]/page.tsx`: show Configure J&K Cabinets action for admins editing existing rooms assigned manufacturer `J&K`; ordinary project readers/writers without administrator status do not see pricing controls.
 - `src/app/globals.css`: original-style modal/table input styling, responsive horizontal scroll.
 - **Known limits:** J&K price catalog is not seeded/imported; catalog search will be empty until supplied. Configuration saves do not update `project_rooms.room_cost` or project financial totals; admin financial schema pending. Full fidelity keyboard focus management, browser screenshot comparison, migration execution and local build/typecheck remain pending. No GitHub CI. Settings Export/Import/Signup Links untouched.
+
+## J&K search lint correction — 2026-10-19
+
+Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projects/jk-configurator.tsx`: the search effect no longer clears results synchronously; the input change handler clears prior matches immediately and the results list is hidden for an empty query. This retains debounced lookup and stale-result cleanup. Local lint/typecheck not executed; user should rerun `npm run check`.
