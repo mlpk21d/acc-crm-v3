@@ -391,3 +391,7 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `src/features/projects/data.ts` extends `contactChoices` to provide phone along with ID and label. Lookup currently loads the first 500 contacts; database-driven search beyond that limit remains a follow-up for large lists.
 - `src/app/globals.css` provides scoped picker and modal styling without changes to general layout/navigation. No migration needed; existing `contact_id`, `project_contact_name`, `project_contact_phone` persistence continues unchanged.
 - Local lint/build and browser screenshot QA not yet run.
+
+## Project Contact icon dependency fix — 2026-10-19
+
+- `src/features/projects/project-contact-picker.tsx` no longer imports unavailable `lucide-react`; the Link button uses an inline accessible magnifying-glass SVG, preserving the existing visual and avoiding a new package dependency. Resolves reported TS2307. Local typecheck still needs user verification.
