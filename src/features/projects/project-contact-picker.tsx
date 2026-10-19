@@ -1,6 +1,5 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
-import {Search} from "lucide-react";
 type ContactChoice={id:string;label:string;phone:string|null};
 export function ProjectContactPicker({contacts,initialId,initialName,initialPhone}:{contacts:ContactChoice[];initialId:string;initialName:string;initialPhone:string}){
  const [id,setId]=useState(initialId);
@@ -15,7 +14,7 @@ export function ProjectContactPicker({contacts,initialId,initialName,initialPhon
   <div className="crm-project-contact-picker">
    <label>Project Contact<input name="project_contact_name" maxLength={200} placeholder="Name or search..." value={name} onChange={e=>{setName(e.target.value);setId("");setPhone("")}}/></label>
    <input type="hidden" name="contact_id" value={id}/><input type="hidden" name="project_contact_phone" value={phone}/>
-   <button type="button" className="crm-project-contact-link" onClick={()=>{setQuery("");setOpen(true)}}><Search size={16} aria-hidden="true"/>Link</button>
+   <button type="button" className="crm-project-contact-link" onClick={()=>{setQuery("");setOpen(true)}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Link</button>
   </div>
   {open&&<div className="crm-room-modal-layer">
    <button className="crm-room-modal-backdrop" type="button" aria-label="Close contact search" onClick={()=>setOpen(false)}/>
