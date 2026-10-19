@@ -404,3 +404,10 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `src/features/projects/project-rooms.tsx` and `new-project-rooms.tsx`: centered italic empty-state text appears instead of table headers when there are no rooms; Add Room button uses lighter charcoal background.
 - `src/app/globals.css`: scoped styling for the above; `src/app/(crm)/projects/[id]/edit/page.tsx` passes editable financial mode; details view labels standardized.
 - No migration required. Local typecheck, build, browser tests, financial persistence and visual fidelity are **not yet verified**. User runs tests locally without GitHub CI.
+
+## Project Rooms view/edit separation — 2026-10-19
+
+- `src/app/(crm)/projects/[id]/page.tsx`: Project View forces `canEdit={false}` and displays room columns without any Add Room, edit, delete, reorder or J&K action controls.
+- `src/app/(crm)/projects/[id]/edit/page.tsx`: Project Edit now loads rooms and manufacturer choices for all project editors (not just admins) and passes an editable `ProjectRooms` section into the existing project edit form layout.
+- `src/features/projects/project-rooms.tsx`: Order/Actions columns are exclusive to Edit; Project View renders only room information columns. Read-only empty state omits instruction to click the edit-only Add Room button.
+- No migrations. Local `npm run check` and browser verification still required. Room actions remain individually server-permission-checked.
