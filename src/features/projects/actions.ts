@@ -6,6 +6,7 @@ import { requirePermission } from "@/features/auth/session";
 import { getDbPool } from "@/lib/db";
 import { parseProjectForm } from "@/features/projects/validation";
 import { checklistFields } from "@/features/projects/data";
+import { can } from "@/features/auth/permissions";
 
 export type ProjectFormState = { error: string | null };
 export async function saveProject(_state: ProjectFormState, form: FormData): Promise<ProjectFormState> {
@@ -19,28 +20,43 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
   const pool = getDbPool();
   const extra=[parsed.data.project_address,parsed.data.project_contact_name,parsed.data.project_contact_phone,parsed.data.project_designer,parsed.data.next_step,parsed.data.sample_signoff_status,parsed.data.order_by_date||null,parsed.data.official_start_date||null,parsed.data.install_date||null,parsed.data.notes];
   const checklist=checklistFields.map(key=>form.get(key)==="on");
+  const financeKeys=["install_cost","misc_cost","drawing_cost","freight","doors_pulls","margin_type","custom_margin_percent"];
+  const hasFinance=financeKeys.some(k=>form.has(k));
+  if(hasFinance&&!can(user.role,"settings:manage"))return {error:"Administrator access required for financial data."};
+  const money=z.coerce.number().finite().min(0).max(99999999)
+    .refine(v=>Math.abs(v*100-Math.round(v*100))<0.000001);
+  const financeSchema=z.object({
+    install_cost:money,misc_cost:money,drawing_cost:money,freight:money,doors_pulls:money,
+    margin_type:z.enum(["25","35","other"]),
+    custom_margin_percent:z.coerce.number().finite().min(0).max(99).optional()
+  }).refine(v=>v.margin_type!=="other"||v.custom_margin_percent!==undefined);
+  const finance=hasFinance?financeSchema.safeParse(Object.fromEntries(
+    financeKeys.filter(k=>form.has(k)).map(k=>[k,form.get(k)]))):null;
+  if(finance&&!finance.success)return {error:"Invalid financial values."};
   let saved: string;
+  const client=await pool.connect();
   try {
-    const allowedStatus = await pool.query(
+    await client.query("BEGIN");
+    const allowedStatus = await client.query(
       "SELECT 1 FROM public.crm_settings_options WHERE category = $1 AND value = $2 AND active = true LIMIT 1",
       ["project_status", status],
     );
     if (!allowedStatus.rowCount) {
-      const unchanged = id ? await pool.query(
+      const unchanged = id ? await client.query(
         "SELECT 1 FROM public.projects WHERE id=$1 AND status=$2 AND deleted_at IS NULL",
         [id, status],
       ) : null;
-      if (!unchanged?.rowCount) return { error: "Choose an active Project Status from Settings." };
+      if (!unchanged?.rowCount) {await client.query("ROLLBACK");return { error: "Choose an active Project Status from Settings." };}
     }
     if (contact_id) {
-      const valid = await pool.query("SELECT 1 FROM public.contacts WHERE id=$1 AND deleted_at IS NULL", [contact_id]);
-      if (!valid.rowCount) return {error:"Choose an active contact."};
+      const valid = await client.query("SELECT 1 FROM public.contacts WHERE id=$1 AND deleted_at IS NULL", [contact_id]);
+      if (!valid.rowCount) {await client.query("ROLLBACK");return {error:"Choose an active contact."};}
     }
     if (id) {
       const updated = await pool.query<{id:string}>(`UPDATE public.projects SET name=$1,contact_id=$2,status=$3,description=$4,
         updated_by=$5,updated_at=now(),project_address=$7,project_contact_name=$8,project_contact_phone=$9,project_designer=$10,next_step=$11,sample_signoff_status=$12,order_by_date=$13,official_start_date=$14,install_date=$15,notes=$16 WHERE id=$6 AND deleted_at IS NULL RETURNING id`,
         [name, contact_id||null,status,description||null,user.id,id,...extra]);
-      if (!updated.rows[0]) return {error:"Project not found."};
+      if (!updated.rows[0]) {await client.query("ROLLBACK");return {error:"Project not found."};}
       saved = updated.rows[0].id;
     } else {
       const inserted = await pool.query<{id:string}>(`INSERT INTO public.projects
@@ -49,11 +65,25 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
         [name,contact_id||null,status,description||null,user.id,...extra]);
       saved = inserted.rows[0].id;
     }
-    await pool.query(`INSERT INTO public.project_checklist (project_id,drawing_approved,appliance_specs,ceiling_height,floor_thickness,hardware,door_styles,finishes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(project_id) DO UPDATE SET drawing_approved=$2,appliance_specs=$3,ceiling_height=$4,floor_thickness=$5,hardware=$6,door_styles=$7,finishes=$8,updated_at=now()`,[saved,...checklist]);
+    if(finance?.success){
+      const v=finance.data;
+      await client.query(`INSERT INTO public.project_financials
+      (project_id,install_cost,misc_cost,drawing_cost,freight,doors_pulls,margin_type,custom_margin)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8)
+      ON CONFLICT(project_id) DO UPDATE SET
+      install_cost=excluded.install_cost,misc_cost=excluded.misc_cost,drawing_cost=excluded.drawing_cost,
+      freight=excluded.freight,doors_pulls=excluded.doors_pulls,margin_type=excluded.margin_type,
+      custom_margin=excluded.custom_margin,updated_at=now()`,
+      [saved,v.install_cost,v.misc_cost,v.drawing_cost,v.freight,v.doors_pulls,
+       v.margin_type,v.margin_type==="other"?(v.custom_margin_percent??0)/100:0]);
+    }
+    await client.query(`INSERT INTO public.project_checklist (project_id,drawing_approved,appliance_specs,ceiling_height,floor_thickness,hardware,door_styles,finishes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(project_id) DO UPDATE SET drawing_approved=$2,appliance_specs=$3,ceiling_height=$4,floor_thickness=$5,hardware=$6,door_styles=$7,finishes=$8,updated_at=now()`,[saved,...checklist]);
+    await client.query("COMMIT");
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error("Project save failed", error);
     return {error:"Unable to save project."};
-  }
+  } finally {client.release();}
   revalidatePath("/projects");
   redirect("/projects/"+saved);
 }
