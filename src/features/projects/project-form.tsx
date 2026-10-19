@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useActionState } from "react";
 import { saveProject } from "@/features/projects/actions";
 import type { Project } from "@/features/projects/data";
+import { ProjectContactPicker } from "@/features/projects/project-contact-picker";
 const checklistFields=["drawing_approved","appliance_specs","ceiling_height","floor_thickness","hardware","door_styles","finishes"] as const;
 
 const checklistLabels:Record<(typeof checklistFields)[number],string>={
@@ -27,9 +28,8 @@ export function ProjectForm({project,contacts,statuses,financialPanel,initialRoo
    <div className="crm-project-field-grid">
     <label>Project Name<input name="name" required maxLength={200} defaultValue={project?.name??""}/></label>
     {field("project_address","Address")}
-    <label>Contact<select name="contact_id" defaultValue={project?.contact_id??""}><option value="">No contact</option>{contacts.map(c=><option value={c.id} key={c.id}>{c.label}</option>)}</select></label>
-    {field("project_contact_name","Contact Name")}
-    {field("project_contact_phone","Contact Phone")}
+    <ProjectContactPicker contacts={contacts} initialId={project?.contact_id??""} initialName={project?.project_contact_name||contacts.find(c=>c.id===project?.contact_id)?.label||""}/>
+    <input type="hidden" name="project_contact_phone" value={project?.project_contact_phone??""} readOnly/>
     {field("project_designer","Designer")}
     <label>Project Status<select name="status" defaultValue={project?.status??""} required><option value="">Select...</option>{statuses.map(s=><option value={s.value} key={s.value}>{s.label}</option>)}{project?.status&&!statuses.some(s=>s.value===project.status)&&<option value={project.status}>{project.status} (inactive)</option>}</select></label>
     {field("next_step","Next Step")}
