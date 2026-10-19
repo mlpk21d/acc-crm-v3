@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { saveProject } from "@/features/projects/actions";
-import { checklistFields, type Project } from "@/features/projects/data";
+import type { Project } from "@/features/projects/data";
+const checklistFields=["drawing_approved","appliance_specs","ceiling_height","floor_thickness","hardware","door_styles","finishes"] as const;
 
 const checklistLabels:Record<(typeof checklistFields)[number],string>={
  drawing_approved:"Drawing Approved",appliance_specs:"Appliance Specs",ceiling_height:"Ceiling Height",
