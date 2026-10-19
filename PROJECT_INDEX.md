@@ -376,3 +376,10 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - Rev-A-Shelf fields are hidden initially. Clicking `+ Add Item` reveals Item Name, Code, Link and Save Item/Cancel; Save Item adds a draft accessory and collapses inputs. Existing items can be removed. No premature DB writes; all drafts persist with initial Project create transaction.
 - `src/app/globals.css`: scoped `crm-new-room-*` styling matches reference width, spacing, borders, labels and action buttons; existing global dialog styles remain unchanged.
 - Visual and accessibility QA pending in local browser; no build or lint run remotely. Other existing room dialog and J&K pre-save configuration are separate parity tasks.
+
+## Room modal second screenshot refinement — 2026-10-19
+
+- `src/features/projects/new-project-rooms.tsx`: Room Cost and `Mfr Discount %` are now two adjacent inputs sharing the right half of the first form row, beside Room Name; removed separate trailing discount row.
+- Rev-A-Shelf `+ Add Item` appends an editable row immediately with Item Name, Code, Link, and red × remove control. No Save Item or Cancel controls. A single `Save Room` persists all room/accessory draft values; blank item names and malformed nonempty links block draft save (backend independently validates them).
+- `src/app/globals.css`: scoped two-column cost grouping and responsive three-input accessory-row styling, preserving original room dialog visual language and untouched sidebar/navigation.
+- Local lint, build and browser visual QA still pending.
