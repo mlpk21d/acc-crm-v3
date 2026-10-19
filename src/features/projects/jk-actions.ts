@@ -63,6 +63,11 @@ export async function saveJkConfiguration(input:unknown) {
   }
   const totalCents=prepared.reduce((sum,p)=>sum+p.discounted*p.item.quantity,0)+v.assemblyCount*2000;
   if(!Number.isSafeInteger(totalCents)) throw new Error("Invalid configuration total.");
+  // Match the legacy CRM: a configured J&K room gets its cost from the cabinet total.
+  // Preserve any existing manufacturer discount independently.
+  await client.query(`INSERT INTO public.project_room_financials(room_id,room_cost,manufacturer_discount)
+   VALUES($1,$2,0) ON CONFLICT(room_id) DO UPDATE SET room_cost=excluded.room_cost,updated_at=now()`,
+   [v.roomId,(totalCents/100).toFixed(2)]);
   await client.query("COMMIT");
   revalidatePath("/projects/"+v.projectId);
   return {total:(totalCents/100).toFixed(2)};
