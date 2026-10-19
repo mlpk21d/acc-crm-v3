@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/features/auth/session";
+import { can } from "@/features/auth/permissions";
 import { getDbPool } from "@/lib/db";
 import { z } from "zod";
 
@@ -11,30 +12,53 @@ const roomInput=z.object({
  construction:z.string().trim().max(200), manufacturer:z.string().trim().max(100),
 });
 export async function addProjectRoom(form:FormData) {
- await requirePermission("projects:write");
+ const user=await requirePermission("projects:write");
  const parsed=roomInput.safeParse(Object.fromEntries(
   ["project_id","id","room_name","door_style","drawer_style","species","finish","construction","manufacturer"].map(k=>[k,form.get(k)])));
- if(!parsed.success) throw new Error("Invalid room details.");
+ if(!parsed.success)throw new Error("Invalid room details.");
  const v=parsed.data;
- const db=getDbPool();
- const project=await db.query("SELECT 1 FROM public.projects WHERE id=$1 AND deleted_at IS NULL",[v.project_id]);
- if(!project.rowCount) throw new Error("Project not found.");
- if(v.manufacturer) {
-  const option=await db.query("SELECT 1 FROM public.crm_settings_options WHERE category='manufacturer' AND value=$1 AND active=true",[v.manufacturer]);
-  if(!option.rowCount) {
-   const existing=v.id ? await db.query("SELECT 1 FROM public.project_rooms WHERE id=$1 AND project_id=$2 AND manufacturer=$3",[v.id,v.project_id,v.manufacturer]) : null;
-   if(!existing?.rowCount) throw new Error("Select an active manufacturer from Settings.");
+ const hasFinancials=form.has("room_cost")||form.has("manufacturer_discount");
+ if(hasFinancials&&!can(user.role,"settings:manage"))throw new Error("Administrator access required for room financials.");
+ const financial=hasFinancials?z.object({
+  room_cost:z.coerce.number().finite().min(0).max(99999999).refine(n=>Math.abs(n*100-Math.round(n*100))<0.000001),
+  manufacturer_discount:z.coerce.number().finite().min(0).max(100)
+ }).parse({room_cost:form.get("room_cost"),manufacturer_discount:form.get("manufacturer_discount")}):null;
+ const client=await getDbPool().connect();
+ try {
+  await client.query("BEGIN");
+  const project=await client.query("SELECT 1 FROM public.projects WHERE id=$1 AND deleted_at IS NULL FOR UPDATE",[v.project_id]);
+  if(!project.rowCount)throw new Error("Project not found.");
+  if(v.manufacturer){
+   const option=await client.query("SELECT 1 FROM public.crm_settings_options WHERE category='manufacturer' AND value=$1 AND active=true",[v.manufacturer]);
+   if(!option.rowCount){
+    const existing=v.id?await client.query("SELECT 1 FROM public.project_rooms WHERE id=$1 AND project_id=$2 AND manufacturer=$3",[v.id,v.project_id,v.manufacturer]):null;
+    if(!existing?.rowCount)throw new Error("Select an active manufacturer from Settings.");
+   }
   }
- }
- if(v.id) {
-  const updated=await db.query(`UPDATE public.project_rooms SET room_name=$1,door_style=$2,drawer_style=$3,species=$4,finish=$5,construction=$6,manufacturer=$7,updated_at=now() WHERE id=$8 AND project_id=$9 RETURNING id`,[v.room_name,v.door_style||null,v.drawer_style||null,v.species||null,v.finish||null,v.construction||null,v.manufacturer||null,v.id,v.project_id]);
-  if(!updated.rowCount) throw new Error("Room not found.");
- } else await db.query(`INSERT INTO public.project_rooms
- (project_id,room_name,door_style,drawer_style,species,finish,construction,manufacturer,sort_order)
- VALUES ($1,$2,$3,$4,$5,$6,$7,$8,
- (SELECT COALESCE(MAX(sort_order)+1,1) FROM public.project_rooms WHERE project_id=$1))`,
- [v.project_id,v.room_name,v.door_style||null,v.drawer_style||null,v.species||null,v.finish||null,v.construction||null,v.manufacturer||null]);
+  let roomId=v.id;
+  if(v.id){
+   const updated=await client.query<{id:string}>(`UPDATE public.project_rooms SET room_name=$1,door_style=$2,drawer_style=$3,species=$4,finish=$5,construction=$6,manufacturer=$7,updated_at=now() WHERE id=$8 AND project_id=$9 RETURNING id`,[v.room_name,v.door_style||null,v.drawer_style||null,v.species||null,v.finish||null,v.construction||null,v.manufacturer||null,v.id,v.project_id]);
+   if(!updated.rowCount)throw new Error("Room not found.");
+  } else {
+   const inserted=await client.query<{id:string}>(`INSERT INTO public.project_rooms
+    (project_id,room_name,door_style,drawer_style,species,finish,construction,manufacturer,sort_order)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,(SELECT COALESCE(MAX(sort_order)+1,1) FROM public.project_rooms WHERE project_id=$1))
+    RETURNING id`,[v.project_id,v.room_name,v.door_style||null,v.drawer_style||null,v.species||null,v.finish||null,v.construction||null,v.manufacturer||null]);
+   roomId=inserted.rows[0].id;
+  }
+  if(financial){
+   const result=await client.query(`INSERT INTO public.project_room_financials(room_id,room_cost,manufacturer_discount)
+    SELECT r.id,$2,$3 FROM public.project_rooms r
+    WHERE r.id=$1 AND r.project_id=$4
+    AND NOT EXISTS(SELECT 1 FROM public.jk_room_configs j WHERE j.room_id=r.id AND j.locked=true)
+    ON CONFLICT(room_id) DO UPDATE SET room_cost=excluded.room_cost,manufacturer_discount=excluded.manufacturer_discount,updated_at=now()
+    RETURNING room_id`,[roomId,financial.room_cost,financial.manufacturer_discount,v.project_id]);
+   if(!result.rowCount)throw new Error("J&K configured room costs cannot be edited manually.");
+  }
+  await client.query("COMMIT");
+ }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
  revalidatePath("/projects/"+v.project_id);
+ revalidatePath("/projects/"+v.project_id+"/edit");
 }
 
 export async function deleteProjectRoom(form:FormData) {
