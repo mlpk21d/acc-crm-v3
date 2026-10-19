@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { useActionState } from "react";
 import { saveProject } from "@/features/projects/actions";
 import type { Project } from "@/features/projects/data";
@@ -9,15 +10,16 @@ const checklistLabels:Record<(typeof checklistFields)[number],string>={
  drawing_approved:"Drawing Approved",appliance_specs:"Appliance Specs",ceiling_height:"Ceiling Height",
  floor_thickness:"Floor Thickness",hardware:"Hardware",door_styles:"Door Styles",finishes:"Finishes"
 };
-export function ProjectForm({project,contacts,statuses}:{
+export function ProjectForm({project,contacts,statuses,financialPanel}:{
  project?:Project;contacts:{id:string;label:string}[];
- statuses:{value:string;label:string;color:string|null}[];
+ statuses:{value:string;label:string;color:string|null}[]; financialPanel?:ReactNode;
 }) {
  const [state,action,pending]=useActionState(saveProject,{error:null});
  const field=(name:keyof Project,label:string,type="text")=><label key={name}>{label}
    <input name={name} type={type} defaultValue={String(project?.[name]??"")} maxLength={type==="text"?500:undefined}/>
  </label>;
- return <form action={action} className="crm-project-edit-form">
+ return <div className="crm-project-edit-form">
+  <form id="crm-project-core-form" action={action} className="crm-project-core-form">
   {project&&<input type="hidden" name="id" value={project.id}/>}
   {state.error&&<p role="alert" className="contact-form-error">{state.error}</p>}
   <section className="content-card crm-project-detail-card">
@@ -36,14 +38,16 @@ export function ProjectForm({project,contacts,statuses}:{
     {field("official_start_date","Official Start Date","date")}
     {field("install_date","Install Date","date")}
    </div>
+   {financialPanel&&<label className="crm-project-description">Description<textarea name="description" rows={3} maxLength={10000} defaultValue={project?.description??""}/></label>}
   </section>
+  </form>
   <div className="crm-project-three-panels">
-   <section className="content-card"><h2>Project Information</h2>
-    <label>Description<textarea name="description" rows={5} maxLength={10000} defaultValue={project?.description??""}/></label>
-   </section>
-   <section className="content-card"><h2>Notes</h2><label className="crm-project-notes-label">Project Notes<textarea name="notes" rows={12} maxLength={20000} defaultValue={project?.notes??""}/></label></section>
-   <section className="content-card"><h2>Checklist</h2><div className="crm-project-checklist">{checklistFields.map(key=><label key={key}><input type="checkbox" name={key} defaultChecked={project?.checklist?.[key]??false}/>{checklistLabels[key]}</label>)}</div></section>
+   {financialPanel??<section className="content-card"><h2>Project Information</h2>
+    <label>Description<textarea name="description" form="crm-project-core-form" rows={5} maxLength={10000} defaultValue={project?.description??""}/></label>
+   </section>}
+   <section className="content-card"><h2>Notes</h2><label className="crm-project-notes-label">Project Notes<textarea name="notes" form="crm-project-core-form" rows={12} maxLength={20000} defaultValue={project?.notes??""}/></label></section>
+   <section className="content-card"><h2>Checklist</h2><div className="crm-project-checklist">{checklistFields.map(key=><label key={key}><input type="checkbox" form="crm-project-core-form" name={key} defaultChecked={project?.checklist?.[key]??false}/>{checklistLabels[key]}</label>)}</div></section>
   </div>
-  <div className="contact-actions"><Link href={project?`/projects/${project.id}`:"/projects"}>Cancel</Link><button disabled={pending} type="submit">{pending?"Saving…":project?"Save Changes":"Create Project"}</button></div>
- </form>;
+  <div className="contact-actions"><Link href={project?`/projects/${project.id}`:"/projects"}>Cancel</Link><button form="crm-project-core-form" disabled={pending} type="submit">{pending?"Saving…":project?"Save Changes":"Create Project"}</button></div>
+ </div>;
 }
