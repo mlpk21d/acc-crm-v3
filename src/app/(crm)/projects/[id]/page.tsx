@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requirePermission } from "@/features/auth/session";
 import { can } from "@/features/auth/permissions";
 import { getProject,checklistFields } from "@/features/projects/data";
-import { listProjectRooms, manufacturerChoices } from "@/features/projects/rooms-data";
+import { listProjectRooms } from "@/features/projects/rooms-data";
 import { ProjectRooms } from "@/features/projects/project-rooms";
 import { getProjectFinancials } from "@/features/projects/financial-data";
 import { ProjectFinancialPanel } from "@/features/projects/project-financial-panel";
@@ -20,7 +20,7 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
  if(!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(id))notFound();
  const project=await getProject(id);
  if(!project)notFound();
- const [rooms,manufacturers]=await Promise.all([listProjectRooms(id),manufacturerChoices()]);
+ const rooms=await listProjectRooms(id);
  const financials=user.role==="admin"?await getProjectFinancials(id):null;
  const details=[
   ["Project Address",project.project_address],["Designer",project.project_designer],["Current Status",project.status],
@@ -50,6 +50,6 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
     {checklistFields.map(key=><div className="crm-project-check-row" key={key}><input type="checkbox" checked={project.checklist[key]} disabled readOnly/><span>{labels[key]}</span></div>)}
    </div></section>
   </div>
-  <section className="content-card crm-project-rooms"><ProjectRooms projectId={id} rooms={rooms} manufacturers={manufacturers} canEdit={can(user.role,"projects:write")} isAdmin={user.role==="admin"}/></section>
+  <section className="content-card crm-project-rooms"><ProjectRooms projectId={id} rooms={rooms} manufacturers={[]} canEdit={false} isAdmin={user.role==="admin"}/></section>
  </section>;
 }
