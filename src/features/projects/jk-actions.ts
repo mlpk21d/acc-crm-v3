@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/features/auth/session";
 import { getDbPool } from "@/lib/db";
+import { searchJkPriceItems, getJkRoomConfig } from "@/features/projects/jk-data";
 import { z } from "zod";
 
 const cabinetSchema=z.object({
@@ -66,4 +67,16 @@ export async function saveJkConfiguration(input:unknown) {
   revalidatePath("/projects/"+v.projectId);
   return {total:(totalCents/100).toFixed(2)};
  }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
+}
+
+export async function searchJkCatalogAction(term:string) {
+ await requirePermission("settings:manage");
+ return searchJkPriceItems(term);
+}
+export async function loadJkConfigAction(projectId:string,roomId:string) {
+ await requirePermission("settings:manage");
+ const project=z.uuid().parse(projectId),room=z.uuid().parse(roomId);
+ const match=await getDbPool().query("SELECT 1 FROM public.project_rooms r JOIN public.projects p ON p.id=r.project_id WHERE r.id=$1 AND r.project_id=$2 AND r.manufacturer='J&K' AND p.deleted_at IS NULL",[room,project]);
+ if(!match.rowCount) throw new Error("J&K room not found.");
+ return getJkRoomConfig(room);
 }
