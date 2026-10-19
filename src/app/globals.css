@@ -346,3 +346,17 @@ a { color: inherit; text-decoration: none; }
 .crm-new-room-ras-row input{min-width:0;width:100%;height:38px;padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px}
 .crm-new-room-ras-row>button{border:0;background:transparent;color:#e11d48;font-size:20px;cursor:pointer;line-height:1}
 @media(max-width:640px){.crm-new-room-ras-row{grid-template-columns:1fr 24px}.crm-new-room-ras-row input{grid-column:1}.crm-new-room-ras-row>button{grid-column:2;grid-row:1}}
+
+/* Project Contact linking — legacy New/Edit Project form */
+.crm-project-contact-picker{display:flex;align-items:flex-end;gap:8px;min-width:0}
+.crm-project-contact-picker>label{flex:1;min-width:0}
+.crm-project-contact-picker input{width:100%;min-width:0}
+.crm-project-contact-link{height:38px;padding:0 14px;border:1px solid #cbd5e1;border-radius:8px;background:white;color:#334155;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-size:13px;flex:none}
+.crm-project-contact-link:hover{background:#f8fafc}
+.crm-link-contact-modal{width:min(672px,100%)}
+.crm-link-contact-search{padding:20px 24px 24px}
+.crm-link-contact-search>input{display:block;width:100%;height:40px;padding:8px 12px;border:1px solid #94a3b8;border-radius:8px}
+.crm-link-contact-results{margin-top:10px;max-height:260px;overflow:auto;border:1px solid #e2e8f0;border-radius:8px}
+.crm-link-contact-results button{display:block;width:100%;border:0;border-bottom:1px solid #f1f5f9;background:white;text-align:left;padding:10px 12px;cursor:pointer;font-size:14px}
+.crm-link-contact-results button:hover,.crm-link-contact-results button:focus-visible{background:#f1f5f9}
+.crm-link-contact-results p{padding:10px 12px;margin:0;color:#64748b;font-size:13px}
