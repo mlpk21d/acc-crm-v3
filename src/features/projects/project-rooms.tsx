@@ -23,14 +23,14 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin}:{
  },[current]);
  return <>
   <div className="crm-rooms-heading"><h2>Rooms</h2>{canEdit&&<button type="button" onClick={()=>setCurrent(null)}>+ Add Room</button>}</div>
-  <div className="crm-rooms-scroll"><table className="contact-table"><thead><tr><th>Order</th><th>Room</th><th>Door Style</th><th>Drawer Style</th><th>Species</th><th>Finish</th><th>Construction</th><th>Manufacturer</th>{canEdit&&<th>Actions</th>}</tr></thead>
+  {rooms.length>0&&<div className="crm-rooms-scroll"><table className="contact-table"><thead><tr><th>Order</th><th>Room</th><th>Door Style</th><th>Drawer Style</th><th>Species</th><th>Finish</th><th>Construction</th><th>Manufacturer</th>{canEdit&&<th>Actions</th>}</tr></thead>
   <tbody>{rooms.map((room,index)=><tr key={room.id}>
    <td>{canEdit&&<div className="crm-room-order-controls">{(["up","down"] as const).map(direction=><form action={moveProjectRoom} key={direction}><input type="hidden" name="project_id" value={projectId}/><input type="hidden" name="id" value={room.id}/><input type="hidden" name="direction" value={direction}/><button type="submit" aria-label={direction==="up"?"Move room up":"Move room down"} disabled={direction==="up"?index===0:index===rooms.length-1}>{direction==="up"?"↑":"↓"}</button></form>)}</div>}</td>
    <td><strong>{room.room_name}</strong>{room.ras_items.length>0&&<div className="crm-room-accessory-preview">Rev-A-Shelf ({room.ras_items.length})</div>}</td><td>{room.door_style||"—"}</td><td>{room.drawer_style||"—"}</td><td>{room.species||"—"}</td><td>{room.finish||"—"}</td><td>{room.construction||"—"}</td>
    <td><span className="crm-manufacturer-chip" style={{backgroundColor:/^#[0-9a-f]{6}$/i.test(room.manufacturer_color??"")?room.manufacturer_color??undefined:undefined}}>{room.manufacturer||"—"}</span></td>
    {canEdit&&<td><button type="button" className="crm-room-text-action" onClick={()=>setCurrent(room)}>Edit</button><button type="button" className="crm-room-text-action" onClick={()=>setConfirmDelete(room)}>Delete</button></td>}
-  </tr>)}</tbody></table></div>
-  {rooms.length===0&&<p>No rooms added yet.</p>}
+  </tr>)}</tbody></table></div>}
+  {rooms.length===0&&<p className="crm-rooms-empty">No rooms added yet. Click &quot;Add Room&quot; to create one.</p>}
   {current!==undefined&&<div className="crm-room-modal-layer">
    <button type="button" className="crm-room-modal-backdrop" aria-label="Close room editor" onClick={()=>setCurrent(undefined)}/>
    <div className="crm-room-modal" role="dialog" aria-modal="true" aria-labelledby="crm-room-modal-title" ref={dialog}>
