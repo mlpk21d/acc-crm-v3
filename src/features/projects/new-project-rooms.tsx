@@ -7,13 +7,9 @@ export function NewProjectRooms({manufacturers,isAdmin}:{manufacturers:{value:st
  const [rooms,setRooms]=useState<DraftRoom[]>([]);
  const [editing,setEditing]=useState<number|null>(null);
  const [draft,setDraft]=useState<DraftRoom>(blank());
- const [showRasFields,setShowRasFields]=useState(false);
- const [rasName,setRasName]=useState("");
- const [rasCode,setRasCode]=useState("");
- const [rasLink,setRasLink]=useState("");
  const update=(key:keyof DraftRoom,value:string)=>setDraft(old=>({...old,[key]:value}));
- function open(index:number|null){setEditing(index??-1);setDraft(index===null?blank():structuredClone(rooms[index]));setRasName("");setRasCode("");setRasLink("");setShowRasFields(false)}
- function apply(){if(!draft.room_name.trim())return;setRooms(old=>editing===-1?[...old,draft]:old.map((r,i)=>i===editing?draft:r));setEditing(null)}
+ function open(index:number|null){setEditing(index??-1);setDraft(index===null?blank():structuredClone(rooms[index]));}
+ function apply(){if(!draft.room_name.trim()||draft.ras_items.some(i=>!i.item_name.trim()||(i.link&&!/^https?:\/\//.test(i.link))))return;setRooms(old=>editing===-1?[...old,draft]:old.map((r,i)=>i===editing?draft:r));setEditing(null)}
  return <section className="content-card crm-project-rooms">
   <div className="crm-rooms-heading"><h2>Rooms ({rooms.length})</h2><button type="button" onClick={()=>open(null)}>+ Add Room</button></div>
   <input form="crm-project-core-form" name="initial_rooms" type="hidden" value={JSON.stringify(rooms)}/>
@@ -25,26 +21,23 @@ export function NewProjectRooms({manufacturers,isAdmin}:{manufacturers:{value:st
     <div className="crm-new-room-body">
      <div className="crm-new-room-fields">
       <label>Room Name<input autoFocus value={draft.room_name} maxLength={200} onChange={e=>update("room_name",e.target.value)}/></label>
-      {isAdmin?<label>Room Cost<input type="number" min="0" step="0.01" value={draft.room_cost} onChange={e=>update("room_cost",e.target.value)}/></label>:<div/>}
+      {isAdmin?<div className="crm-new-room-cost-pair"><label>Room Cost<input type="number" min="0" step="0.01" value={draft.room_cost} onChange={e=>update("room_cost",e.target.value)}/></label><label>Mfr Discount %<input type="number" min="0" max="100" step="0.001" value={draft.manufacturer_discount} onChange={e=>update("manufacturer_discount",e.target.value)}/></label></div>:<div/>}
       <label>Door Style<input value={draft.door_style} maxLength={200} onChange={e=>update("door_style",e.target.value)}/></label>
       <label>Species<input value={draft.species} maxLength={200} onChange={e=>update("species",e.target.value)}/></label>
       <label>Drawer Style<input value={draft.drawer_style} maxLength={200} onChange={e=>update("drawer_style",e.target.value)}/></label>
       <label>Finish<input value={draft.finish} maxLength={200} onChange={e=>update("finish",e.target.value)}/></label>
       <label>Construction<select value={draft.construction} onChange={e=>update("construction",e.target.value)}><option value="">Select...</option>{constructions.map(v=><option value={v} key={v}>{v}</option>)}</select></label>
       <label>Manufacturer<select value={draft.manufacturer} onChange={e=>update("manufacturer",e.target.value)}><option value="">Select...</option>{manufacturers.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}</select></label>
-      {isAdmin&&<label>Manufacturer Discount (%)<input type="number" min="0" max="100" step="0.001" value={draft.manufacturer_discount} onChange={e=>update("manufacturer_discount",e.target.value)}/></label>}
      </div>
      <div className="crm-new-room-ras">
-      <div className="crm-new-room-ras-heading"><h3>◇&nbsp; Rev-A-Shelf Items ({draft.ras_items.length})</h3><button type="button" onClick={()=>setShowRasFields(true)}>＋ Add Item</button></div>
+      <div className="crm-new-room-ras-heading"><h3>◇&nbsp; Rev-A-Shelf Items ({draft.ras_items.length})</h3><button type="button" onClick={()=>setDraft(d=>({...d,ras_items:[...d.ras_items,{item_name:"",code:"",link:""}]}))}>＋ Add Item</button></div>
       {draft.ras_items.length===0&&<p className="crm-new-room-empty">No items added.</p>}
-      {draft.ras_items.map((item,i)=><div className="crm-room-ras-item" key={i}><span>{item.item_name}{item.code?" · "+item.code:""}{item.link&&<a href={item.link} target="_blank" rel="noopener noreferrer">View</a>}</span><button type="button" onClick={()=>setDraft(d=>({...d,ras_items:d.ras_items.filter((_,n)=>n!==i)}))}>Remove</button></div>)}
-      {showRasFields&&<div className="crm-new-room-ras-fields">
-       <input aria-label="Rev-A-Shelf Item Name" placeholder="Item Name" maxLength={200} value={rasName} onChange={e=>setRasName(e.target.value)}/>
-       <input aria-label="Rev-A-Shelf Code" placeholder="Code" maxLength={100} value={rasCode} onChange={e=>setRasCode(e.target.value)}/>
-       <input aria-label="Rev-A-Shelf Link" placeholder="Link (https://)" type="url" value={rasLink} onChange={e=>setRasLink(e.target.value)}/>
-       <button type="button" disabled={!rasName.trim()||(!!rasLink&&!/^https?:\/\//.test(rasLink))} onClick={()=>{setDraft(d=>({...d,ras_items:[...d.ras_items,{item_name:rasName.trim(),code:rasCode,link:rasLink}]}));setRasName("");setRasCode("");setRasLink("");setShowRasFields(false)}}>Save Item</button>
-       <button type="button" onClick={()=>{setShowRasFields(false);setRasName("");setRasCode("");setRasLink("")}}>Cancel</button>
-      </div>}
+      {draft.ras_items.map((item,i)=><div className="crm-new-room-ras-row" key={i}>
+       <input aria-label={`Item ${i+1} Name`} placeholder="Item Name" maxLength={200} value={item.item_name} onChange={e=>setDraft(d=>({...d,ras_items:d.ras_items.map((r,n)=>n===i?{...r,item_name:e.target.value}:r)}))}/>
+       <input aria-label={`Item ${i+1} Code`} placeholder="Code" maxLength={100} value={item.code} onChange={e=>setDraft(d=>({...d,ras_items:d.ras_items.map((r,n)=>n===i?{...r,code:e.target.value}:r)}))}/>
+       <input aria-label={`Item ${i+1} Link`} placeholder="Link (https://)" type="url" value={item.link} onChange={e=>setDraft(d=>({...d,ras_items:d.ras_items.map((r,n)=>n===i?{...r,link:e.target.value}:r)}))}/>
+       <button type="button" aria-label={`Remove item ${i+1}`} onClick={()=>setDraft(d=>({...d,ras_items:d.ras_items.filter((_,n)=>n!==i)}))}>×</button>
+      </div>)}
      </div>
      <div className="crm-room-modal-actions"><button type="button" onClick={()=>setEditing(null)}>Cancel</button><button type="button" className="crm-new-room-save" disabled={!draft.room_name.trim()} onClick={apply}>Save Room</button></div>
     </div>
