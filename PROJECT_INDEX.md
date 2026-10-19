@@ -411,3 +411,9 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `src/app/(crm)/projects/[id]/edit/page.tsx`: Project Edit now loads rooms and manufacturer choices for all project editors (not just admins) and passes an editable `ProjectRooms` section into the existing project edit form layout.
 - `src/features/projects/project-rooms.tsx`: Order/Actions columns are exclusive to Edit; Project View renders only room information columns. Read-only empty state omits instruction to click the edit-only Add Room button.
 - No migrations. Local `npm run check` and browser verification still required. Room actions remain individually server-permission-checked.
+
+## Persisted Room Edit modal financial fields — 2026-10-19
+
+- Restored Room Cost and Mfr Discount % as an adjacent pair in `src/features/projects/project-rooms.tsx`, restricted to admins and populated from persisted `project_room_financials`.
+- `src/app/(crm)/projects/[id]/edit/page.tsx` supplies the financial room values; `src/features/projects/rooms-actions.ts` saves room details and optional financial values transactionally, with a server-side admin permission check and a J&K locked-cost guard. Non-admin project editors cannot submit room financial values.
+- Added scoped styles to `src/app/globals.css`. Room View remains read-only. No migration. Local compilation and browser verification required.
