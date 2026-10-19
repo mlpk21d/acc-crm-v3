@@ -286,3 +286,26 @@ a { color: inherit; text-decoration: none; }
 .crm-project-notes-label textarea{flex:1}
 @media(max-width:1050px){.crm-project-three-panels{grid-template-columns:repeat(2,minmax(0,1fr))}.crm-project-three-panels>.content-card:last-child{grid-column:1/-1}.crm-project-field-grid,.crm-project-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.crm-project-three-panels,.crm-project-field-grid,.crm-project-detail-grid{grid-template-columns:1fr}.crm-project-three-panels>.content-card:last-child{grid-column:auto}}
+
+/* Original admin-only Project Financial Summary; no changes to CRM navigation */
+.crm-project-financial h2{font-size:14px;font-weight:600;margin:0 0 16px}
+.crm-project-financial h3{font-size:13px;font-weight:600;margin:20px 0 12px}
+.crm-project-financial-inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.crm-project-financial label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#4b5563}
+.crm-project-financial input,.crm-project-financial select{width:100%;min-width:0;padding:8px;border:1px solid #d1d5db;border-radius:7px;background:#fff}
+.crm-project-financial button{border:1px solid #d1d5db;border-radius:7px;padding:8px 12px;background:#fff;color:#111827;cursor:pointer;font-size:12px}
+.crm-project-financial button:disabled{opacity:.5}
+.crm-project-financial-form>button{margin-top:12px}
+.crm-project-financial-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:16px}
+.crm-project-financial-cards>div{background:#f8fafc;border-radius:9px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.crm-project-financial-cards span{font-size:11px;color:#64748b}
+.crm-project-financial-cards strong{font-size:18px}
+.crm-project-financial-cards>.crm-project-financial-highlight{background:#111827;color:#fff}
+.crm-project-financial-highlight span{color:#cbd5e1}
+.crm-project-margin-label{font-size:11px;color:#6b7280;margin:12px 0}
+.crm-project-room-financials{display:flex;flex-direction:column;gap:12px}
+.crm-project-room-financial-row{display:grid;grid-template-columns:minmax(0,1fr) repeat(2,minmax(0,1fr)) auto;align-items:end;gap:8px;border-top:1px solid #e5e7eb;padding-top:12px}
+.crm-project-room-financial-row>strong{font-size:12px;align-self:center}
+.crm-project-edit-financial{margin-top:24px}
+@media(max-width:1050px){.crm-project-financial-inputs{grid-template-columns:repeat(2,minmax(0,1fr))}.crm-project-room-financial-row{grid-template-columns:1fr 1fr}.crm-project-room-financial-row>strong{grid-column:1/-1}}
+@media(max-width:600px){.crm-project-financial-inputs{grid-template-columns:1fr}}
