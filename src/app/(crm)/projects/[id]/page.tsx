@@ -23,7 +23,7 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
  const [rooms,manufacturers]=await Promise.all([listProjectRooms(id),manufacturerChoices()]);
  const financials=user.role==="admin"?await getProjectFinancials(id):null;
  const details=[
-  ["Address",project.project_address],["Designer",project.project_designer],["Current Status",project.status],
+  ["Project Address",project.project_address],["Designer",project.project_designer],["Current Status",project.status],
   ["Next Step",project.next_step],["Sample Signoff Status",project.sample_signoff_status],
   ["Order By Date",formatDate(project.order_by_date)],["Official Start Date",formatDate(project.official_start_date)],
   ["Install Date",formatDate(project.install_date)]
@@ -37,7 +37,7 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
   <section className="content-card crm-project-detail-card"><h2>Project Details</h2>
    <div className="crm-project-detail-grid">
     {details.map(([label,value])=><div key={label}><span className="crm-project-detail-label">{label}</span><p>{display(value)}</p></div>)}
-    <div><span className="crm-project-detail-label">Contact</span>
+    <div><span className="crm-project-detail-label">Project Contact</span>
      <p>{project.contact_id?<Link href={`/contacts/${project.contact_id}`}>{display(project.project_contact_name||project.contact_name)}</Link>:display(project.project_contact_name||project.contact_name)}</p>
      {project.project_contact_phone&&<a href={`tel:${project.project_contact_phone}`}>{project.project_contact_phone}</a>}
     </div>
