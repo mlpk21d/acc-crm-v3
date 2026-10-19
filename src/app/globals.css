@@ -360,3 +360,14 @@ a { color: inherit; text-decoration: none; }
 .crm-link-contact-results button{display:block;width:100%;border:0;border-bottom:1px solid #f1f5f9;background:white;text-align:left;padding:10px 12px;cursor:pointer;font-size:14px}
 .crm-link-contact-results button:hover,.crm-link-contact-results button:focus-visible{background:#f1f5f9}
 .crm-link-contact-results p{padding:10px 12px;margin:0;color:#64748b;font-size:13px}
+
+/* Project form parity — scoped additions only. */
+.crm-project-field-grid>.crm-project-name-field{grid-column:span 2}
+.crm-project-custom-modal{width:min(460px,100%)}
+.crm-project-custom-body{padding:24px;display:flex;flex-direction:column;gap:22px}
+.crm-project-custom-body>label{display:flex;flex-direction:column;gap:8px;font-size:13px;color:#374151}
+.crm-project-custom-body input{border:1px solid #d1d5db;border-radius:8px;padding:10px 12px}
+.crm-rooms-empty{text-align:center;font-style:italic;color:#9ca3af;padding:36px 12px;margin:0;font-size:14px}
+.crm-rooms-heading>button{background:#374151;color:#fff;border-color:#374151}
+.crm-rooms-heading>button:hover{background:#4b5563;border-color:#4b5563}
+@media(max-width:640px){.crm-project-field-grid>.crm-project-name-field{grid-column:span 1}}
