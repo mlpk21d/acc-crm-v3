@@ -10,9 +10,9 @@ const checklistLabels:Record<(typeof checklistFields)[number],string>={
  drawing_approved:"Drawing Approved",appliance_specs:"Appliance Specs",ceiling_height:"Ceiling Height",
  floor_thickness:"Floor Thickness",hardware:"Hardware",door_styles:"Door Styles",finishes:"Finishes"
 };
-export function ProjectForm({project,contacts,statuses,financialPanel}:{
+export function ProjectForm({project,contacts,statuses,financialPanel,initialRoomsPanel}:{
  project?:Project;contacts:{id:string;label:string}[];
- statuses:{value:string;label:string;color:string|null}[]; financialPanel?:ReactNode;
+ statuses:{value:string;label:string;color:string|null}[]; financialPanel?:ReactNode; initialRoomsPanel?:ReactNode;
 }) {
  const [state,action,pending]=useActionState(saveProject,{error:null});
  const field=(name:keyof Project,label:string,type="text")=><label key={name}>{label}
@@ -48,6 +48,7 @@ export function ProjectForm({project,contacts,statuses,financialPanel}:{
    <section className="content-card"><h2>Notes</h2><label className="crm-project-notes-label">Project Notes<textarea name="notes" form="crm-project-core-form" rows={12} maxLength={20000} defaultValue={project?.notes??""}/></label></section>
    <section className="content-card"><h2>Checklist</h2><div className="crm-project-checklist">{checklistFields.map(key=><label key={key}><input type="checkbox" form="crm-project-core-form" name={key} defaultChecked={project?.checklist?.[key]??false}/>{checklistLabels[key]}</label>)}</div></section>
   </div>
+  {initialRoomsPanel}
   <div className="contact-actions"><Link href={project?`/projects/${project.id}`:"/projects"}>Cancel</Link><button form="crm-project-core-form" disabled={pending} type="submit">{pending?"Saving…":project?"Save Changes":"Create Project"}</button></div>
  </div>;
 }
