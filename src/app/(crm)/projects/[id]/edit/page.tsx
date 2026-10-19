@@ -4,7 +4,8 @@ import { getProject, contactChoices, projectStatusOptions } from "@/features/pro
 import { ProjectForm } from "@/features/projects/project-form";
 import { getProjectFinancials } from "@/features/projects/financial-data";
 import { ProjectFinancialPanel } from "@/features/projects/project-financial-panel";
-import { listProjectRooms } from "@/features/projects/rooms-data";
+import { listProjectRooms, manufacturerChoices } from "@/features/projects/rooms-data";
+import { ProjectRooms } from "@/features/projects/project-rooms";
 export default async function EditProject({params}:{params:Promise<{id:string}>}) {
  const user=await requirePermission("projects:write");
  const {id}=await params;
@@ -12,8 +13,9 @@ export default async function EditProject({params}:{params:Promise<{id:string}>}
  const project=await getProject(id);
  if(!project) notFound();
  const financials=user.role==="admin"?await getProjectFinancials(id):null;
- const rooms=financials?await listProjectRooms(id):[];
+ const [rooms,manufacturers]=await Promise.all([listProjectRooms(id),manufacturerChoices()]);
  return <section><div className="page-heading"><h1>Edit project</h1></div>
  <ProjectForm project={project} contacts={await contactChoices()} statuses={await projectStatusOptions()}
- financialPanel={financials?<ProjectFinancialPanel editable projectId={id} financials={financials.project} rooms={financials.rooms} roomNames={Object.fromEntries(rooms.map(r=>[r.id,r.room_name]))}/>:undefined}/></section>;
+ financialPanel={financials?<ProjectFinancialPanel editable projectId={id} financials={financials.project} rooms={financials.rooms} roomNames={Object.fromEntries(rooms.map(r=>[r.id,r.room_name]))}/>:undefined}
+ initialRoomsPanel={<section className="content-card crm-project-rooms"><ProjectRooms projectId={id} rooms={rooms} manufacturers={manufacturers} canEdit isAdmin={user.role==="admin"}/></section>}/></section>;
 }
