@@ -1,14 +1,16 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import type { ProjectRoom } from "@/features/projects/rooms-data";
+import { JkConfigurator } from "@/features/projects/jk-configurator";
 import { addProjectRoom, deleteProjectRoom, moveProjectRoom, addRoomAccessory, deleteRoomAccessory } from "@/features/projects/rooms-actions";
 
 const fields=[["room_name","Room Name"],["door_style","Door Style"],["species","Species"],["drawer_style","Drawer Style"],["finish","Finish"]] as const;
 const construction=["Inset","Inset Beaded","Full Overlay","Frameless"];
-export function ProjectRooms({projectId,rooms,manufacturers,canEdit}:{
- projectId:string;rooms:ProjectRoom[];manufacturers:{value:string;label:string}[];canEdit:boolean;
+export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin}:{
+ projectId:string;rooms:ProjectRoom[];manufacturers:{value:string;label:string}[];canEdit:boolean;isAdmin:boolean;
 }) {
  const [current,setCurrent]=useState<ProjectRoom|null|undefined>(undefined);
+ const [jkRoom,setJkRoom]=useState<string|null>(null);
  const [confirmDelete,setConfirmDelete]=useState<ProjectRoom|null>(null);
  const dialog=useRef<HTMLDivElement>(null);
  useEffect(()=>{
@@ -41,6 +43,7 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit}:{
        <label>Construction<select name="construction" defaultValue={current?.construction??""}><option value="">Select...</option>{construction.map(v=><option key={v} value={v}>{v}</option>)}</select></label>
        <label>Manufacturer<select name="manufacturer" defaultValue={current?.manufacturer??""}><option value="">Select...</option>{manufacturers.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}{current?.manufacturer&&!manufacturers.some(m=>m.value===current.manufacturer)&&<option value={current.manufacturer}>{current.manufacturer} (inactive)</option>}</select></label>
       </div>
+      {current&&isAdmin&&current.manufacturer==="J&K"&&<button type="button" className="crm-jk-launch" onClick={()=>{setCurrent(undefined);setJkRoom(current.id)}}>Configure J&amp;K Cabinets</button>}
       {current&&<div className="crm-room-accessory-notice">Rev-A-Shelf items: {current.ras_items.length}. Save room changes before managing accessories below.</div>}
       <div className="crm-room-modal-actions"><button type="button" onClick={()=>setCurrent(undefined)}>Cancel</button><button type="submit">Save Room</button></div>
     </form>
@@ -59,6 +62,7 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit}:{
     </div>}
    </div>
   </div>}
+  {jkRoom&&<JkConfigurator projectId={projectId} roomId={jkRoom} onClose={()=>setJkRoom(null)}/>}
   {confirmDelete&&<div className="crm-room-modal-layer"><button type="button" className="crm-room-modal-backdrop" aria-label="Cancel room delete" onClick={()=>setConfirmDelete(null)}/><div className="crm-room-modal crm-room-confirm" role="dialog" aria-modal="true"><h2>Delete Room?</h2><p>Delete {confirmDelete.room_name}? This action cannot be undone.</p><form action={async data=>{await deleteProjectRoom(data);setConfirmDelete(null)}}><input type="hidden" name="project_id" value={projectId}/><input type="hidden" name="id" value={confirmDelete.id}/><button type="button" onClick={()=>setConfirmDelete(null)}>Cancel</button><button type="submit">Delete Room</button></form></div></div>}
  </>;
 }
