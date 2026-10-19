@@ -63,13 +63,15 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
       "SELECT 1 FROM public.crm_settings_options WHERE category = $1 AND value = $2 AND active = true LIMIT 1",
       ["project_status", status],
     );
-    if (!allowedStatus.rowCount) {
+    const isCustomStatus = form.get("status_custom")==="true" && status!=="__custom__";
+    if (!allowedStatus.rowCount && !isCustomStatus) {
       const unchanged = id ? await client.query(
         "SELECT 1 FROM public.projects WHERE id=$1 AND status=$2 AND deleted_at IS NULL",
         [id, status],
       ) : null;
-      if (!unchanged?.rowCount) {await client.query("ROLLBACK");return { error: "Choose an active Project Status from Settings." };}
+      if (!unchanged?.rowCount) {await client.query("ROLLBACK");return { error: "Choose an active Project Status or add a custom one." };}
     }
+    if (parsed.data.next_step==="__custom__"||status==="__custom__"){await client.query("ROLLBACK");return {error:"Enter a custom value before saving."};}
     if (contact_id) {
       const valid = await client.query("SELECT 1 FROM public.contacts WHERE id=$1 AND deleted_at IS NULL", [contact_id]);
       if (!valid.rowCount) {await client.query("ROLLBACK");return {error:"Choose an active contact."};}
