@@ -316,3 +316,25 @@ a { color: inherit; text-decoration: none; }
 .crm-project-core-form{display:block}
 .crm-project-description{display:flex;flex-direction:column;gap:7px;margin-top:18px;font-size:13px;color:#374151}
 .crm-project-description textarea{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;resize:vertical}
+
+/* Room screenshot acceptance: initial-project room modal */
+.crm-new-room-modal{width:min(896px,100%);border-radius:12px}
+.crm-new-room-modal .crm-room-modal-title{padding:19px 24px}
+.crm-new-room-modal .crm-room-modal-title h2{font-size:18px;font-weight:600}
+.crm-new-room-modal .crm-room-modal-title button{color:#94a3b8}
+.crm-new-room-body{padding:24px}
+.crm-new-room-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px}
+.crm-new-room-fields label{display:flex;flex-direction:column;gap:6px;color:#26364f;font-size:13px}
+.crm-new-room-fields input,.crm-new-room-fields select{height:38px;padding:8px 12px;width:100%;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+.crm-new-room-ras{border-top:1px solid #e2e8f0;margin-top:16px;padding-top:17px}
+.crm-new-room-ras-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.crm-new-room-ras-heading h3{font-size:13px;margin:0;font-weight:500;color:#334155}
+.crm-new-room-ras-heading button{border:0;background:transparent;color:#334155;font-size:13px;cursor:pointer;padding:3px 9px}
+.crm-new-room-empty{font-size:12px;color:#94a3b8;margin:17px 0 15px}
+.crm-new-room-ras-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:14px}
+.crm-new-room-ras-fields input{min-width:0;padding:9px;border:1px solid #cbd5e1;border-radius:8px}
+.crm-new-room-ras-fields button{border:1px solid #cbd5e1;background:white;border-radius:8px;padding:8px 10px;cursor:pointer}
+.crm-new-room-ras-fields button:disabled{opacity:.5;cursor:not-allowed}
+.crm-new-room-modal .crm-room-modal-actions{margin-top:16px;padding-top:16px}
+.crm-new-room-modal .crm-room-modal-actions .crm-new-room-save{background:#111827;color:#fff;border-color:#111827}
+@media(max-width:640px){.crm-new-room-body{padding:16px}.crm-new-room-fields{grid-template-columns:1fr}.crm-new-room-ras-fields{grid-template-columns:1fr}}
