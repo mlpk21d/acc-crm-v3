@@ -262,3 +262,27 @@ a { color: inherit; text-decoration: none; }
 .crm-jk-totals input{width:90px;margin-left:8px;padding:6px;border:1px solid #d1d5db;border-radius:6px}
 .crm-jk-modal .crm-room-modal-actions button:last-child{background:#111827;color:#fff;border-color:#111827}
 @media(max-width:640px){.crm-jk-content{padding:16px}.crm-jk-search,.crm-jk-custom{flex-wrap:wrap}}
+
+/* Legacy Project View/Edit: wide details card, 50/30/20 secondary panels, rooms */
+.crm-project-page,.crm-project-edit-form{display:flex;flex-direction:column;gap:24px}
+.crm-project-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.crm-project-back{display:inline-block;color:#6b7280;font-size:13px;margin-bottom:8px;text-decoration:none}
+.crm-project-edit-link{display:inline-block;border:1px solid #e5e7eb;background:white;border-radius:8px;padding:9px 14px;text-decoration:none;font-size:14px;color:#374151}
+.crm-project-status{align-self:flex-start;background:#f3f4f6;border-radius:6px;padding:5px 10px;font-size:13px;font-weight:600;color:#374151}
+.crm-project-detail-card h2,.crm-project-three-panels h2{font-size:14px;font-weight:600;margin:0 0 18px;color:#111827}
+.crm-project-detail-grid,.crm-project-field-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px 24px}
+.crm-project-detail-label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;font-weight:600}
+.crm-project-detail-grid p{font-size:14px;margin:6px 0 0;overflow-wrap:anywhere}
+.crm-project-three-panels{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,3fr) minmax(0,2fr);gap:24px;align-items:stretch}
+.crm-project-three-panels>.content-card{min-width:0}
+.crm-project-three-panels p{margin:0;font-size:14px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.crm-project-checklist{display:flex;flex-direction:column;gap:12px}
+.crm-project-checklist label,.crm-project-check-row{display:flex;align-items:center;gap:10px;font-size:14px;color:#374151}
+.crm-project-checklist input{width:16px;height:16px;flex:none;accent-color:#111827}
+.crm-project-field-grid label,.crm-project-edit-form .content-card>label{display:flex;flex-direction:column;gap:7px;font-size:13px;color:#374151}
+.crm-project-field-grid input,.crm-project-field-grid select,.crm-project-edit-form textarea{width:100%;min-width:0;border:1px solid #d1d5db;border-radius:8px;padding:10px 12px;background:white;color:#111827}
+.crm-project-edit-form textarea{resize:vertical}
+.crm-project-notes-label{height:calc(100% - 40px)}
+.crm-project-notes-label textarea{flex:1}
+@media(max-width:1050px){.crm-project-three-panels{grid-template-columns:repeat(2,minmax(0,1fr))}.crm-project-three-panels>.content-card:last-child{grid-column:1/-1}.crm-project-field-grid,.crm-project-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.crm-project-three-panels,.crm-project-field-grid,.crm-project-detail-grid{grid-template-columns:1fr}.crm-project-three-panels>.content-card:last-child{grid-column:auto}}
