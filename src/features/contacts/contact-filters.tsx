@@ -18,7 +18,7 @@ export function ContactFilters({filters, options}: {filters:Filters;options:Opti
   return <>
     <button type="button" className="crm-filters-button" onClick={() => setOpen(true)}>Filters{count > 0 ? <span className="crm-filter-count">{count}</span> : null}<ButtonIcon kind="filter" /></button>
     {open && <div className="crm-filter-overlay">
-      <button className="crm-filter-backdrop" type="button" aria-label="Close filters" onClick={() => setOpen(false)} />
+      <button className="crm-filter-backdrop" type="button" aria-label="Close filters" onClick={() => setOpen(false)} ><ButtonIcon kind="close" /></button>
       <aside role="dialog" aria-modal="true" aria-labelledby="contact-filter-heading" className="crm-filter-drawer">
         <div className="crm-filter-heading"><h2 id="contact-filter-heading">Filters</h2><button type="button" aria-label="Close filters" onClick={() => setOpen(false)}>✕<ButtonIcon kind="close" /></button></div>
         <form method="get" action="/contacts" className="crm-filter-body">
