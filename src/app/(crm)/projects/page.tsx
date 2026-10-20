@@ -1,3 +1,4 @@
+import { ButtonIcon } from "@/components/button-icon";
 import Link from "next/link";
 import { can } from "@/features/auth/permissions";
 import { requirePermission } from "@/features/auth/session";
@@ -17,7 +18,7 @@ export default async function ProjectsPage({searchParams}:{
     <form method="get" className="contact-search">
       <label htmlFor="project-search">Search projects</label>
       <input id="project-search" name="q" maxLength={100} defaultValue={search}/>
-      <button type="submit">Search</button>
+      <button type="submit">Search<ButtonIcon kind="search" /></button>
     </form>
     <div className="content-card"><table className="contact-table">
       <thead><tr><th>Project</th><th>Contact</th><th>Status</th></tr></thead>
