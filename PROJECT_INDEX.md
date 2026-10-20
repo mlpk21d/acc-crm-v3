@@ -433,3 +433,11 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `src/components/app-shell.tsx`: replaced the text “ACC CRM” in the desktop sidebar, mobile drawer, and mobile header with the already committed `public/images/acc-logo.svg` using `next/image`. Logo links to dashboard.
 - `src/app/globals.css`: scoped logo sizing to existing sidebar/mobile header heights without altering navigation, typography, or shell layout.
 - No migration. Local `npm run check` and visual verification required.
+
+## Button icon consistency — 2026-10-20
+
+- Introduced `src/components/button-icon.tsx`: reusable, accessible, inline SVG glyphs for add, edit, save, delete, search, filter, close, move, authentication, and related buttons. Icons inherit currentColor; no icon library dependency.
+- Added paired action icons to native buttons throughout Projects, Contacts, Settings, authentication, the J&K configurator, and the application shell; retained existing button action handlers and field semantics.
+- Existing navigation/menu buttons with inline `NavIcon` or existing magnifying-glass SVG already satisfy icon requirements. Backdrop buttons contain a hidden close glyph and preserve the full-screen click-dismiss affordance.
+- `src/app/globals.css` keeps overlay dismiss controls visually empty. Project-specific UI positioning is unchanged. Button icons are now a requirement for newly added buttons; use `ButtonIcon` instead of bare text.
+- No database migration and no GitHub CI. Run `npm run check` and review the affected pages locally; local compilation and browser verification were not available through this repository-only edit.
