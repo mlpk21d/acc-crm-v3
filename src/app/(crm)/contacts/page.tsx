@@ -1,3 +1,4 @@
+import { ButtonIcon } from "@/components/button-icon";
 import Link from "next/link";
 import { can } from "@/features/auth/permissions";
 import { requirePermission } from "@/features/auth/session";
@@ -53,7 +54,7 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
                 <form action={setContacted}>
                   <input type="hidden" name="id" value={contact.id} />
                   <input type="hidden" name="contacted" value={String(!contact.contacted)} />
-                  <button className="contact-toggle" type="submit" aria-label={contact.contacted ? "Mark not contacted" : "Mark contacted"}>{contact.contacted ? "Yes" : "No"}</button>
+                  <button className="contact-toggle" type="submit" aria-label={contact.contacted ? "Mark not contacted" : "Mark contacted"}>{contact.contacted ? "Yes" : "No"}<ButtonIcon kind="check" /></button>
                 </form> : contact.contacted ? "Yes" : "No"}</td>
               <td><Link href={`/contacts/${contact.id}`}>View</Link>{can(user.role, "contacts:write") && <Link className="contact-edit-link" href={`/contacts/${contact.id}/edit`}>Edit</Link>}</td>
             </tr>)}
