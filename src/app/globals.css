@@ -393,3 +393,6 @@ a { color: inherit; text-decoration: none; }
 .crm-brand-logo{display:block;width:auto;height:47px;max-width:100%;object-fit:contain}
 .crm-mobile-brand-logo{display:inline-flex;align-items:center;max-width:190px}
 .crm-mobile-brand-logo .crm-brand-logo{height:40px}
+
+/* Button icons share existing text color; invisible full-screen dismiss surfaces stay visually empty. */
+.crm-room-modal-backdrop svg,.crm-mobile-backdrop svg,.crm-filter-backdrop svg{visibility:hidden}
