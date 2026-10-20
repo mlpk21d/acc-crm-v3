@@ -1,3 +1,4 @@
+import { ButtonIcon } from "@/components/button-icon";
 "use client";
 
 import type { FormEvent } from "react";
@@ -14,7 +15,7 @@ export function DeleteContactForm({ id }: { id: string }) {
   return (
     <form action={deleteContact} onSubmit={confirmDeletion}>
       <input type="hidden" name="id" value={id} />
-      <button type="submit">Delete contact</button>
+      <button type="submit">Delete contact<ButtonIcon kind="delete" /></button>
     </form>
   );
 }
