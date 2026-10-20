@@ -1,3 +1,4 @@
+import { ButtonIcon } from "@/components/button-icon";
 "use client";
 
 import Link from "next/link";
@@ -15,18 +16,18 @@ export function ContactFilters({filters, options}: {filters:Filters;options:Opti
     return () => document.removeEventListener("keydown", handleEscape);
   }, [open]);
   return <>
-    <button type="button" className="crm-filters-button" onClick={() => setOpen(true)}>Filters{count > 0 ? <span className="crm-filter-count">{count}</span> : null}</button>
+    <button type="button" className="crm-filters-button" onClick={() => setOpen(true)}>Filters{count > 0 ? <span className="crm-filter-count">{count}</span> : null}<ButtonIcon kind="filter" /></button>
     {open && <div className="crm-filter-overlay">
       <button className="crm-filter-backdrop" type="button" aria-label="Close filters" onClick={() => setOpen(false)} />
       <aside role="dialog" aria-modal="true" aria-labelledby="contact-filter-heading" className="crm-filter-drawer">
-        <div className="crm-filter-heading"><h2 id="contact-filter-heading">Filters</h2><button type="button" aria-label="Close filters" onClick={() => setOpen(false)}>✕</button></div>
+        <div className="crm-filter-heading"><h2 id="contact-filter-heading">Filters</h2><button type="button" aria-label="Close filters" onClick={() => setOpen(false)}>✕<ButtonIcon kind="filter" /></button></div>
         <form method="get" action="/contacts" className="crm-filter-body">
           <label>Search<input name="q" maxLength={100} defaultValue={filters.search} placeholder="Company or contact" /></label>
           <label>Region<select name="region" defaultValue={filters.region}><option value="">All regions</option>{options.regions.map(v => <option key={v} value={v}>{v}</option>)}</select></label>
           <label>Type<select name="type" defaultValue={filters.type}><option value="">All types</option>{options.types.map(v => <option key={v} value={v}>{v}</option>)}</select></label>
           <label>Status<select name="status" defaultValue={filters.status}><option value="">All statuses</option>{options.statuses.map(v => <option key={v} value={v}>{v}</option>)}</select></label>
           <label>Contacted<select name="contacted" defaultValue={filters.contacted}><option value="">All</option><option value="yes">Yes</option><option value="no">No</option></select></label>
-          <div className="crm-filter-footer"><Link href="/contacts" onClick={() => setOpen(false)}>Clear all</Link><button type="submit">Apply Filters</button></div>
+          <div className="crm-filter-footer"><Link href="/contacts" onClick={() => setOpen(false)}>Clear all</Link><button type="submit">Apply Filters<ButtonIcon kind="filter" /></button></div>
         </form>
       </aside>
     </div>}
