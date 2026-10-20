@@ -10,14 +10,14 @@ export function NewProjectFinancialFields(){
  const margin=marginType==="other"?Number(customMargin)||0:Number(marginType);
  const selling=margin>=0&&margin<100?Math.round(total/(1-margin/100)):total;
  return <section className="content-card crm-project-financial">
-  <h2>Financial Summary</h2>
+  <h2>Financial Information (Admin Only)</h2>
   <div className="crm-project-financial-inputs">
    {labels.map(([key,label])=><label key={key}>{label}<input form="crm-project-core-form" name={key} type="number" step="0.01" min="0" max="99999999" required value={values[key]} onChange={e=>setValues(old=>({...old,[key]:e.target.value}))}/></label>)}
    <label>Margin<select form="crm-project-core-form" name="margin_type" value={marginType} onChange={e=>setMarginType(e.target.value)}><option value="35">35%</option><option value="25">25%</option><option value="other">Other</option></select></label>
    {marginType==="other"&&<label>Custom Margin (%)<input form="crm-project-core-form" name="custom_margin_percent" type="number" min="0" max="99" step="0.01" required value={customMargin} onChange={e=>setCustomMargin(e.target.value)}/></label>}
   </div>
   <div className="crm-project-financial-cards">
-   {([["Room Costs",0],["Total",total],["Total Cost",selling],["Profit",selling-total]] as const).map(([label,value])=><div key={label} className={label==="Total Cost"?"crm-project-financial-highlight":""}><span>{label}</span><strong>{cash(value)}</strong></div>)}
+   {([["Room Costs",0],["Total",total],["Total Cost",selling],["Profit",selling-total]] as const).map(([label,value])=><div key={label} className={label==="Total Cost"||label==="Profit"?"crm-project-financial-highlight":""}><span>{label}</span><strong>{cash(value)}</strong></div>)}
   </div>
   <p className="crm-project-margin-label">Margin: {margin.toFixed(2)}% · Room costs can be added after creating rooms.</p>
  </section>;
