@@ -49,7 +49,7 @@ export function JkConfigurator({projectId,roomId,onClose}:{
   finally{setBusy(false)}
  }
  return <div className="crm-room-modal-layer">
-  <button type="button" className="crm-room-modal-backdrop" aria-label="Close J&K configuration" onClick={onClose}/>
+  <button type="button" className="crm-room-modal-backdrop" aria-label="Close J&K configuration" onClick={onClose}><ButtonIcon kind="close" /></button>
   <section className="crm-room-modal crm-jk-modal" role="dialog" aria-modal="true" aria-labelledby="jk-title">
    <div className="crm-room-modal-title"><h2 id="jk-title">Configure J&amp;K Cabinets</h2><button type="button" aria-label="Close" onClick={onClose}>×<ButtonIcon kind="close" /></button></div>
    <div className="crm-jk-content">
