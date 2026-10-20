@@ -377,3 +377,13 @@ a { color: inherit; text-decoration: none; }
 .crm-existing-room-cost-pair label{display:flex;flex-direction:column;gap:7px}
 .crm-existing-room-cost-pair input{width:100%;min-width:0}
 @media(max-width:640px){.crm-room-fields>.crm-existing-room-cost-pair{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Financial Information screenshot fidelity: 3 inputs per row, 4 totals per row. */
+.crm-project-financial .crm-project-financial-inputs{grid-template-columns:repeat(3,minmax(0,1fr));column-gap:16px;row-gap:18px}
+.crm-project-financial .crm-project-financial-cards{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:24px}
+.crm-project-financial .crm-project-financial-cards>div{min-width:0}
+@media(max-width:700px){
+ .crm-project-financial .crm-project-financial-inputs{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .crm-project-financial .crm-project-financial-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:420px){.crm-project-financial .crm-project-financial-inputs{grid-template-columns:1fr}}
