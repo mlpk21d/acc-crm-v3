@@ -387,3 +387,9 @@ a { color: inherit; text-decoration: none; }
  .crm-project-financial .crm-project-financial-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:420px){.crm-project-financial .crm-project-financial-inputs{grid-template-columns:1fr}}
+
+/* Supplied ACC Cabinetry logo: preserve existing sidebar and mobile header geometry. */
+.crm-brand-logo-link{display:inline-flex;align-items:center;max-width:100%;min-width:0}
+.crm-brand-logo{display:block;width:auto;height:47px;max-width:100%;object-fit:contain}
+.crm-mobile-brand-logo{display:inline-flex;align-items:center;max-width:190px}
+.crm-mobile-brand-logo .crm-brand-logo{height:40px}
