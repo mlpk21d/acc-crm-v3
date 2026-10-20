@@ -1,3 +1,4 @@
+import { ButtonIcon } from "@/components/button-icon";
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -26,6 +27,6 @@ export function SignOutButton() {
   return (
     <button type="button" className="crm-sign-out" onClick={signOut} disabled={busy}>
       {busy ? "Signing out…" : "Sign out"}
-    </button>
+    <ButtonIcon kind="logout" /></button>
   );
 }
