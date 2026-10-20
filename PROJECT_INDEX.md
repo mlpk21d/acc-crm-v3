@@ -441,3 +441,7 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - Existing navigation/menu buttons with inline `NavIcon` or existing magnifying-glass SVG already satisfy icon requirements. Backdrop buttons contain a hidden close glyph and preserve the full-screen click-dismiss affordance.
 - `src/app/globals.css` keeps overlay dismiss controls visually empty. Project-specific UI positioning is unchanged. Button icons are now a requirement for newly added buttons; use `ButtonIcon` instead of bare text.
 - No database migration and no GitHub CI. Run `npm run check` and review the affected pages locally; local compilation and browser verification were not available through this repository-only edit.
+
+## Contact delete lint correction (2026-10-20)
+
+- Moved the client component directive to the beginning of `src/features/contacts/delete-contact-form.tsx`, ahead of imports, to address ESLint unused-expression warning. No behavior changes or migrations; local verification pending.
