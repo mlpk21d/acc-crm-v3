@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { can } from "@/features/auth/permissions";
@@ -38,7 +39,7 @@ export function AppShell({ children, user }: { children: ReactNode; user: Curren
 
   const sidebar = (mobile: boolean) => (
     <>
-      <div className="crm-brand"><span className="crm-brand-title">ACC CRM</span>{mobile && <button className="crm-menu-toggle" aria-label="Close navigation" onClick={() => setMobileOpen(false)}><NavIcon name="close"/></button>}</div>
+      <div className="crm-brand"><Link href="/" className="crm-brand-logo-link" aria-label="ACC Cabinetry home" onClick={() => setMobileOpen(false)}><Image src="/images/acc-logo.svg" alt="ACC Cabinetry" width={267} height={77} className="crm-brand-logo" priority/></Link>{mobile && <button className="crm-menu-toggle" aria-label="Close navigation" onClick={() => setMobileOpen(false)}><NavIcon name="close"/></button>}</div>
       <nav aria-label={mobile ? "Mobile navigation" : "Primary navigation"} className="crm-nav">
         {links.map(item => {
           const active = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(item.href + "/");
@@ -54,7 +55,7 @@ export function AppShell({ children, user }: { children: ReactNode; user: Curren
 
   return <div className="crm-shell">
     <aside className="crm-sidebar">{sidebar(false)}</aside>
-    <header className="crm-mobile-header"><strong>ACC CRM</strong><button className="crm-menu-toggle" aria-label="Open navigation" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><NavIcon name="menu"/></button></header>
+    <header className="crm-mobile-header"><Link href="/" className="crm-mobile-brand-logo" aria-label="ACC Cabinetry home"><Image src="/images/acc-logo.svg" alt="ACC Cabinetry" width={267} height={77} className="crm-brand-logo" priority/></Link><button className="crm-menu-toggle" aria-label="Open navigation" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><NavIcon name="menu"/></button></header>
     {mobileOpen && <div className="crm-mobile-overlay"><button className="crm-mobile-backdrop" aria-label="Close navigation" onClick={() => setMobileOpen(false)}/><aside className="crm-mobile-drawer">{sidebar(true)}</aside></div>}
     <div className="crm-main"><main className="crm-content">{children}</main></div>
   </div>;
