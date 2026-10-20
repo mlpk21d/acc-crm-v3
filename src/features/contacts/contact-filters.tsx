@@ -20,7 +20,7 @@ export function ContactFilters({filters, options}: {filters:Filters;options:Opti
     {open && <div className="crm-filter-overlay">
       <button className="crm-filter-backdrop" type="button" aria-label="Close filters" onClick={() => setOpen(false)} />
       <aside role="dialog" aria-modal="true" aria-labelledby="contact-filter-heading" className="crm-filter-drawer">
-        <div className="crm-filter-heading"><h2 id="contact-filter-heading">Filters</h2><button type="button" aria-label="Close filters" onClick={() => setOpen(false)}>✕<ButtonIcon kind="filter" /></button></div>
+        <div className="crm-filter-heading"><h2 id="contact-filter-heading">Filters</h2><button type="button" aria-label="Close filters" onClick={() => setOpen(false)}>✕<ButtonIcon kind="close" /></button></div>
         <form method="get" action="/contacts" className="crm-filter-body">
           <label>Search<input name="q" maxLength={100} defaultValue={filters.search} placeholder="Company or contact" /></label>
           <label>Region<select name="region" defaultValue={filters.region}><option value="">All regions</option>{options.regions.map(v => <option key={v} value={v}>{v}</option>)}</select></label>
