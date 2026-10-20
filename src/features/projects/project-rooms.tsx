@@ -34,7 +34,7 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
   </tr>)}</tbody></table></div>}
   {rooms.length===0&&<p className="crm-rooms-empty">{canEdit?<>No rooms added yet. Click &quot;Add Room&quot; to create one.</>:"No rooms added yet."}</p>}
   {current!==undefined&&<div className="crm-room-modal-layer">
-   <button type="button" className="crm-room-modal-backdrop" aria-label="Close room editor" onClick={()=>setCurrent(undefined)}/>
+   <button type="button" className="crm-room-modal-backdrop" aria-label="Close room editor" onClick={()=>setCurrent(undefined)}><ButtonIcon kind="close" /></button>
    <div className="crm-room-modal" role="dialog" aria-modal="true" aria-labelledby="crm-room-modal-title" ref={dialog}>
     <div className="crm-room-modal-title"><h2 id="crm-room-modal-title">{current?"Edit Room":"Add Room"}</h2><button type="button" onClick={()=>setCurrent(undefined)} aria-label="Close">×<ButtonIcon kind="close" /></button></div>
     <form action={async data=>{await addProjectRoom(data);setCurrent(undefined)}} className="crm-room-modal-form">
@@ -70,6 +70,6 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
    </div>
   </div>}
   {jkRoom&&<JkConfigurator projectId={projectId} roomId={jkRoom} onClose={()=>setJkRoom(null)}/>}
-  {confirmDelete&&<div className="crm-room-modal-layer"><button type="button" className="crm-room-modal-backdrop" aria-label="Cancel room delete" onClick={()=>setConfirmDelete(null)}/><div className="crm-room-modal crm-room-confirm" role="dialog" aria-modal="true"><h2>Delete Room?</h2><p>Delete {confirmDelete.room_name}? This action cannot be undone.</p><form action={async data=>{await deleteProjectRoom(data);setConfirmDelete(null)}}><input type="hidden" name="project_id" value={projectId}/><input type="hidden" name="id" value={confirmDelete.id}/><button type="button" onClick={()=>setConfirmDelete(null)}>Cancel<ButtonIcon kind="delete" /></button><button type="submit">Delete Room<ButtonIcon kind="delete" /></button></form></div></div>}
+  {confirmDelete&&<div className="crm-room-modal-layer"><button type="button" className="crm-room-modal-backdrop" aria-label="Cancel room delete" onClick={()=>setConfirmDelete(null)}><ButtonIcon kind="close" /></button><div className="crm-room-modal crm-room-confirm" role="dialog" aria-modal="true"><h2>Delete Room?</h2><p>Delete {confirmDelete.room_name}? This action cannot be undone.</p><form action={async data=>{await deleteProjectRoom(data);setConfirmDelete(null)}}><input type="hidden" name="project_id" value={projectId}/><input type="hidden" name="id" value={confirmDelete.id}/><button type="button" onClick={()=>setConfirmDelete(null)}>Cancel<ButtonIcon kind="delete" /></button><button type="submit">Delete Room<ButtonIcon kind="delete" /></button></form></div></div>}
  </>;
 }
