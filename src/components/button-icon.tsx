@@ -1,7 +1,7 @@
-import type { SVGProps } from "react";
+import type { SVGProps, ReactNode } from "react";
 
 export type ButtonIconKind="add"|"save"|"edit"|"delete"|"close"|"search"|"filter"|"up"|"down"|"check"|"login"|"logout"|"settings"|"link"|"back"|"menu"|"default";
-const paths:Record<ButtonIconKind,React.ReactNode>={
+const paths:Record<ButtonIconKind,ReactNode>={
  add:<path d="M12 5v14M5 12h14"/>,
  save:<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M7 3v6h10V3M7 21v-9h10v9"/></>,
  edit:<><path d="M12 20h9"/><path d="m16 4 4 4-11 11-5 1 1-5L16 4Z"/></>,
