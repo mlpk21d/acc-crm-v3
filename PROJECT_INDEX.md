@@ -421,3 +421,9 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 ## Room edit modal first-row alignment — 2026-10-19
 
 - Existing Project Edit Add/Edit Room modal places Room Name in the first left 50% grid cell and places Room Cost / Mfr Discount % side-by-side inside the right 50% grid cell (each half that cell). Remaining fields retain order, financial permissions, and persistence behavior. Mobile keeps the two financial fields paired. CSS change is scoped; no migration required. Local visual/typecheck verification pending.
+
+## Financial Information screenshot fidelity — 2026-10-20
+
+- `src/features/projects/project-financial-panel.tsx` and `new-project-financial-fields.tsx`: use screenshot section heading “Financial Information (Admin Only)” and dark highlight for both Total Cost and Profit cards.
+- `src/app/globals.css`: preserve the six-input order (Install Cost, Misc Cost, Drawing Cost / Freight, Doors/Pulls, Margin) in a three-column grid, with Room Costs, Total, Total Cost, Profit arranged as a single row of four cards. Narrow-screen fallback uses two columns or one column as appropriate.
+- Calculations, field names, submission behavior and permission boundaries unchanged. No database migration. Local check and screenshot comparison still required.
