@@ -1,3 +1,4 @@
+import { ButtonIcon } from "@/components/button-icon";
 "use client";
 
 import Link from "next/link";
@@ -56,7 +57,7 @@ export function AppShell({ children, user }: { children: ReactNode; user: Curren
   return <div className="crm-shell">
     <aside className="crm-sidebar">{sidebar(false)}</aside>
     <header className="crm-mobile-header"><Link href="/" className="crm-mobile-brand-logo" aria-label="ACC Cabinetry home"><Image src="/images/acc-logo.svg" alt="ACC Cabinetry" width={267} height={77} className="crm-brand-logo" priority/></Link><button className="crm-menu-toggle" aria-label="Open navigation" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><NavIcon name="menu"/></button></header>
-    {mobileOpen && <div className="crm-mobile-overlay"><button className="crm-mobile-backdrop" aria-label="Close navigation" onClick={() => setMobileOpen(false)}/><aside className="crm-mobile-drawer">{sidebar(true)}</aside></div>}
+    {mobileOpen && <div className="crm-mobile-overlay"><button className="crm-mobile-backdrop" aria-label="Close navigation" onClick={() => setMobileOpen(false)}><ButtonIcon kind="close" /></button><aside className="crm-mobile-drawer">{sidebar(true)}</aside></div>}
     <div className="crm-main"><main className="crm-content">{children}</main></div>
   </div>;
 }
