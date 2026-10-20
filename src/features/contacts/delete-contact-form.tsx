@@ -1,5 +1,6 @@
-import { ButtonIcon } from "@/components/button-icon";
 "use client";
+
+import { ButtonIcon } from "@/components/button-icon";
 
 import type { FormEvent } from "react";
 
