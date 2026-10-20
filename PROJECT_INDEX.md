@@ -427,3 +427,9 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `src/features/projects/project-financial-panel.tsx` and `new-project-financial-fields.tsx`: use screenshot section heading “Financial Information (Admin Only)” and dark highlight for both Total Cost and Profit cards.
 - `src/app/globals.css`: preserve the six-input order (Install Cost, Misc Cost, Drawing Cost / Freight, Doors/Pulls, Margin) in a three-column grid, with Room Costs, Total, Total Cost, Profit arranged as a single row of four cards. Narrow-screen fallback uses two columns or one column as appropriate.
 - Calculations, field names, submission behavior and permission boundaries unchanged. No database migration. Local check and screenshot comparison still required.
+
+## ACC logo branding — 2026-10-20
+
+- `src/components/app-shell.tsx`: replaced the text “ACC CRM” in the desktop sidebar, mobile drawer, and mobile header with the already committed `public/images/acc-logo.svg` using `next/image`. Logo links to dashboard.
+- `src/app/globals.css`: scoped logo sizing to existing sidebar/mobile header heights without altering navigation, typography, or shell layout.
+- No migration. Local `npm run check` and visual verification required.
