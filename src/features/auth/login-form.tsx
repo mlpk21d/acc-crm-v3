@@ -1,3 +1,4 @@
+import { ButtonIcon } from "@/components/button-icon";
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -41,7 +42,7 @@ export function LoginForm() {
       <label htmlFor="password">Password</label>
       <input id="password" name="password" type="password" autoComplete="current-password" required />
       {error && <p role="alert">{error}</p>}
-      <button type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
+      <button type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}<ButtonIcon kind="login" /></button>
     </form>
   );
 }
