@@ -1,3 +1,4 @@
+import { ButtonIcon } from "@/components/button-icon";
 "use client";
 
 import Link from "next/link";
@@ -80,7 +81,7 @@ export function ContactForm({ contact, options }: { contact?: Contact; options: 
             <textarea name="comment" rows={5} maxLength={10000} key={value("comment")} defaultValue={value("comment")} />
           </label>
           <div className="contact-actions">
-            <button type="submit" disabled={pending}>{pending ? "Saving…" : contact ? "Save Changes" : "Create Contact"}</button>
+            <button type="submit" disabled={pending}>{pending ? "Saving…" : contact ? "Save Changes" : "Create Contact"}<ButtonIcon kind="save" /></button>
             <Link href="/contacts">Cancel</Link>
           </div>
         </section>
