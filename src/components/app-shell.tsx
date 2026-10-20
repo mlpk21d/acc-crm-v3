@@ -1,5 +1,5 @@
-import { ButtonIcon } from "@/components/button-icon";
 "use client";
+import { ButtonIcon } from "@/components/button-icon";
 
 import Link from "next/link";
 import Image from "next/image";
