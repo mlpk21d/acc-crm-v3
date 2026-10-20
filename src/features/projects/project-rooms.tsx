@@ -40,11 +40,12 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
       <input type="hidden" name="project_id" value={projectId}/>
       <input type="hidden" name="id" value={current?.id??""}/>
       <div className="crm-room-fields">
+       <label>Room Name<input name="room_name" maxLength={200} required defaultValue={current?.room_name??""}/></label>
        {isAdmin&&<div className="crm-existing-room-cost-pair">
         <label>Room Cost<input key={current?.id??"new"} name="room_cost" type="number" min="0" max="99999999" step="0.01" required defaultValue={roomFinancials.find(r=>r.room_id===current?.id)?.room_cost??"0"} disabled={roomFinancials.some(r=>r.room_id===current?.id&&r.jk_locked)}/></label>
         <label>Mfr Discount %<input key={current?.id??"new"} name="manufacturer_discount" type="number" min="0" max="100" step="0.001" required defaultValue={roomFinancials.find(r=>r.room_id===current?.id)?.manufacturer_discount??"0"} disabled={roomFinancials.some(r=>r.room_id===current?.id&&r.jk_locked)}/></label>
        </div>}
-       {fields.map(([name,label])=><label key={name}>{label}<input name={name} maxLength={200} required={name==="room_name"} defaultValue={current?.[name]??""}/></label>)}
+       {fields.filter(([name])=>name!=="room_name").map(([name,label])=><label key={name}>{label}<input name={name} maxLength={200} required={name==="room_name"} defaultValue={current?.[name]??""}/></label>)}
        <label>Construction<select name="construction" defaultValue={current?.construction??""}><option value="">Select...</option>{construction.map(v=><option key={v} value={v}>{v}</option>)}</select></label>
        <label>Manufacturer<select name="manufacturer" defaultValue={current?.manufacturer??""}><option value="">Select...</option>{manufacturers.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}{current?.manufacturer&&!manufacturers.some(m=>m.value===current.manufacturer)&&<option value={current.manufacturer}>{current.manufacturer} (inactive)</option>}</select></label>
       </div>
