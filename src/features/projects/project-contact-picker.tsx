@@ -18,7 +18,7 @@ export function ProjectContactPicker({contacts,initialId,initialName,initialPhon
    <button type="button" className="crm-project-contact-link" onClick={()=>{setQuery("");setOpen(true)}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Link</button>
   </div>
   {open&&<div className="crm-room-modal-layer">
-   <button className="crm-room-modal-backdrop" type="button" aria-label="Close contact search" onClick={()=>setOpen(false)}/>
+   <button className="crm-room-modal-backdrop" type="button" aria-label="Close contact search" onClick={()=>setOpen(false)}><ButtonIcon kind="close" /></button>
    <div role="dialog" aria-modal="true" aria-labelledby="crm-link-contact-title" className="crm-room-modal crm-link-contact-modal">
     <div className="crm-room-modal-title"><h2 id="crm-link-contact-title">Link CRM Contact</h2><button type="button" onClick={()=>setOpen(false)} aria-label="Close">×<ButtonIcon kind="close" /></button></div>
     <div className="crm-link-contact-search">
