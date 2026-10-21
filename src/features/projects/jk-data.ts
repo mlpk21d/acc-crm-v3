@@ -49,3 +49,9 @@ export async function getJkRoomConfig(roomId:string) {
  ]);
  return {assemblyCount:config.rows[0]?.assembly_count??0,locked:config.rows[0]?.locked??false,items:items.rows};
 }
+
+export async function listJkCatalog():Promise<JkPriceItem[]> {
+ await requireJkPricingAdmin();
+ const {rows}=await getDbPool().query<JkPriceItem>(`SELECT id,item,description,price::text,msrp::text,series,item_code,tier,category FROM public.jk_price_items WHERE active=true AND series IS NOT NULL ORDER BY item_code,tier,id`);
+ return rows;
+}

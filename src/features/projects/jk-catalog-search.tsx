@@ -1,10 +1,11 @@
 'use client';
 import {useEffect,useId,useRef,useState,type KeyboardEvent} from 'react';
 import {ButtonIcon} from '@/components/button-icon';
-import {loadJkSeriesAction,searchJkCatalogAction} from './jk-actions';
+import {loadJkCatalogAction} from './jk-actions';
 import type {JkPriceItem} from './jk-data';
 const price=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
 export function JkCatalogSearch({onSelect,disabled=false}:{onSelect:(item:JkPriceItem)=>void;disabled?:boolean}){
+ const [catalog,setCatalog]=useState<JkPriceItem[]>([]);
  const [series,setSeries]=useState(''),[options,setOptions]=useState<string[]>([]);
  const [seriesLoading,setSeriesLoading]=useState(true);
  const [term,setTerm]=useState(''),[results,setResults]=useState<JkPriceItem[]>([]);
@@ -16,17 +17,9 @@ export function JkCatalogSearch({onSelect,disabled=false}:{onSelect:(item:JkPric
  const visible=open&&!!series&&!!term.trim()&&!disabled;
  useEffect(()=>{
   let live=true;
-  loadJkSeriesAction().then(data=>{if(live)setOptions(data);}).catch(()=>{if(live)setError('Unable to load J&K series. Close and reopen the configurator to retry.');}).finally(()=>{if(live)setSeriesLoading(false);});
+  loadJkCatalogAction().then(data=>{if(live){setCatalog(data);setOptions([...new Set(data.map(item=>item.series!.toUpperCase()))].sort());}}).catch(()=>{if(live)setError('Unable to load J&K series. Close and reopen the configurator to retry.');}).finally(()=>{if(live)setSeriesLoading(false);});
   return ()=>{live=false;};
  },[]);
- useEffect(()=>{
-  if(!series||!term.trim())return;
-  let live=true;
-  const timer=setTimeout(()=>{
-   searchJkCatalogAction(term,series).then(data=>{if(live)setResults(data);}).catch(()=>{if(live)setError('Unable to search cabinet items. Please try again.');}).finally(()=>{if(live)setLoading(false);});
-  },250);
-  return ()=>{live=false;clearTimeout(timer);};
- },[term,series]);
  useEffect(()=>{
   if(!visible)return;
   function place(){
@@ -56,7 +49,7 @@ export function JkCatalogSearch({onSelect,disabled=false}:{onSelect:(item:JkPric
    <option value="">{seriesLoading?'Loading series…':options.length?'Select series…':'No series available'}</option>{options.map(value=><option key={value} value={value}>{value}</option>)}
   </select>
   <div className="crm-jk-item-search"><ButtonIcon kind="search"/>
-   <input ref={input} role="combobox" aria-autocomplete="list" aria-expanded={visible} aria-controls={listId} aria-activedescendant={visible&&active>=0?`${listId}-${active}`:undefined} aria-label="Search J&K item code" placeholder={series?'Search item code…':'Select a series first…'} disabled={disabled||!series||seriesLoading} maxLength={100} value={term} onKeyDown={keyboard} onFocus={()=>setOpen(true)} onChange={event=>{setTerm(event.target.value);setResults([]);setLoading(!!event.target.value.trim());setOpen(true);setActive(-1);setError('');}}/>
+   <input ref={input} role="combobox" aria-autocomplete="list" aria-expanded={visible} aria-controls={listId} aria-activedescendant={visible&&active>=0?`${listId}-${active}`:undefined} aria-label="Search J&K item code" placeholder={series?'Search item code…':'Select a series first…'} disabled={disabled||!series||seriesLoading} maxLength={100} value={term} onKeyDown={keyboard} onFocus={()=>setOpen(true)} onChange={event=>{setTerm(event.target.value);setResults([]);setLoading(false);setResults(catalog.filter(item=>item.series?.toUpperCase()===series&&item.item_code?.toUpperCase().includes(event.target.value.trim().toUpperCase())).slice(0,15));setOpen(true);setActive(-1);setError('');}}/>
    {visible&&<div ref={popup} id={listId} role="listbox" aria-label="J&K cabinet search results" className="crm-jk-results" style={position}>
     {loading?<p role="status">Searching…</p>:error?<p role="alert">{error}</p>:results.length?results.map((item,index)=><button type="button" role="option" aria-selected={active===index} tabIndex={-1} id={`${listId}-${index}`} key={item.id} onMouseDown={event=>event.preventDefault()} onClick={()=>select(item)}>
      <span className="crm-jk-result-detail"><span className="crm-jk-result-code"><ButtonIcon kind="add"/>{item.item_code??item.item}</span>{item.description&&<small>{item.description}</small>}</span><span className="crm-jk-result-price">{price.format(Number(item.price))}</span>

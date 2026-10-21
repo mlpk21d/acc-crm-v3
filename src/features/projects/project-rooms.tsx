@@ -5,7 +5,7 @@ import type { ProjectRoom } from "@/features/projects/rooms-data";
 import type { RoomFinancial } from "@/features/projects/financial-data";
 import {jkTotalCents,type JkDraft} from "@/features/projects/jk-model";
 import { JkConfigurator } from "@/features/projects/jk-configurator";
-import { addProjectRoom, deleteProjectRoom, moveProjectRoom, addRoomAccessory, deleteRoomAccessory } from "@/features/projects/rooms-actions";
+import { addProjectRoom, deleteProjectRoom, moveProjectRoom } from "@/features/projects/rooms-actions";
 
 const fields=[["room_name","Room Name"],["door_style","Door Style"],["species","Species"],["drawer_style","Drawer Style"],["finish","Finish"]] as const;
 const construction=["Inset","Inset Beaded","Full Overlay","Frameless"];
@@ -16,9 +16,10 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
  const [jkOpen,setJkOpen]=useState(false);
  const [manufacturer,setManufacturer]=useState("");
  const [jkDraft,setJkDraft]=useState<JkDraft|undefined>();
+ const [accessories,setAccessories]=useState<{item_name:string;code:string;link:string}[]>([]);
  const [roomError,setRoomError]=useState("");
  const [saving,setSaving]=useState(false);
- function openRoom(room:ProjectRoom|null){setManufacturer(room?.manufacturer??"");setJkDraft(undefined);setRoomError("");setCurrent(room);}
+ function openRoom(room:ProjectRoom|null){setManufacturer(room?.manufacturer??"");setJkDraft(undefined);setAccessories(room?.ras_items.map(i=>({item_name:i.item_name,code:i.code??"",link:i.link??""}))??[]);setRoomError("");setCurrent(room);}
  const [confirmDelete,setConfirmDelete]=useState<ProjectRoom|null>(null);
  const dialog=useRef<HTMLDivElement>(null);
  useEffect(()=>{
@@ -53,7 +54,7 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
        <label>Room Name<input name="room_name" maxLength={200} required defaultValue={current?.room_name??""}/></label>
        {isAdmin&&<div className="crm-existing-room-cost-pair">
         <label>Room Cost<input key={`${current?.id??"new"}-${jkDraft?jkTotalCents(jkDraft):"manual"}`} name="room_cost" type="number" min="0" max="99999999" step="0.01" required defaultValue={jkDraft?(jkTotalCents(jkDraft)/100).toFixed(2):roomFinancials.find(r=>r.room_id===current?.id)?.room_cost??"0"} disabled={!!jkDraft||roomFinancials.some(r=>r.room_id===current?.id&&r.jk_locked)}/></label>
-        <label>Mfr Discount %<input key={current?.id??"new"} name="manufacturer_discount" type="number" min="0" max="100" step="0.001" required defaultValue={roomFinancials.find(r=>r.room_id===current?.id)?.manufacturer_discount??"0"} disabled={!!jkDraft||roomFinancials.some(r=>r.room_id===current?.id&&r.jk_locked)}/></label>
+        <label>Mfr Discount %<input key={current?.id??"new"} name="manufacturer_discount" type="number" min="0" max="100" step="0.001" required defaultValue={roomFinancials.find(r=>r.room_id===current?.id)?.manufacturer_discount??"0"}/></label>
        </div>}
        {fields.filter(([name])=>name!=="room_name").map(([name,label])=><label key={name}>{label}<input name={name} maxLength={200} required={name==="room_name"} defaultValue={current?.[name]??""}/></label>)}
        <label>Construction<select name="construction" defaultValue={current?.construction??""}><option value="">Select...</option>{construction.map(v=><option key={v} value={v}>{v}</option>)}</select></label>
@@ -61,22 +62,20 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
       </div>
       {isAdmin&&manufacturer==="J&K"&&<button type="button" className="crm-jk-launch" disabled={saving} onClick={()=>setJkOpen(true)}><ButtonIcon kind="cabinet"/>Configure J&amp;K Cabinets</button>}
       {jkDraft&&<p className="crm-jk-draft-notice">Cabinet configuration applied. Save Room to save these cabinets.</p>}
-      {current&&<div className="crm-room-accessory-notice">Rev-A-Shelf items: {current.ras_items.length}. Save room changes before managing accessories below.</div>}
+      <input type="hidden" name="ras_items" value={JSON.stringify(accessories)}/>
+      <div className="crm-new-room-ras">
+       <div className="crm-new-room-ras-heading"><h3><ButtonIcon kind="cabinet"/> Rev-A-Shelf Items ({accessories.length})</h3><button type="button" onClick={()=>setAccessories(old=>[...old,{item_name:"",code:"",link:""}])}><ButtonIcon kind="add"/>Add Item</button></div>
+       {!accessories.length&&<p className="crm-new-room-empty">No items added.</p>}
+       {accessories.map((item,i)=><div className="crm-new-room-ras-row" key={i}>
+        <input aria-label={`Item ${i+1} Name`} placeholder="Item Name" required maxLength={200} value={item.item_name} onChange={e=>setAccessories(old=>old.map((v,n)=>n===i?{...v,item_name:e.target.value}:v))}/>
+        <input aria-label={`Item ${i+1} Code`} placeholder="Code" maxLength={100} value={item.code} onChange={e=>setAccessories(old=>old.map((v,n)=>n===i?{...v,code:e.target.value}:v))}/>
+        <input aria-label={`Item ${i+1} Link`} placeholder="Link (https://)" type="url" value={item.link} onChange={e=>setAccessories(old=>old.map((v,n)=>n===i?{...v,link:e.target.value}:v))}/>
+        <button type="button" aria-label={`Remove item ${i+1}`} onClick={()=>setAccessories(old=>old.filter((_,n)=>n!==i))}><ButtonIcon kind="delete"/></button>
+       </div>)}
+      </div>
       <div className="crm-room-modal-actions"><button type="button" onClick={()=>setCurrent(undefined)}>Cancel<ButtonIcon kind="close" /></button><button type="submit" disabled={saving}>{saving?"Saving…":"Save Room"}<ButtonIcon kind="save" /></button></div>
     </form>
-    {current&&<div className="crm-room-ras-section">
-      <h3>Rev-A-Shelf Items ({current.ras_items.length})</h3>
-      {current.ras_items.map(item=><div className="crm-room-ras-item" key={item.id}><div><strong>{item.item_name}</strong>{item.code&&<span> · {item.code}</span>}{item.link&&<a href={item.link} target="_blank" rel="noopener noreferrer">View</a>}</div>
-        <form action={async data=>{await deleteRoomAccessory(data);setCurrent(undefined)}}><input type="hidden" name="project_id" value={projectId}/><input type="hidden" name="room_id" value={current.id}/><input type="hidden" name="id" value={item.id}/><button type="submit" aria-label={"Remove "+item.item_name}>Remove<ButtonIcon kind="delete" /></button></form>
-      </div>)}
-      <form className="crm-room-ras-add" action={async data=>{await addRoomAccessory(data);setCurrent(undefined)}}>
-       <input type="hidden" name="project_id" value={projectId}/><input type="hidden" name="room_id" value={current.id}/>
-       <input name="item_name" placeholder="Item Name" aria-label="Item Name" required maxLength={200}/>
-       <input name="code" placeholder="Code" aria-label="Code" maxLength={100}/>
-       <input name="link" placeholder="Link (https://)" aria-label="Link" type="url"/>
-       <button type="submit">Add Item<ButtonIcon kind="save" /></button>
-      </form>
-    </div>}
+
    </div>
   </div>}
   {jkOpen&&<JkConfigurator projectId={projectId} roomId={current?.manufacturer==="J&K"?current.id:undefined} initialConfig={jkDraft} onApply={configuration=>{setJkDraft(configuration);setJkOpen(false);}} onClose={()=>setJkOpen(false)}/>}

@@ -31,7 +31,7 @@ export function NewProjectRooms({manufacturers,isAdmin}:{manufacturers:{value:st
       <label>Manufacturer<select value={draft.manufacturer} onChange={e=>update("manufacturer",e.target.value)}><option value="">Select...</option>{manufacturers.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}</select></label>
      </div>
      <div className="crm-new-room-ras">
-      <div className="crm-new-room-ras-heading"><h3>◇&nbsp; Rev-A-Shelf Items ({draft.ras_items.length})</h3><button type="button" onClick={()=>setDraft(d=>({...d,ras_items:[...d.ras_items,{item_name:"",code:"",link:""}]}))}><ButtonIcon kind="add"/>Add Item</button></div>
+      <div className="crm-new-room-ras-heading"><h3><ButtonIcon kind="cabinet"/> Rev-A-Shelf Items ({draft.ras_items.length})</h3><button type="button" onClick={()=>setDraft(d=>({...d,ras_items:[...d.ras_items,{item_name:"",code:"",link:""}]}))}><ButtonIcon kind="add"/>Add Item</button></div>
       {draft.ras_items.length===0&&<p className="crm-new-room-empty">No items added.</p>}
       {draft.ras_items.map((item,i)=><div className="crm-new-room-ras-row" key={i}>
        <input aria-label={`Item ${i+1} Name`} placeholder="Item Name" maxLength={200} value={item.item_name} onChange={e=>setDraft(d=>({...d,ras_items:d.ras_items.map((r,n)=>n===i?{...r,item_name:e.target.value}:r)}))}/>

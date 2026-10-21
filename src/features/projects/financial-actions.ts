@@ -29,9 +29,8 @@ export async function saveRoomFinancials(form:FormData) {
  const result=await getDbPool().query(`INSERT INTO public.project_room_financials(room_id,room_cost,manufacturer_discount)
  SELECT r.id,$3,$4 FROM public.project_rooms r JOIN public.projects p ON p.id=r.project_id
  WHERE r.id=$1 AND r.project_id=$2 AND p.deleted_at IS NULL
- AND NOT EXISTS (SELECT 1 FROM public.jk_room_configs j WHERE j.room_id=r.id AND j.locked=true)
- ON CONFLICT(room_id) DO UPDATE SET room_cost=excluded.room_cost,manufacturer_discount=excluded.manufacturer_discount,updated_at=now() RETURNING room_id`,
+ ON CONFLICT(room_id) DO UPDATE SET room_cost=CASE WHEN EXISTS(SELECT 1 FROM public.jk_room_configs j WHERE j.room_id=$1 AND j.locked=true) THEN project_room_financials.room_cost ELSE excluded.room_cost END,manufacturer_discount=excluded.manufacturer_discount,updated_at=now() RETURNING room_id`,
  [v.room_id,v.project_id,v.room_cost,v.manufacturer_discount]);
- if(!result.rowCount)throw new Error("Room is unavailable or its J&K cost is controlled by the cabinet configurator.");
+ if(!result.rowCount)throw new Error("Room is unavailable.");
  revalidatePath("/projects/"+v.project_id);
 }

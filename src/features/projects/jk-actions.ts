@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/features/auth/session";
 import { getDbPool } from "@/lib/db";
-import { searchJkPriceItems, getJkRoomConfig, listJkSeries } from "@/features/projects/jk-data";
+import { searchJkPriceItems, getJkRoomConfig, listJkSeries, listJkCatalog } from "@/features/projects/jk-data";
 import { z } from "zod";
 import {configSchema,persistJkConfiguration} from "@/features/projects/jk-persistence";
 
@@ -35,4 +35,9 @@ export async function loadJkConfigAction(projectId:string,roomId:string) {
  const match=await getDbPool().query("SELECT 1 FROM public.project_rooms r JOIN public.projects p ON p.id=r.project_id WHERE r.id=$1 AND r.project_id=$2 AND r.manufacturer='J&K' AND p.deleted_at IS NULL",[room,project]);
  if(!match.rowCount) throw new Error("J&K room not found.");
  return getJkRoomConfig(room);
+}
+
+export async function loadJkCatalogAction(){
+ await requirePermission("settings:manage");
+ return listJkCatalog();
 }

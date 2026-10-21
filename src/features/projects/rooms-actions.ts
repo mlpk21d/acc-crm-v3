@@ -32,6 +32,8 @@ export async function addProjectRoom(form:FormData) {
   room_cost:z.coerce.number().finite().min(0).max(99999999).refine(n=>Math.abs(n*100-Math.round(n*100))<0.000001),
   manufacturer_discount:z.coerce.number().finite().min(0).max(100)
  }).parse({room_cost:form.get("room_cost"),manufacturer_discount:form.get("manufacturer_discount")}):null;
+ const rawAccessories=form.get("ras_items");
+ const accessories=rawAccessories===null?null:z.array(z.object({item_name:z.string().trim().min(1).max(200),code:z.string().trim().max(100),link:z.union([z.literal(""),z.url().refine(v=>/^https?:\/\//.test(v))])})).max(250).parse(JSON.parse(z.string().max(250000).parse(rawAccessories)));
  const client=await getDbPool().connect();
  try {
   await client.query("BEGIN");
@@ -55,16 +57,17 @@ export async function addProjectRoom(form:FormData) {
     RETURNING id`,[v.project_id,v.room_name,v.door_style||null,v.drawer_style||null,v.species||null,v.finish||null,v.construction||null,v.manufacturer||null]);
    roomId=inserted.rows[0].id;
   }
-  if(financial&&!jkConfiguration){
-   const result=await client.query(`INSERT INTO public.project_room_financials(room_id,room_cost,manufacturer_discount)
-    SELECT r.id,$2,$3 FROM public.project_rooms r
-    WHERE r.id=$1 AND r.project_id=$4
-    AND NOT EXISTS(SELECT 1 FROM public.jk_room_configs j WHERE j.room_id=r.id AND j.locked=true)
-    ON CONFLICT(room_id) DO UPDATE SET room_cost=excluded.room_cost,manufacturer_discount=excluded.manufacturer_discount,updated_at=now()
-    RETURNING room_id`,[roomId,financial.room_cost,financial.manufacturer_discount,v.project_id]);
-   if(!result.rowCount)throw new Error("J&K configured room costs cannot be edited manually.");
-  }
   if(jkConfiguration)await persistJkConfiguration(client,{...jkConfiguration,projectId:v.project_id,roomId});
+  if(financial){
+   await client.query(`INSERT INTO public.project_room_financials(room_id,room_cost,manufacturer_discount)
+    VALUES($1,$2,$3) ON CONFLICT(room_id) DO UPDATE SET
+    room_cost=CASE WHEN EXISTS(SELECT 1 FROM public.jk_room_configs j WHERE j.room_id=$1 AND j.locked=true) THEN project_room_financials.room_cost ELSE excluded.room_cost END,
+    manufacturer_discount=excluded.manufacturer_discount,updated_at=now()`,[roomId,financial.room_cost,financial.manufacturer_discount]);
+  }
+  if(accessories){
+   await client.query("DELETE FROM public.rev_a_shelf_items WHERE room_id=$1",[roomId]);
+   for(const [index,item] of accessories.entries())await client.query("INSERT INTO public.rev_a_shelf_items(room_id,item_name,code,link,sort_order) VALUES($1,$2,$3,$4,$5)",[roomId,item.item_name,item.code||null,item.link||null,index+1]);
+  }
   await client.query("COMMIT");
  }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
  revalidatePath("/projects/"+v.project_id);

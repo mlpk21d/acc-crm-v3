@@ -41,7 +41,7 @@ export async function persistJkConfiguration(client:PoolClient,v:z.infer<typeof 
     item.description=raw.description??"";
    }
    if(!Number.isSafeInteger(price)||price<0) throw new Error("Invalid price.");
-   const discounted=Math.round(price*80/100);
+   const discounted=price;
    prepared.push({item,catalogId,price,discounted});
   }
   await client.query(`INSERT INTO public.jk_room_configs(room_id,assembly_count,locked,updated_at)
