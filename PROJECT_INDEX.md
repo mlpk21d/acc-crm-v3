@@ -491,3 +491,9 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `src/components/button-icon.tsx`: adds the reusable `arrow-left` icon.
 - `src/app/globals.css`: both Back controls use 15px semibold text with hover/focus treatment. The shared financial margin note uses 12px, light gray, italic text on View and Edit; its selector overrides the broader panel paragraph rule.
 - Validation: lint, TypeScript and whitespace checks pass. No data or migration changes.
+
+
+## Project Details Designer field order — 2026-10-20
+
+- `src/features/projects/project-form.tsx`: moves Designer after Sample Signoff Status. The desktop row now reads Project Status, Next Step, Sample Signoff Status, Designer. The shared create/edit form retains the same field names and save behavior.
+- Validation: inspected field order and ran lint; no migration required.

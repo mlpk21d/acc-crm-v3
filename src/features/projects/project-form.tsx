@@ -39,10 +39,10 @@ export function ProjectForm({project,contacts,statuses,financialPanel,initialRoo
     {field("project_address","Project Address")}
     <ProjectContactPicker contacts={contacts} initialId={project?.contact_id??""} initialName={project?.project_contact_name||contacts.find(c=>c.id===project?.contact_id)?.label||""} initialPhone={project?.project_contact_phone||project?.contact_phone||""}/>
 
-    {field("project_designer","Designer")}
     {statusField("status","Project Status")}
     {statusField("next_step","Next Step")}
     <label>Sample Signoff Status<select name="sample_signoff_status" defaultValue={project?.sample_signoff_status??""}><option value="">Select...</option><option value="Pending">Pending</option><option value="Approved">Approved</option></select></label>
+    {field("project_designer","Designer")}
     {field("order_by_date","Order By Date","date")}
     {field("official_start_date","Official Start Date","date")}
     {field("install_date","Install Date","date")}
