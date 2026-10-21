@@ -6,18 +6,19 @@ export type ProjectChecklist=Record<(typeof checklistFields)[number],boolean>;
 export type Project = {
   id: string; name: string; contact_id: string | null; contact_name: string | null;
   contact_phone:string|null;contact_company:string|null;
-  status: string;
+  status: string;status_color:string|null;
   description: string | null;
   project_address:string|null;project_contact_name:string|null;project_contact_phone:string|null;project_designer:string|null;
   next_step:string|null;sample_signoff_status:string|null;order_by_date:string|null;official_start_date:string|null;install_date:string|null;notes:string|null;
   checklist:ProjectChecklist;
 };
-const selection = `SELECT p.id, p.name, p.contact_id, p.status, p.description,
+const selection = `SELECT p.id, p.name, p.contact_id, p.status, s.color AS status_color, p.description,
  p.project_address,p.project_contact_name,p.project_contact_phone,p.project_designer,p.next_step,p.sample_signoff_status,
  p.order_by_date::text,p.official_start_date::text,p.install_date::text,p.notes,
  c.phone AS contact_phone,c.company_name AS contact_company,
   COALESCE(NULLIF(trim(concat_ws(' ', c.first_name, c.last_name)), ''), c.company_name) AS contact_name
-  FROM public.projects p LEFT JOIN public.contacts c ON c.id = p.contact_id`;
+  FROM public.projects p LEFT JOIN public.contacts c ON c.id = p.contact_id
+ LEFT JOIN public.crm_settings_options s ON s.category='project_status' AND s.value=p.status`;
 export async function listProjects(search: string, page: number) {
   const result = await getDbPool().query<Project>(
     `${selection} WHERE p.deleted_at IS NULL AND ($1 = '' OR p.name ILIKE '%' || $1 || '%')

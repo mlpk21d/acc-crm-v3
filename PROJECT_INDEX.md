@@ -497,3 +497,12 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 
 - `src/features/projects/project-form.tsx`: moves Designer after Sample Signoff Status. The desktop row now reads Project Status, Next Step, Sample Signoff Status, Designer. The shared create/edit form retains the same field names and save behavior.
 - Validation: inspected field order and ran lint; no migration required.
+
+## Project information grouping and Settings icon cleanup — 2026-10-20
+
+- `src/features/projects/project-form.tsx`: swaps Designer and Project Contact. Desktop first row: Project Name (two columns), Project Address, Designer. Second row: Project Status, Next Step, Sample Signoff Status, Project Contact. Shared create/edit form field names and persistence remain unchanged.
+- `src/app/(crm)/projects/[id]/page.tsx`: detail first row is Project Address, Current Status, Next Step, Designer; second row is Order By Date, Official Start Date, Install Date, Sample Signoff Status. Contact remains below these rows.
+- `src/features/projects/data.ts`: project reads include the configured Project Status color through a unique category/value LEFT JOIN, including inactive statuses still referenced by a project. Missing settings retain the project and neutral badge fallback.
+- Project View title status badge uses the configured hex background with light/dark text for readability.
+- `src/features/settings/dropdown-settings.tsx`: removes duplicate text glyphs beside SVG icons from order, Edit, Activate/Deactivate, Add Option and Cancel Adding controls across all categories. Reorder uses matching up/down icons; inactive options show a check icon to activate. Existing actions and accessible labels remain intact.
+- Validation: lint, TypeScript and whitespace checks pass. No migration required.

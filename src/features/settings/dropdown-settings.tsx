@@ -22,12 +22,12 @@ export function DropdownSettings({options}: {options:Option[]}) {
    {categories.map(c=><button key={c.value} type="button" role="tab" aria-selected={category===c.value} className={category===c.value?"selected":""} onClick={()=>{setCategory(c.value);setAdding(false);setEditing(null)}}>{c.label}<ButtonIcon kind="edit" /></button>)}
   </div>
   <section className="crm-settings-option-panel">
-   <div className="crm-settings-option-heading"><h2>{categories.find(c=>c.value===category)?.label} Options</h2><button type="button" onClick={()=>setAdding(!adding)}>+ Add Option<ButtonIcon kind="add" /></button></div>
+   <div className="crm-settings-option-heading"><h2>{categories.find(c=>c.value===category)?.label} Options</h2><button type="button" onClick={()=>setAdding(!adding)}><ButtonIcon kind="add" />Add Option</button></div>
    {adding&&<form action={async data=>{await addDropdownOption(data);setAdding(false)}} className="crm-settings-edit-row crm-settings-add-row">
      <input name="category" type="hidden" value={category}/>
      <input name="label" aria-label="New option name" required maxLength={100} placeholder="New option name" autoFocus />
      {showColor&&<label>Color <input name="color" type="color" defaultValue="#e5e7eb"/></label>}
-     <button type="submit">Add<ButtonIcon kind="save" /></button><button type="button" className="crm-option-icon" aria-label="Cancel adding" title="Cancel" onClick={()=>setAdding(false)}>×<ButtonIcon kind="close" /></button>
+     <button type="submit">Add<ButtonIcon kind="save" /></button><button type="button" className="crm-option-icon" aria-label="Cancel adding" title="Cancel" onClick={()=>setAdding(false)}><ButtonIcon kind="close" /></button>
    </form>}
    {visible.length===0&&<p className="crm-settings-empty">No options yet. Add one to get started.</p>}
    {visible.map((o,i)=><div key={o.id} className="crm-settings-option-row">
@@ -46,10 +46,10 @@ export function DropdownSettings({options}: {options:Option[]}) {
      <div className="crm-option-controls">
       {(["up","down"] as const).map(dir=><form action={moveDropdownOption} key={dir}>
        <input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><input type="hidden" name="id" value={o.id}/><input type="hidden" name="direction" value={dir}/>
-       <button type="submit" className="crm-option-icon" aria-label={(dir==="up"?"Move up ":"Move down ")+o.label} title={dir==="up"?"Move up":"Move down"} disabled={dir==="up"?i===0:i===visible.length-1}>{dir==="up"?"↑":"↓"}<ButtonIcon kind="up" /></button>
+       <button type="submit" className="crm-option-icon" aria-label={(dir==="up"?"Move up ":"Move down ")+o.label} title={dir==="up"?"Move up":"Move down"} disabled={dir==="up"?i===0:i===visible.length-1}><ButtonIcon kind={dir} /></button>
       </form>)}
-      <button type="button" className="crm-option-icon" aria-label={"Edit "+o.label} title="Edit" onClick={()=>setEditing(o.id)}>✎<ButtonIcon kind="edit" /></button>
-      {!isPermanent(o)&&<form action={toggleDropdownOption}><input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><button type="submit" className="crm-option-icon" aria-label={(o.active?"Deactivate ":"Activate ")+o.label} title={o.active?"Deactivate":"Activate"}>{o.active?"×":"✓"}<ButtonIcon kind="close" /></button></form>}
+      <button type="button" className="crm-option-icon" aria-label={"Edit "+o.label} title="Edit" onClick={()=>setEditing(o.id)}><ButtonIcon kind="edit" /></button>
+      {!isPermanent(o)&&<form action={toggleDropdownOption}><input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><button type="submit" className="crm-option-icon" aria-label={(o.active?"Deactivate ":"Activate ")+o.label} title={o.active?"Deactivate":"Activate"}><ButtonIcon kind={o.active?"close":"check"} /></button></form>}
       {!isPermanent(o)&&<form action={deleteDropdownOption}><input type="hidden" name="category" value={o.category}/><input type="hidden" name="value" value={o.value}/><button type="submit" className="crm-option-icon crm-option-delete" title="Retire option" aria-label={"Retire "+o.label}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6"/></svg></button></form>}
      </div>
     </>}

@@ -21,17 +21,20 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
  if(!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(id))notFound();
  const project=await getProject(id);
  if(!project)notFound();
+ const statusColor=/^#[0-9a-f]{6}$/i.test(project.status_color??"")?project.status_color:null;
+ const statusBrightness=statusColor?0.299*parseInt(statusColor.slice(1,3),16)+0.587*parseInt(statusColor.slice(3,5),16)+0.114*parseInt(statusColor.slice(5,7),16):255;
+ const statusStyle=statusColor?{backgroundColor:statusColor,color:statusBrightness<150?"#fff":"#111827"}:undefined;
  const rooms=await listProjectRooms(id);
  const financials=user.role==="admin"?await getProjectFinancials(id):null;
  const details=[
-  ["Project Address",project.project_address],["Designer",project.project_designer],["Current Status",project.status],
-  ["Next Step",project.next_step],["Sample Signoff Status",project.sample_signoff_status],
+  ["Project Address",project.project_address],["Current Status",project.status],
+  ["Next Step",project.next_step],["Designer",project.project_designer],
   ["Order By Date",formatDate(project.order_by_date)],["Official Start Date",formatDate(project.official_start_date)],
-  ["Install Date",formatDate(project.install_date)]
+  ["Install Date",formatDate(project.install_date)],["Sample Signoff Status",project.sample_signoff_status]
  ];
  return <section className="crm-project-page">
   <div className="page-heading crm-project-heading">
-   <div><Link className="crm-project-back" href="/projects"><ButtonIcon kind="arrow-left"/>Back</Link><div className="crm-project-title-row"><h1>{project.name}</h1><span className="crm-project-status">{project.status}</span></div></div>
+   <div><Link className="crm-project-back" href="/projects"><ButtonIcon kind="arrow-left"/>Back</Link><div className="crm-project-title-row"><h1>{project.name}</h1><span className="crm-project-status" style={statusStyle}>{project.status}</span></div></div>
    {can(user.role,"projects:write")&&<Link className="crm-project-edit-link" href={`/projects/${id}/edit`}><ButtonIcon kind="edit"/>Edit Project</Link>}
   </div>
   <section className="content-card crm-project-detail-card"><h2>Project Details</h2>
