@@ -10,6 +10,7 @@ async function requireJkPricingAdmin() {
 }
 export type JkPriceItem = {
  id:string; item:string;description:string|null;price:string;msrp:string|null;
+ series:string|null;item_code:string|null;tier:string|null;category:string|null;
 };
 export type JkCabinetItem = {
  id:string; price_item_id:string|null; item:string;description:string|null;
@@ -22,7 +23,7 @@ export async function searchJkPriceItems(term:string):Promise<JkPriceItem[]> {
  if(!q.success) return [];
  const escaped=q.data.replace(/[\\%_]/g, "\\$&");
  const {rows}=await getDbPool().query<JkPriceItem>(
-  `SELECT id,item,description,price::text,msrp::text FROM public.jk_price_items
+  `SELECT id,item,description,price::text,msrp::text,series,item_code,tier,category FROM public.jk_price_items
    WHERE active=true AND (item ILIKE '%' || $1 || '%' ESCAPE '\\'
      OR description ILIKE '%' || $1 || '%' ESCAPE '\\')
    ORDER BY item,id LIMIT 15`,[escaped]);

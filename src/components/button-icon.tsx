@@ -1,7 +1,8 @@
 import type { SVGProps, ReactNode } from "react";
 
-export type ButtonIconKind="cabinet"|"arrow-left"|"layers"|"star"|"eye"|"reset"|"sort"|"add"|"save"|"edit"|"delete"|"close"|"search"|"filter"|"up"|"down"|"check"|"login"|"logout"|"settings"|"link"|"back"|"menu"|"default";
+export type ButtonIconKind="upload"|"cabinet"|"arrow-left"|"layers"|"star"|"eye"|"reset"|"sort"|"add"|"save"|"edit"|"delete"|"close"|"search"|"filter"|"up"|"down"|"check"|"login"|"logout"|"settings"|"link"|"back"|"menu"|"default";
 const paths:Record<ButtonIconKind,ReactNode>={
+ upload:<><path d="M12 16V3m-5 5 5-5 5 5M4 15v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/></>,
  cabinet:<><path d="m12 3 9 5v8l-9 5-9-5V8l9-5Z"/><path d="m3 8 9 5 9-5M12 13v8M8 5l9 5"/></>,
  "arrow-left":<path d="M19 12H5m7-7-7 7 7 7"/>,
  layers:<><path d="m12 3 10 5-10 5L2 8l10-5Z"/><path d="m2 12 10 5 10-5M2 16l10 5 10-5"/></>,
