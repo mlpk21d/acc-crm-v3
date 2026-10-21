@@ -45,6 +45,8 @@ export function parseJkPriceCsv(text:string):JkPriceCsvRow[]{
  for(const record of records.slice(1)){
   if(record.values.length!==headers.length)throw new Error(`CSV line ${record.line} has ${record.values.length} fields; expected ${headers.length}.`);
   const row=Object.fromEntries(jkPriceHeaders.map((key,i)=>[key,record.values[positions[i]].trim()])) as JkPriceCsvRow;
+  row.series=row.series.toUpperCase();
+  row.item_code=row.item_code.toUpperCase();
   for(const [key,max]of [['series',50],['item_code',150],['tier',20],['category',200]] as const){
    if(!row[key]||row[key].length>max||/[\u0000-\u001f\u007f]/.test(row[key]))throw new Error(`CSV line ${record.line}: ${key} must contain 1–${max} characters without control characters.`);
   }

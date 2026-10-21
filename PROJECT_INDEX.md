@@ -533,3 +533,11 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `tests/jk-price-csv.test.mjs`: five regression tests cover header mapping/extras, quoted CSV, currency, duplicate variant keys, malformed/empty data, and case handling.
 - Validation: all 6,426 supplied entries across 18 series parse successfully. Fourteen unit tests, lint, TypeScript and production build pass (placeholder environment; expected warnings from unavailable live auth DB). Chromium fixture checks pass for click/native picker, supplied-file preview, explicit import, errors/success, drag/drop, removing/reselecting, bad headers and mobile layout. PGlite executed actual import actions against the complete supplied file, verified repeat import/stable IDs, updates, inactive replacement, unchanged historical snapshots, failure rollback, size limit and non-admin rejection. No live catalog was changed and the supplied price CSV was not committed.
 - Deployment: run `npm run db:migrate` to apply migration 0015 before starting this version. Then import the supplied CSV through Settings → Import → Import J&K Price List.
+
+
+## J&K import capitalization — 2026-10-20
+
+- `src/features/settings/jk-price-csv.ts`: normalizes Series and Item Code to uppercase before field validation, duplicate detection and display-label generation. Shared parsing applies this to both the upload preview and server-side import; Tier, Price and Category retain their prior treatment.
+- `tests/jk-price-csv.test.mjs`: updated normalized expectations and regression coverage for `a7` → `A7` and `#gs18` → `#GS18`.
+- No new migration is needed for this change. The importer still requires migration 0015 from the preceding feature.
+- Validation: lint, TypeScript and all 15 unit tests pass.
