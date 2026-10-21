@@ -5,6 +5,7 @@ export const checklistFields = ["drawing_approved","appliance_specs","ceiling_he
 export type ProjectChecklist=Record<(typeof checklistFields)[number],boolean>;
 export type Project = {
   id: string; name: string; contact_id: string | null; contact_name: string | null;
+  contact_phone:string|null;contact_company:string|null;
   status: string;
   description: string | null;
   project_address:string|null;project_contact_name:string|null;project_contact_phone:string|null;project_designer:string|null;
@@ -14,6 +15,7 @@ export type Project = {
 const selection = `SELECT p.id, p.name, p.contact_id, p.status, p.description,
  p.project_address,p.project_contact_name,p.project_contact_phone,p.project_designer,p.next_step,p.sample_signoff_status,
  p.order_by_date::text,p.official_start_date::text,p.install_date::text,p.notes,
+ c.phone AS contact_phone,c.company_name AS contact_company,
   COALESCE(NULLIF(trim(concat_ws(' ', c.first_name, c.last_name)), ''), c.company_name) AS contact_name
   FROM public.projects p LEFT JOIN public.contacts c ON c.id = p.contact_id`;
 export async function listProjects(search: string, page: number) {
@@ -34,8 +36,8 @@ export async function getProject(id: string) {
   return project;
 }
 export async function contactChoices() {
-  const result = await getDbPool().query<{id:string; label:string;phone:string|null}>(`
-    SELECT id, phone, COALESCE(NULLIF(trim(concat_ws(' ',first_name,last_name)),''), company_name) AS label
+  const result = await getDbPool().query<{id:string; label:string;phone:string|null;company:string|null}>(`
+    SELECT id, phone, company_name AS company, COALESCE(NULLIF(trim(concat_ws(' ',first_name,last_name)),''), company_name) AS label
     FROM public.contacts WHERE deleted_at IS NULL ORDER BY label, id LIMIT 500`);
   return result.rows;
 }

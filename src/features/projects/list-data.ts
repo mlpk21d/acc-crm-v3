@@ -41,5 +41,5 @@ export async function getProjectList(input:ProjectListFilters):Promise<ProjectLi
 export async function getProjectListColumns():Promise<ProjectColumn[]>{
  const user=await requirePermission('projects:read');
  const result=await getDbPool().query<{hidden_columns:ProjectColumn[]}>('SELECT hidden_columns FROM public.user_project_list_columns WHERE user_id=$1',[user.id]);
- return result.rows[0]?.hidden_columns??defaultHidden;
+ return (result.rows[0]?.hidden_columns??defaultHidden).filter(key=>key!=='project_name');
 }

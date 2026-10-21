@@ -18,7 +18,7 @@ export async function listProjectRooms(projectId:string):Promise<ProjectRoom[]> 
  return rows;
 }
 export async function manufacturerChoices() {
- const {rows}=await getDbPool().query<{value:string;label:string}>(
-  "SELECT value,label FROM public.crm_settings_options WHERE category='manufacturer' AND active=true ORDER BY sort_order,label");
+ const {rows}=await getDbPool().query<{value:string;label:string;color:string|null}>(
+  "SELECT value,label,color FROM public.crm_settings_options WHERE category='manufacturer' AND active=true ORDER BY sort_order,label");
  return rows;
 }

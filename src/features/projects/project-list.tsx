@@ -26,7 +26,7 @@ export function ProjectList({initial,initialFilters,hiddenColumns,admin,editable
  const filterButton=useRef<HTMLButtonElement>(null);
  const preferenceQueue=useRef<Promise<unknown>>(Promise.resolve());
  const columns=allowedColumns(admin);
- const visible=columns.filter(([key])=>!hidden.includes(key));
+ const visible=columns.filter(([key])=>key==='project_name'||!hidden.includes(key));
  useEffect(()=>{
   const timer=setTimeout(()=>setFilters(f=>f.q===query?f:{...f,q:query,page:1}),250);
   return ()=>clearTimeout(timer);
@@ -57,6 +57,7 @@ export function ProjectList({initial,initialFilters,hiddenColumns,admin,editable
  },[open]);
  function close(){setOpen(false);}
  function toggleColumn(key:ProjectColumn){
+  if(key==='project_name')return;
   const next=hidden.includes(key)?hidden.filter(k=>k!==key):[...hidden,key];
   setHidden(next);
   preferenceQueue.current=preferenceQueue.current.catch(()=>undefined).then(async()=>{
@@ -116,9 +117,9 @@ export function ProjectList({initial,initialFilters,hiddenColumns,admin,editable
    <div className="project-list-drawer-layout"><header><h2 id="project-filter-title">Filters</h2><button type="button" aria-label="Close filters" onClick={close}><ButtonIcon kind="close"/></button></header>
     <div className="project-list-filter-body">
      <label>Current Status<select value={draft.status} onChange={e=>setDraft(d=>({...d,status:e.target.value}))}><option value="">All statuses</option>{statuses.map(s=><option key={s.value} value={s.value}>{s.label}</option>)}</select></label>
-     <div><p>Show Featured Only</p><button type="button" className={`project-list-button ${draft.featured?'featured':''}`} aria-pressed={draft.featured} onClick={()=>setDraft(d=>({...d,featured:!d.featured}))}><ButtonIcon kind="star" fill={draft.featured?'currentColor':'none'}/>Featured Only: {draft.featured?'On':'Off'}</button></div>
+     <div><p>Show Featured Only</p><button type="button" className={`project-list-button ${draft.featured?'featured':''}`} aria-pressed={draft.featured} onClick={()=>{const featured=!draft.featured;setDraft(d=>({...d,featured}));setFilters(f=>({...f,featured,page:1}));}}><ButtonIcon kind="star" fill={draft.featured?'currentColor':'none'}/>Featured Only: {draft.featured?'On':'Off'}</button></div>
      <div className="project-list-columns"><button type="button" aria-expanded={expanded} aria-controls="project-columns" onClick={()=>setExpanded(v=>!v)}>Column Display<ButtonIcon kind={expanded?'up':'down'}/></button>
-      {expanded&&<div id="project-columns">{columns.map(([key,label])=><label key={key}><button type="button" role="switch" aria-checked={!hidden.includes(key)} aria-label={label} className="project-list-switch" onClick={()=>toggleColumn(key)}><span><ButtonIcon kind={!hidden.includes(key)?'check':'close'}/></span></button>{label}</label>)}</div>}
+      {expanded&&<div id="project-columns">{columns.filter(([key])=>key!=='project_name').map(([key,label])=><label key={key}><button type="button" role="switch" aria-checked={!hidden.includes(key)} aria-label={label} className="project-list-switch" onClick={()=>toggleColumn(key)}><span><ButtonIcon kind={!hidden.includes(key)?'check':'close'}/></span></button>{label}</label>)}</div>}
      </div>
     </div>
     <footer><button type="button" className="project-list-button" onClick={()=>{setFilters(f=>({...f,status:'',featured:false,page:1}));close();}}><ButtonIcon kind="reset"/>Reset</button><button type="button" className="project-list-button primary" onClick={()=>{setFilters(f=>({...f,...draft,page:1}));close();}}><ButtonIcon kind="check"/>Apply</button></footer>

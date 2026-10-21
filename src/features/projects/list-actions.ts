@@ -20,6 +20,6 @@ export async function saveProjectListColumns(hidden:ProjectColumn[]){
  const user=await requirePermission('projects:read');
  if(!Array.isArray(hidden)||hidden.length>projectColumns.length||hidden.some(k=>!projectColumns.some(([key])=>key===k)))return {error:'Invalid columns.'};
  try{await getDbPool().query(`INSERT INTO public.user_project_list_columns(user_id,hidden_columns) VALUES($1,$2)
- ON CONFLICT(user_id) DO UPDATE SET hidden_columns=EXCLUDED.hidden_columns,updated_at=now()`,[user.id,[...new Set(hidden)]]);return {error:null};}
+ ON CONFLICT(user_id) DO UPDATE SET hidden_columns=EXCLUDED.hidden_columns,updated_at=now()`,[user.id,[...new Set(hidden)].filter(key=>key!=='project_name')]);return {error:null};}
  catch{return {error:'Unable to save column preferences. Please try again.'};}
 }

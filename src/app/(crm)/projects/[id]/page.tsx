@@ -1,4 +1,5 @@
 import Link from "next/link";
+import {ButtonIcon} from "@/components/button-icon";
 import { notFound } from "next/navigation";
 import { requirePermission } from "@/features/auth/session";
 import { can } from "@/features/auth/permissions";
@@ -31,15 +32,16 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
  return <section className="crm-project-page">
   <div className="page-heading crm-project-heading">
    <div><Link className="crm-project-back" href="/projects">← Back</Link><h1>{project.name}</h1></div>
-   {can(user.role,"projects:write")&&<Link className="crm-project-edit-link" href={`/projects/${id}/edit`}>Edit Project</Link>}
+   {can(user.role,"projects:write")&&<Link className="crm-project-edit-link" href={`/projects/${id}/edit`}><ButtonIcon kind="edit"/>Edit Project</Link>}
   </div>
   <div className="crm-project-status">{project.status}</div>
   <section className="content-card crm-project-detail-card"><h2>Project Details</h2>
    <div className="crm-project-detail-grid">
     {details.map(([label,value])=><div key={label}><span className="crm-project-detail-label">{label}</span><p>{display(value)}</p></div>)}
     <div><span className="crm-project-detail-label">Project Contact</span>
-     <p>{project.contact_id?<Link href={`/contacts/${project.contact_id}`}>{display(project.project_contact_name||project.contact_name)}</Link>:display(project.project_contact_name||project.contact_name)}</p>
-     {project.project_contact_phone&&<a href={`tel:${project.project_contact_phone}`}>{project.project_contact_phone}</a>}
+     <p className="crm-project-contact-name">{project.contact_id?<Link href={`/contacts/${project.contact_id}`}>{display(project.project_contact_name||project.contact_name)}</Link>:display(project.project_contact_name||project.contact_name)}</p>
+     {(project.project_contact_phone||project.contact_phone)&&<a className="crm-project-contact-phone" href={`tel:${project.project_contact_phone||project.contact_phone}`}>{project.project_contact_phone||project.contact_phone}</a>}
+     {project.contact_id&&<small className="crm-project-contact-company">{[project.contact_name,project.contact_company].filter(Boolean).join(" · ")}</small>}
     </div>
    </div>
   </section>
@@ -50,6 +52,6 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
     {checklistFields.map(key=><div className="crm-project-check-row" key={key}><input type="checkbox" checked={project.checklist[key]} disabled readOnly/><span>{labels[key]}</span></div>)}
    </div></section>
   </div>
-  <section className="content-card crm-project-rooms"><ProjectRooms projectId={id} rooms={rooms} manufacturers={[]} canEdit={false} isAdmin={user.role==="admin"}/></section>
+  <section className="content-card crm-project-rooms"><ProjectRooms projectId={id} rooms={rooms} manufacturers={[]} canEdit={false} isAdmin={user.role==="admin"} roomFinancials={financials?.rooms??[]}/></section>
  </section>;
 }

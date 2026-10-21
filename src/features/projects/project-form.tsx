@@ -13,7 +13,7 @@ const checklistLabels:Record<(typeof checklistFields)[number],string>={
  floor_thickness:"Floor Thickness",hardware:"Hardware",door_styles:"Door Styles",finishes:"Finishes"
 };
 export function ProjectForm({project,contacts,statuses,financialPanel,initialRoomsPanel}:{
- project?:Project;contacts:{id:string;label:string;phone:string|null}[];
+ project?:Project;contacts:{id:string;label:string;phone:string|null;company:string|null}[];
  statuses:{value:string;label:string;color:string|null}[]; financialPanel?:ReactNode; initialRoomsPanel?:ReactNode;
 }) {
  const [state,action,pending]=useActionState(saveProject,{error:null});
@@ -37,7 +37,7 @@ export function ProjectForm({project,contacts,statuses,financialPanel,initialRoo
    <div className="crm-project-field-grid">
     <label className="crm-project-name-field">Project Name<input name="name" required maxLength={200} defaultValue={project?.name??""}/></label>
     {field("project_address","Project Address")}
-    <ProjectContactPicker contacts={contacts} initialId={project?.contact_id??""} initialName={project?.project_contact_name||contacts.find(c=>c.id===project?.contact_id)?.label||""} initialPhone={project?.project_contact_phone??""}/>
+    <ProjectContactPicker contacts={contacts} initialId={project?.contact_id??""} initialName={project?.project_contact_name||contacts.find(c=>c.id===project?.contact_id)?.label||""} initialPhone={project?.project_contact_phone||project?.contact_phone||""}/>
 
     {field("project_designer","Designer")}
     {statusField("status","Project Status")}
@@ -56,7 +56,7 @@ export function ProjectForm({project,contacts,statuses,financialPanel,initialRoo
    <section className="content-card"><h2>Checklist</h2><div className="crm-project-checklist">{checklistFields.map(key=><label key={key}><input type="checkbox" form="crm-project-core-form" name={key} defaultChecked={project?.checklist?.[key]??false}/>{checklistLabels[key]}</label>)}</div></section>
   </div>
   {initialRoomsPanel}
-  {custom&&<div className="crm-room-modal-layer"><button type="button" className="crm-room-modal-backdrop" aria-label="Close custom value dialog" onClick={()=>setCustom(null)}><ButtonIcon kind="close" /></button><div role="dialog" aria-modal="true" aria-labelledby="crm-custom-value-title" className="crm-room-modal crm-project-custom-modal"><div className="crm-room-modal-title"><h2 id="crm-custom-value-title">Add Custom {custom==="status"?"Project Status":"Next Step"}</h2><button type="button" onClick={()=>setCustom(null)} aria-label="Close">×<ButtonIcon kind="close" /></button></div><div className="crm-project-custom-body"><label>{custom==="status"?"Project Status":"Next Step"}<input autoFocus maxLength={100} value={customValue} onChange={e=>setCustomValue(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();applyCustom();}if(e.key==="Escape")setCustom(null);}}/></label><div className="crm-room-modal-actions"><button type="button" onClick={()=>setCustom(null)}>Cancel<ButtonIcon kind="close" /></button><button type="button" disabled={!customValue.trim()} onClick={applyCustom}>Add Custom<ButtonIcon kind="add" /></button></div></div></div></div>}
-  <div className="contact-actions"><Link href={project?`/projects/${project.id}`:"/projects"}>Cancel</Link><button form="crm-project-core-form" disabled={pending} type="submit">{pending?"Saving…":project?"Save Changes":"Create Project"}<ButtonIcon kind="save" /></button></div>
+  {custom&&<div className="crm-room-modal-layer"><button type="button" className="crm-room-modal-backdrop" aria-label="Close custom value dialog" onClick={()=>setCustom(null)}><ButtonIcon kind="close" /></button><div role="dialog" aria-modal="true" aria-labelledby="crm-custom-value-title" className="crm-room-modal crm-project-custom-modal"><div className="crm-room-modal-title"><h2 id="crm-custom-value-title">Add Custom {custom==="status"?"Project Status":"Next Step"}</h2><button type="button" onClick={()=>setCustom(null)} aria-label="Close"><ButtonIcon kind="close" /></button></div><div className="crm-project-custom-body"><label>{custom==="status"?"Project Status":"Next Step"}<input autoFocus maxLength={100} value={customValue} onChange={e=>setCustomValue(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();applyCustom();}if(e.key==="Escape")setCustom(null);}}/></label><div className="crm-room-modal-actions"><button type="button" onClick={()=>setCustom(null)}>Cancel<ButtonIcon kind="close" /></button><button type="button" disabled={!customValue.trim()} onClick={applyCustom}>Add Custom<ButtonIcon kind="add" /></button></div></div></div></div>}
+  <div className="contact-actions crm-project-form-actions"><Link href={project?`/projects/${project.id}`:"/projects"}><ButtonIcon kind="close"/>Cancel</Link><button form="crm-project-core-form" disabled={pending} type="submit">{pending?"Saving…":project?"Save Changes":"Create Project"}<ButtonIcon kind="save" /></button></div>
  </div>;
 }
