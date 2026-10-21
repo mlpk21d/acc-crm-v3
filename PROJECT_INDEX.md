@@ -541,3 +541,10 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `tests/jk-price-csv.test.mjs`: updated normalized expectations and regression coverage for `a7` → `A7` and `#gs18` → `#GS18`.
 - No new migration is needed for this change. The importer still requires migration 0015 from the preceding feature.
 - Validation: lint, TypeScript and all 15 unit tests pass.
+
+## J&K configurator series search and custom descriptions — 2026-10-21
+
+- `src/features/projects/jk-catalog-search.tsx`: Series dropdown precedes item-code search, which stays disabled until a series is selected. Debounced searches discard stale responses. Fixed-position autocomplete overlays modal content, supports keyboard selection and outside dismissal, and displays item code/description on the left with one catalog price on the right.
+- `src/features/projects/jk-data.ts` / `jk-actions.ts`: administrator-only active series options and server-side series-scoped, case-insensitive item-code search with escaped wildcard input.
+- `src/features/projects/jk-configurator.tsx` / `src/app/globals.css`: custom entries contain Item Name, Description, Price and Add Item; description is preserved in configuration. Selected cabinet table remains unchanged. Responsive series/search and overlay styling.
+- Validation: lint, TypeScript, all 15 unit tests and production build passed (placeholder database environment with expected auth connectivity warnings). Chromium fixture verified initial disabled search, selected-series request, unchanged modal dimensions, code/single-price layout, custom description persistence and existing room/configuration workflow. PGlite verified actual series/search queries, inactive exclusion, case handling, literal wildcard escaping and administrator authorization. No migration required.

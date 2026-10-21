@@ -548,3 +548,23 @@ a { color: inherit; text-decoration: none; }
 .crm-jk-preview-note{margin:12px 0}
 .crm-jk-importer button:focus-visible,.crm-settings-primary-tabs a:focus-visible{outline:2px solid #2563eb;outline-offset:3px}
 @media(max-width:640px){.crm-jk-import-preview-heading{align-items:flex-start;flex-direction:column}.crm-settings-primary-tabs a{padding:10px 12px}}
+
+/* Series-scoped J&K search with an overlay that never resizes the modal. */
+.crm-jk-series{flex:0 0 150px;min-width:0;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;background:white;font:inherit;font-size:14px}
+.crm-jk-item-search{position:relative;flex:1;min-width:150px}
+.crm-jk-item-search>svg{position:absolute;left:12px;top:12px;color:#9ca3af;margin-inline-start:0!important;pointer-events:none}
+.crm-jk-item-search input{width:100%;padding-left:36px}
+.crm-jk-item-search input:disabled{background:#f9fafb;color:#9ca3af;cursor:not-allowed}
+.crm-jk-results{position:fixed;z-index:100;margin:0;background:white;border:1px solid #e5e7eb;border-radius:8px;overflow:auto;box-shadow:0 6px 16px #0002}
+.crm-project-edit-form .crm-jk-results button,.crm-jk-results button{display:flex;justify-content:space-between;align-items:center;gap:16px;font:inherit;font-size:14px;padding:10px 12px}
+.crm-jk-results button[aria-selected=true]{background:#eff6ff}
+.crm-jk-result-detail{min-width:0;text-align:left}
+.crm-jk-result-code{display:flex;align-items:center;gap:6px;overflow-wrap:anywhere}
+.crm-jk-result-code svg{margin-inline-start:0!important;flex-shrink:0;color:#9ca3af}
+.crm-jk-result-detail small{display:block;color:#9ca3af;font-size:12px;font-weight:400;margin-top:3px}
+.crm-jk-result-price{flex-shrink:0;font-variant-numeric:tabular-nums;font-weight:500}
+.crm-jk-results>p{padding:12px;margin:0;font-size:14px;color:#6b7280}
+.crm-jk-series-error{color:#b91c1c;font-size:12px}
+.crm-jk-custom input[aria-label="Custom description"]{flex:2}
+.crm-jk-custom input[aria-label="Custom price"]{flex:0 1 140px}
+@media(max-width:640px){.crm-jk-series{flex:1 1 120px}.crm-jk-item-search{flex:2 1 180px}.crm-jk-custom input{flex-basis:100%}}

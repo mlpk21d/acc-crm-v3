@@ -17,17 +17,24 @@ export type JkCabinetItem = {
  hinge_direction:""|"L"|"R";unit_price:string;discounted_price:string;
  quantity:number;custom:boolean;sort_order:number;
 };
-export async function searchJkPriceItems(term:string):Promise<JkPriceItem[]> {
+export async function searchJkPriceItems(term:string,series:string):Promise<JkPriceItem[]> {
  await requireJkPricingAdmin();
  const q=z.string().trim().min(1).max(100).safeParse(term);
- if(!q.success) return [];
+ const selectedSeries=z.string().trim().min(1).max(50).safeParse(series);
+ if(!q.success||!selectedSeries.success) return [];
  const escaped=q.data.replace(/[\\%_]/g, "\\$&");
  const {rows}=await getDbPool().query<JkPriceItem>(
   `SELECT id,item,description,price::text,msrp::text,series,item_code,tier,category FROM public.jk_price_items
-   WHERE active=true AND (item ILIKE '%' || $1 || '%' ESCAPE '\\'
-     OR description ILIKE '%' || $1 || '%' ESCAPE '\\')
-   ORDER BY item,id LIMIT 15`,[escaped]);
+   WHERE active=true AND lower(series)=lower($2)
+     AND item_code ILIKE '%' || $1 || '%' ESCAPE '\\'
+   ORDER BY item_code,tier,id LIMIT 15`,[escaped,selectedSeries.data]);
  return rows;
+}
+export async function listJkSeries():Promise<string[]> {
+ await requireJkPricingAdmin();
+ const {rows}=await getDbPool().query<{series:string}>(
+  "SELECT DISTINCT upper(series) AS series FROM public.jk_price_items WHERE active=true AND series IS NOT NULL AND trim(series)<>'' ORDER BY series");
+ return rows.map(row=>row.series);
 }
 export async function getJkRoomConfig(roomId:string) {
  await requireJkPricingAdmin();

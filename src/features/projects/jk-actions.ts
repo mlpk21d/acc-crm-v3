@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/features/auth/session";
 import { getDbPool } from "@/lib/db";
-import { searchJkPriceItems, getJkRoomConfig } from "@/features/projects/jk-data";
+import { searchJkPriceItems, getJkRoomConfig, listJkSeries } from "@/features/projects/jk-data";
 import { z } from "zod";
 import {configSchema,persistJkConfiguration} from "@/features/projects/jk-persistence";
 
@@ -21,9 +21,13 @@ export async function saveJkConfiguration(input:unknown) {
  }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
 }
 
-export async function searchJkCatalogAction(term:string) {
+export async function searchJkCatalogAction(term:string,series:string) {
  await requirePermission("settings:manage");
- return searchJkPriceItems(term);
+ return searchJkPriceItems(term,series);
+}
+export async function loadJkSeriesAction(){
+ await requirePermission("settings:manage");
+ return listJkSeries();
 }
 export async function loadJkConfigAction(projectId:string,roomId:string) {
  await requirePermission("settings:manage");

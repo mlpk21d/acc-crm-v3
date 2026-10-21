@@ -1,8 +1,8 @@
 "use client";
 import { ButtonIcon } from "@/components/button-icon";
 import { useEffect, useRef, useState } from "react";
-import { loadJkConfigAction, saveJkConfiguration, searchJkCatalogAction } from "@/features/projects/jk-actions";
-import type { JkPriceItem } from "@/features/projects/jk-data";
+import { loadJkConfigAction, saveJkConfiguration } from "@/features/projects/jk-actions";
+import {JkCatalogSearch} from "@/features/projects/jk-catalog-search";
 
 import type {JkSelection as Selection,JkDraft} from "@/features/projects/jk-model";
 const money=(cents:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(cents/100);
@@ -11,11 +11,10 @@ export function JkConfigurator({projectId,roomId,onClose,initialConfig,onApply}:
 }) {
  const [items,setItems]=useState<Selection[]>(initialConfig?.items??[]);
  const [assemblyCount,setAssemblyCount]=useState(initialConfig?.assemblyCount??0);
- const [search,setSearch]=useState("");
- const [results,setResults]=useState<JkPriceItem[]>([]);
  const [showCustom,setShowCustom]=useState(false);
  const [customName,setCustomName]=useState("");
  const [customPrice,setCustomPrice]=useState("");
+ const [customDescription,setCustomDescription]=useState("");
  const [busy,setBusy]=useState(!!roomId&&!initialConfig);
  const [loadFailed,setLoadFailed]=useState(false);
  const modal=useRef<HTMLElement>(null);
@@ -31,14 +30,6 @@ export function JkConfigurator({projectId,roomId,onClose,initialConfig,onApply}:
   }).catch(()=>{if(mounted){setError("Unable to load J&K configuration.");setLoadFailed(true)}}).finally(()=>{if(mounted)setBusy(false)});
   return ()=>{mounted=false};
  },[projectId,roomId,initialConfig]);
- useEffect(()=>{
-  let live=true;
-  if(!search.trim())return
-  const delay=setTimeout(()=>{
-   searchJkCatalogAction(search).then(data=>{if(live)setResults(data)}).catch(()=>{if(live)setError("Unable to search cabinet catalog.")});
-  },250);
-  return ()=>{live=false;clearTimeout(delay)};
- },[search]);
  useEffect(()=>{
   const previous=document.activeElement as HTMLElement|null;
   modal.current?.focus();
@@ -75,9 +66,8 @@ export function JkConfigurator({projectId,roomId,onClose,initialConfig,onApply}:
    <div className="crm-jk-content">
     {error&&<p role="alert" className="contact-form-error">{error}</p>}
     {savedTotal&&<p role="status">Configuration saved. Total: {money(Math.round(Number(savedTotal)*100))}</p>}
-    <div className="crm-jk-search"><input aria-label="Search J&K price list" placeholder="Search J&K price list..." value={search} onChange={event=>{setSearch(event.target.value);setResults([])}}/><button type="button" onClick={()=>setShowCustom(!showCustom)}><ButtonIcon kind="add"/>Custom</button></div>
-    {search.trim()&&results.length>0&&<div className="crm-jk-results">{results.map(item=><button type="button" key={item.id} onClick={()=>{setItems(old=>[...old,{price_item_id:item.id,item:item.item,description:item.description??"",hinge_direction:"",quantity:1,custom:false,price:Number(item.price)}]);setSearch("");setResults([])}}>{item.item} — {money(Math.round(Number(item.price)*100))}<ButtonIcon kind="search" /></button>)}</div>}
-    {showCustom&&<div className="crm-jk-custom"><input placeholder="Item Name" aria-label="Custom item name" value={customName} maxLength={150} onChange={e=>setCustomName(e.target.value)}/><input type="number" min="0" step="0.01" placeholder="Price" aria-label="Custom price" value={customPrice} onChange={e=>setCustomPrice(e.target.value)}/><button type="button" onClick={()=>{const price=Number(customPrice);if(!customName.trim()||!customPrice||!Number.isFinite(price)||price<0)return;setItems(old=>[...old,{price_item_id:null,item:customName.trim(),description:"",hinge_direction:"",quantity:1,custom:true,price}]);setCustomName("");setCustomPrice("");setShowCustom(false)}}>Add Item<ButtonIcon kind="edit" /></button></div>}
+    <div className="crm-jk-search"><JkCatalogSearch disabled={busy} onSelect={item=>setItems(old=>[...old,{price_item_id:item.id,item:item.item,description:item.description??"",hinge_direction:"",quantity:1,custom:false,price:Number(item.price)}])}/><button type="button" onClick={()=>setShowCustom(!showCustom)}><ButtonIcon kind="add"/>Custom</button></div>
+    {showCustom&&<div className="crm-jk-custom"><input placeholder="Item Name" aria-label="Custom item name" value={customName} maxLength={150} onChange={e=>setCustomName(e.target.value)}/><input placeholder="Description" aria-label="Custom description" maxLength={2000} value={customDescription} onChange={e=>setCustomDescription(e.target.value)}/><input type="number" min="0" step="0.01" placeholder="Price" aria-label="Custom price" value={customPrice} onChange={e=>setCustomPrice(e.target.value)}/><button type="button" onClick={()=>{const price=Number(customPrice);if(!customName.trim()||!customPrice||!Number.isFinite(price)||price<0)return;setItems(old=>[...old,{price_item_id:null,item:customName.trim(),description:customDescription.trim(),hinge_direction:"",quantity:1,custom:true,price}]);setCustomName("");setCustomDescription("");setCustomPrice("");setShowCustom(false)}}>Add Item<ButtonIcon kind="edit" /></button></div>}
     <div className="crm-rooms-scroll"><table className="contact-table"><thead><tr><th>#</th><th>Item</th><th>Hinge</th><th>Description</th><th>Unit Price</th><th>Disc. (20%)</th><th>Qty</th><th>Line Total</th><th>Actions</th></tr></thead><tbody>
     {items.map((item,index)=><tr key={index}><td>{index+1}</td><td>{item.item}</td><td><select aria-label={item.item+" hinge"} value={item.hinge_direction} onChange={e=>update(index,{hinge_direction:e.target.value as ""|"L"|"R"})}><option value="">—</option><option value="L">L</option><option value="R">R</option></select></td><td>{item.description}</td><td>{money(Math.round(item.price*100))}</td><td>{money(discounted(item.price))}</td><td><input aria-label={item.item+" quantity"} type="number" min="1" max="10000" value={item.quantity} onChange={e=>update(index,{quantity:Math.max(1,Math.min(10000,Number(e.target.value)||1))})}/></td><td>{money(discounted(item.price)*item.quantity)}</td><td><button type="button" disabled={index===0} onClick={()=>setItems(old=>{const copy=[...old];[copy[index-1],copy[index]]=[copy[index],copy[index-1]];return copy})} aria-label={"Move "+item.item+" up"}><ButtonIcon kind="up" /></button><button type="button" disabled={index===items.length-1} onClick={()=>setItems(old=>{const copy=[...old];[copy[index],copy[index+1]]=[copy[index+1],copy[index]];return copy})} aria-label={"Move "+item.item+" down"}><ButtonIcon kind="down" /></button><button type="button" aria-label={"Remove "+item.item} onClick={()=>setItems(old=>old.filter((_,i)=>i!==index))}><ButtonIcon kind="delete" /></button></td></tr>)}
     </tbody></table></div>
