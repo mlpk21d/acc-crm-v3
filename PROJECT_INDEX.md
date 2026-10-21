@@ -483,3 +483,11 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `src/features/projects/project-rooms.tsx`: editable room tables now put Actions after the administrator Cost column. Edit/Delete are icon-only buttons with room-specific accessible labels and tooltips; existing edit and delete-confirmation handlers are retained.
 - `src/app/globals.css`: neutral Edit hover and red Delete hover/focus treatments, compact 32px action targets, 8px vertical cell padding, compact reorder controls without inherited form margins, and 10px outer cell radii. Manufacturer color is painted on individual cells via a row CSS variable so rounded corners are visible rather than covered by the row background.
 - Validation: lint and TypeScript pass; browser fixture checks verify the final Actions column, red Delete icon, both hover states, icon-only accessible controls, editor/delete-dialog behavior, rounded corners and a room row height at most 54px. Admin cost visibility and shared form typography remain covered. No migration needed.
+
+## Project header navigation and margin note — 2026-10-20
+
+- `src/app/(crm)/projects/[id]/edit/page.tsx`: adds a top Back link with arrow icon targeting the current Project View page.
+- `src/app/(crm)/projects/[id]/page.tsx`: places the status badge immediately to the right of the project title in a wrapping title row; uses the shared arrow icon for Back to Projects.
+- `src/components/button-icon.tsx`: adds the reusable `arrow-left` icon.
+- `src/app/globals.css`: both Back controls use 15px semibold text with hover/focus treatment. The shared financial margin note uses 12px, light gray, italic text on View and Edit; its selector overrides the broader panel paragraph rule.
+- Validation: lint, TypeScript and whitespace checks pass. No data or migration changes.

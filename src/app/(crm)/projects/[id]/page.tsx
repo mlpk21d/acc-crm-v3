@@ -31,10 +31,9 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
  ];
  return <section className="crm-project-page">
   <div className="page-heading crm-project-heading">
-   <div><Link className="crm-project-back" href="/projects">← Back</Link><h1>{project.name}</h1></div>
+   <div><Link className="crm-project-back" href="/projects"><ButtonIcon kind="arrow-left"/>Back</Link><div className="crm-project-title-row"><h1>{project.name}</h1><span className="crm-project-status">{project.status}</span></div></div>
    {can(user.role,"projects:write")&&<Link className="crm-project-edit-link" href={`/projects/${id}/edit`}><ButtonIcon kind="edit"/>Edit Project</Link>}
   </div>
-  <div className="crm-project-status">{project.status}</div>
   <section className="content-card crm-project-detail-card"><h2>Project Details</h2>
    <div className="crm-project-detail-grid">
     {details.map(([label,value])=><div key={label}><span className="crm-project-detail-label">{label}</span><p>{display(value)}</p></div>)}
