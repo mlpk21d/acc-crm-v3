@@ -1,7 +1,11 @@
 import type { SVGProps, ReactNode } from "react";
 
-export type ButtonIconKind="add"|"save"|"edit"|"delete"|"close"|"search"|"filter"|"up"|"down"|"check"|"login"|"logout"|"settings"|"link"|"back"|"menu"|"default";
+export type ButtonIconKind="star"|"eye"|"reset"|"sort"|"add"|"save"|"edit"|"delete"|"close"|"search"|"filter"|"up"|"down"|"check"|"login"|"logout"|"settings"|"link"|"back"|"menu"|"default";
 const paths:Record<ButtonIconKind,ReactNode>={
+ star:<path d="m12 3 2.78 5.63L21 9.54l-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91L12 3Z"/>,
+ eye:<><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></>,
+ reset:<><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></>,
+ sort:<path d="m7 3-3 3m3-3 3 3M7 3v18m10 0-3-3m3 3 3-3M17 3v18"/>,
  add:<path d="M12 5v14M5 12h14"/>,
  save:<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M7 3v6h10V3M7 21v-9h10v9"/></>,
  edit:<><path d="M12 20h9"/><path d="m16 4 4 4-11 11-5 1 1-5L16 4Z"/></>,

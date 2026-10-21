@@ -1,6 +1,6 @@
 # ACC CRM V3 Project Index
 
-Last updated: 2026-10-16
+Last updated: 2026-10-20
 
 This file is the fast-entry index for the repository. Update it whenever routes,
 domain boundaries, database modules, or major shared components change.
@@ -108,7 +108,12 @@ Outstanding fidelity and functional work (do not mark complete):
 
 | Path | Purpose |
 | --- | --- |
-| `src/features/projects/data.ts` | Parameterized project listing/detail and active contact choices |
+| `src/features/projects/data.ts` | Project detail, active contact choices, and project status options |
+| `src/features/projects/list-model.ts` | Column inventory, nine-column default, filter/result contracts, administrator-only column gating |
+| `src/features/projects/list-data.ts` | Authorized server-side search, status/featured filters, sorting, 15-row pagination, numeric financial summaries, saved column reads |
+| `src/features/projects/list-actions.ts` | Permission-checked asynchronous search, featured updates, and per-user column preference writes |
+| `src/features/projects/project-list.tsx` | Live search, yellow featured stars, bold names, configurable table, right-side filter dialog and pagination |
+| `src/db/migrations/0014_project_list.sql` | Featured flag, active list indexes, and user_project_list_columns preferences; run before serving the updated list |
 | `src/features/projects/actions.ts` | Server-side permission checked create/update actions |
 | `src/features/projects/validation.ts` | Project input validation |
 | `src/features/projects/project-form.tsx` | Shared provisional create/edit project form |
@@ -445,3 +450,16 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 ## Contact delete lint correction (2026-10-20)
 
 - Moved the client component directive to the beginning of `src/features/contacts/delete-contact-form.tsx`, ahead of imports, to address ESLint unused-expression warning. No behavior changes or migrations; local verification pending.
+
+
+## Project list parity — 2026-10-20
+
+- `/projects` now follows the supplied `project-list-page.png` and `fitlers.png`, with `mlpk21d/acc-crm/src/pages/projects/ProjectList.tsx` reviewed for existing behavior.
+- Default columns follow the user's explicit list: Project Name (bold), Current Status, Next Step, Order By Date, Official Start Date, Install Date, Contact, Profit, Total Cost. Sample Signoff, Drawing Approved and Last Edited are initially hidden and available in Column Display. Featured and action columns are always present.
+- Profit and Total Cost remain administrator-only; unauthorized queries do not select or join financial tables. Financial summaries use PostgreSQL numeric arithmetic and the existing discounted-room / margin formula.
+- Search has an inline magnifier, clear control, no submit button, and a 250 ms debounce. Requests apply only while current; search/filter/sort changes reset pagination.
+- Right-side native modal dialog provides focus containment, Escape dismissal, backdrop dismissal, scroll locking and focus restoration. Current Status and Featured Only apply together; Reset clears those filters, preserving search and column preferences as in V2. Column switches save immediately per CRM user.
+- All new buttons contain icons; featured stars fill yellow. Featured saves are optimistic, permission-checked, audited, disabled while pending, and rolled back with a visible error on failure.
+- Retains V2 default exclusion of Cancelled/Canceled and Archived records unless a status is selected. Status row colors and View/Edit actions are preserved. List sorts server-side with a stable ID tiebreaker and uses 15-row pages.
+- Migration 0014 adds the featured flag, partial indexes for updated/featured/status list ordering, and legacy-named per-user hidden-column preferences. No existing migration is changed. Apply with `npm run db:migrate` before starting the updated application. No production database was accessed.
+- Validation: `npm run check` passes (lint with no warnings, TypeScript, 7 existing unit tests); production build passes with placeholder environment configuration. Auth reports expected database-connectivity warnings because no live database is configured. Isolated PGlite checks passed for migrations, financial numeric rounding, status/featured/name filters, literal wildcard handling, pagination and non-admin financial exclusion. Browser interaction/visual verification remains unconfirmed: Chromium download failed in this environment.
