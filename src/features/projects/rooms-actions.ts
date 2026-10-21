@@ -4,6 +4,7 @@ import { requirePermission } from "@/features/auth/session";
 import { can } from "@/features/auth/permissions";
 import { getDbPool } from "@/lib/db";
 import { z } from "zod";
+import {jkDraftSchema,persistJkConfiguration} from "@/features/projects/jk-persistence";
 
 const roomInput=z.object({
  project_id:z.uuid(), id:z.union([z.uuid(),z.literal("")]), room_name:z.string().trim().min(1).max(200),
@@ -17,6 +18,14 @@ export async function addProjectRoom(form:FormData) {
   ["project_id","id","room_name","door_style","drawer_style","species","finish","construction","manufacturer"].map(k=>[k,form.get(k)])));
  if(!parsed.success)throw new Error("Invalid room details.");
  const v=parsed.data;
+ const rawConfig=form.get("jk_configuration");
+ let jkConfiguration:z.infer<typeof jkDraftSchema>|null=null;
+ if(rawConfig){
+  if(!can(user.role,"settings:manage"))throw new Error("Administrator access required for J&K configuration.");
+  if(v.manufacturer!=="J&K")throw new Error("J&K configuration requires a J&K room.");
+  if(typeof rawConfig!=="string"||rawConfig.length>250000)throw new Error("Invalid J&K configuration.");
+  jkConfiguration=jkDraftSchema.parse(JSON.parse(rawConfig));
+ }
  const hasFinancials=form.has("room_cost")||form.has("manufacturer_discount");
  if(hasFinancials&&!can(user.role,"settings:manage"))throw new Error("Administrator access required for room financials.");
  const financial=hasFinancials?z.object({
@@ -46,7 +55,7 @@ export async function addProjectRoom(form:FormData) {
     RETURNING id`,[v.project_id,v.room_name,v.door_style||null,v.drawer_style||null,v.species||null,v.finish||null,v.construction||null,v.manufacturer||null]);
    roomId=inserted.rows[0].id;
   }
-  if(financial){
+  if(financial&&!jkConfiguration){
    const result=await client.query(`INSERT INTO public.project_room_financials(room_id,room_cost,manufacturer_discount)
     SELECT r.id,$2,$3 FROM public.project_rooms r
     WHERE r.id=$1 AND r.project_id=$4
@@ -55,10 +64,12 @@ export async function addProjectRoom(form:FormData) {
     RETURNING room_id`,[roomId,financial.room_cost,financial.manufacturer_discount,v.project_id]);
    if(!result.rowCount)throw new Error("J&K configured room costs cannot be edited manually.");
   }
+  if(jkConfiguration)await persistJkConfiguration(client,{...jkConfiguration,projectId:v.project_id,roomId});
   await client.query("COMMIT");
  }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
  revalidatePath("/projects/"+v.project_id);
  revalidatePath("/projects/"+v.project_id+"/edit");
+ revalidatePath("/projects");
 }
 
 export async function deleteProjectRoom(form:FormData) {

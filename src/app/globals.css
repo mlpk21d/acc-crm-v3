@@ -507,3 +507,10 @@ a { color: inherit; text-decoration: none; }
 .crm-room-delete-action{color:#dc2626}
 .crm-room-delete-action:hover,.crm-room-delete-action:focus-visible{background:#fee2e2;color:#b91c1c}
 .crm-room-icon-action:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+
+/* J&K configurator is opened above the unsaved room editor. */
+.crm-room-modal-form .crm-jk-launch{display:inline-flex;align-items:center;gap:8px;margin:24px 0 0;padding:8px 12px;color:#334155}
+.crm-room-modal-form .crm-jk-launch svg{margin-inline-start:0}
+.crm-room-modal-form .crm-jk-launch:hover{background:#f8fafc}
+.crm-jk-modal-layer{z-index:90}
+.crm-jk-draft-notice{font-size:12px;color:#6b7280;margin:8px 0 0}
