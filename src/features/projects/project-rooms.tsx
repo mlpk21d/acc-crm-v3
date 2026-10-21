@@ -1,6 +1,6 @@
 "use client";
 import { ButtonIcon } from "@/components/button-icon";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { ProjectRoom } from "@/features/projects/rooms-data";
 import type { RoomFinancial } from "@/features/projects/financial-data";
 import { JkConfigurator } from "@/features/projects/jk-configurator";
@@ -25,13 +25,13 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
  },[current]);
  return <>
   <div className="crm-rooms-heading"><h2><ButtonIcon kind="layers"/>Rooms ({rooms.length})</h2>{canEdit&&<button type="button" onClick={()=>setCurrent(null)}><ButtonIcon kind="add"/>Add Room</button>}</div>
-  {rooms.length>0&&<div className="crm-rooms-scroll"><table className="contact-table"><thead><tr>{canEdit&&<th>Order</th>}<th>Room</th><th>Door Style</th><th>Drawer Style</th><th>Species</th><th>Finish</th><th>Construction</th><th>Manufacturer</th>{canEdit&&<th>Actions</th>}{isAdmin&&<th className="crm-room-cost">Cost</th>}</tr></thead>
-  <tbody>{rooms.map((room,index)=><tr key={room.id} style={{backgroundColor:/^#[0-9a-f]{6}$/i.test(room.manufacturer_color??"")?room.manufacturer_color!:undefined}}>
+  {rooms.length>0&&<div className="crm-rooms-scroll"><table className={`contact-table crm-room-table ${canEdit?"crm-room-table-editable":""}`}><thead><tr>{canEdit&&<th>Order</th>}<th>Room</th><th>Door Style</th><th>Drawer Style</th><th>Species</th><th>Finish</th><th>Construction</th><th>Manufacturer</th>{isAdmin&&<th className="crm-room-cost">Cost</th>}{canEdit&&<th className="crm-room-actions-column">Actions</th>}</tr></thead>
+  <tbody>{rooms.map((room,index)=><tr key={room.id} style={{"--room-row-color":/^#[0-9a-f]{6}$/i.test(room.manufacturer_color??"")?room.manufacturer_color!:undefined} as CSSProperties}>
    {canEdit&&<td><div className="crm-room-order-controls">{(["up","down"] as const).map(direction=><form action={moveProjectRoom} key={direction}><input type="hidden" name="project_id" value={projectId}/><input type="hidden" name="id" value={room.id}/><input type="hidden" name="direction" value={direction}/><button type="submit" aria-label={direction==="up"?"Move room up":"Move room down"} disabled={direction==="up"?index===0:index===rooms.length-1}><ButtonIcon kind={direction}/></button></form>)}</div></td>}
    <td><strong>{room.room_name}</strong>{room.ras_items.length>0&&<div className="crm-room-accessory-preview">Rev-A-Shelf ({room.ras_items.length})</div>}</td><td>{room.door_style||"—"}</td><td>{room.drawer_style||"—"}</td><td>{room.species||"—"}</td><td>{room.finish||"—"}</td><td>{room.construction||"—"}</td>
    <td><span>{room.manufacturer||"—"}</span></td>
-   {canEdit&&<td><button type="button" className="crm-room-text-action" onClick={()=>setCurrent(room)}>Edit<ButtonIcon kind="edit" /></button><button type="button" className="crm-room-text-action" onClick={()=>setConfirmDelete(room)}>Delete<ButtonIcon kind="delete" /></button></td>}
    {isAdmin&&<td className="crm-room-cost">{new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(roomFinancials.find(r=>r.room_id===room.id)?.room_cost??0))}</td>}
+   {canEdit&&<td className="crm-room-actions-column"><div className="crm-room-row-actions"><button type="button" className="crm-room-icon-action" aria-label={`Edit ${room.room_name}`} title="Edit room" onClick={()=>setCurrent(room)}><ButtonIcon kind="edit"/></button><button type="button" className="crm-room-icon-action crm-room-delete-action" aria-label={`Delete ${room.room_name}`} title="Delete room" onClick={()=>setConfirmDelete(room)}><ButtonIcon kind="delete"/></button></div></td>}
   </tr>)}</tbody></table></div>}
   {rooms.length===0&&<p className="crm-rooms-empty">{canEdit?<>No rooms added yet. Click &quot;Add Room&quot; to create one.</>:"No rooms added yet."}</p>}
   {current!==undefined&&<div className="crm-room-modal-layer">

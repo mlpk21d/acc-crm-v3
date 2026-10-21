@@ -487,3 +487,19 @@ a { color: inherit; text-decoration: none; }
 .crm-project-contact-name a:hover{text-decoration:underline}
 .crm-link-contact-results button small{display:block;color:#9ca3af;font-size:12px;font-weight:400}
 .crm-project-edit-form .crm-link-contact-results button{display:block;text-align:left}
+
+/* Compact room rows and final icon-only action column on Project Edit. */
+.crm-project-rooms .crm-room-table tbody td{background:var(--room-row-color,transparent)}
+.crm-project-rooms .crm-room-table-editable td{padding-top:8px;padding-bottom:8px}
+.crm-project-rooms .crm-room-table-editable td:first-child{border-radius:10px 0 0 10px}
+.crm-project-rooms .crm-room-table-editable td:last-child{border-radius:0 10px 10px 0}
+.crm-room-table-editable .crm-room-order-controls{gap:0}
+.crm-room-table-editable .crm-room-order-controls form{display:flex;margin:0}
+.crm-room-table-editable .crm-room-order-controls button{width:24px;height:16px;padding:0}
+.crm-room-actions-column{text-align:right;white-space:nowrap}
+.crm-room-row-actions{display:flex;justify-content:flex-end;gap:4px}
+.crm-room-icon-action{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:0;border-radius:6px;background:transparent;color:#6b7280;cursor:pointer;transition:background-color .15s,color .15s}
+.crm-room-icon-action:hover,.crm-room-icon-action:focus-visible{background:#e5e7eb;color:#111827}
+.crm-room-delete-action{color:#dc2626}
+.crm-room-delete-action:hover,.crm-room-delete-action:focus-visible{background:#fee2e2;color:#b91c1c}
+.crm-room-icon-action:focus-visible{outline:2px solid currentColor;outline-offset:2px}
