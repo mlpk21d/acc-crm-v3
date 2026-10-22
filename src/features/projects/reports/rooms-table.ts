@@ -3,6 +3,7 @@ import type PDFKit from "pdfkit";
 /** Deliberately excludes all financial fields. Shared by room and project reports. */
 export type RoomReportRow = {
   room_name: string;
+  enabled: boolean;
   door_style: string | null;
   drawer_style: string | null;
   species: string | null;
@@ -26,7 +27,8 @@ export function roomReportCells(room: RoomReportRow): string[] {
 }
 
 /** Appends the section to any PDF document; owns wrapping and repeated table headers. */
-export function drawRoomsTable(doc: PDFKit.PDFDocument, rooms: readonly RoomReportRow[], startY = doc.y): number {
+export function drawRoomsTable(doc: PDFKit.PDFDocument, allRooms: readonly RoomReportRow[], startY = doc.y): number {
+  const rooms = allRooms.filter(room => room.enabled);
   const left = doc.page.margins.left;
   const width = doc.page.width - left - doc.page.margins.right;
   const widths = roomReportColumns.map(column => width * column.width);
@@ -53,7 +55,7 @@ export function drawRoomsTable(doc: PDFKit.PDFDocument, rooms: readonly RoomRepo
   heading();
   if (!rooms.length) {
     doc.font("Helvetica").fontSize(9).fillColor("#475569")
-      .text("No rooms added yet.", left + padding, y + 12, { width: width - padding * 2 });
+      .text("No enabled rooms.", left + padding, y + 12, { width: width - padding * 2 });
     y = doc.y + 12;
   }
   rooms.forEach((room, rowIndex) => {
