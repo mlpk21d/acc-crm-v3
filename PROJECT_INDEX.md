@@ -578,3 +578,11 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `src/components/app-shell.tsx`: adds Files directly below Door Orders in desktop/mobile menus with an outline folder icon, active-page behavior and the same read visibility as Projects.
 - `/files`: placeholder destination for future file management.
 - Validation: lint, TypeScript and whitespace checks passed. No migration required.
+
+## Enable or disable project rooms — 2026-10-22
+
+- Migration `0016_room_enabled.sql`: adds persisted room `enabled` flag defaulting to true for existing and new rooms.
+- `project-rooms.tsx`, `rooms-actions.ts`: checkbox in each editable room's Actions cell saves independently without opening the room. Shows pending/error states and a Disabled label; preserves room data, cabinet configuration and accessories. Server checks projects:write, validates input and project ownership, and refreshes Edit, View and list routes.
+- `rooms-data.ts`, `financial-data.ts`, `project-financial-panel.tsx`, `list-data.ts`: expose enabled state and exclude disabled rooms from Room Costs, Total, Total Cost and Profit in both project summaries and the project list. Re-enabling restores the room's discounted contribution.
+- Validation: lint, TypeScript, 15 unit tests and whitespace checks passed. PGlite executed migration and actual server action, checked disable/re-enable financial contribution, ownership and staff authorization. Existing cabinet/room transaction regression checks passed.
+- Deployment: run `npm run db:migrate` before starting this version.

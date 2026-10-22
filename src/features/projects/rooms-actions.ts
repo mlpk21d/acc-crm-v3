@@ -127,3 +127,14 @@ export async function deleteRoomAccessory(form:FormData) {
  WHERE i.id=$1 AND i.room_id=$2 AND r.id=i.room_id AND r.project_id=$3 AND p.id=r.project_id AND p.deleted_at IS NULL`,[id,roomId,projectId]);
  revalidatePath("/projects/"+projectId);
 }
+
+export async function setProjectRoomEnabled(input:{projectId:string;roomId:string;enabled:boolean}) {
+ await requirePermission("projects:write");
+ const v=z.object({projectId:z.uuid(),roomId:z.uuid(),enabled:z.boolean()}).parse(input);
+ const result=await getDbPool().query(`UPDATE public.project_rooms r SET enabled=$3,updated_at=now()
+  FROM public.projects p WHERE r.id=$1 AND r.project_id=$2 AND p.id=r.project_id AND p.deleted_at IS NULL RETURNING r.id`,[v.roomId,v.projectId,v.enabled]);
+ if(!result.rowCount)throw new Error("Room not found.");
+ revalidatePath("/projects/"+v.projectId);
+ revalidatePath("/projects/"+v.projectId+"/edit");
+ revalidatePath("/projects");
+}

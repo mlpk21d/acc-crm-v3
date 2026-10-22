@@ -7,7 +7,7 @@ const fields=[["install_cost","Install Cost"],["misc_cost","Misc Cost"],["drawin
 export function ProjectFinancialPanel({financials,rooms,editable=false}:Props){
  const [data,setData]=useState(financials);
  const cents=(value:string)=>Math.round((Number(value)||0)*100);
- const roomTotal=rooms.reduce((sum,r)=>sum+Math.round(cents(r.room_cost)*(1-Number(r.manufacturer_discount)/100)),0);
+ const roomTotal=rooms.filter(r=>r.enabled!==false).reduce((sum,r)=>sum+Math.round(cents(r.room_cost)*(1-Number(r.manufacturer_discount)/100)),0);
  const total=roomTotal+fields.reduce((sum,[key])=>sum+cents(data[key]),0);
  const margin=data.margin_type==="other"?Number(data.custom_margin)*100:Number(data.margin_type);
  const totalCost=margin>=0&&margin<100?Math.round(total/(1-margin/100)):total;
