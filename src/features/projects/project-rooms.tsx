@@ -12,6 +12,23 @@ const construction=["Inset","Inset Beaded","Full Overlay","Frameless"];
 export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,roomFinancials=[]}:{
  projectId:string;rooms:ProjectRoom[];manufacturers:{value:string;label:string}[];canEdit:boolean;isAdmin:boolean;roomFinancials?:RoomFinancial[];
 }) {
+ const [downloading,setDownloading]=useState(false);
+ const [downloadError,setDownloadError]=useState("");
+ async function downloadRooms(){
+  setDownloading(true);setDownloadError("");
+  try {
+   const response=await fetch(`/api/projects/${projectId}/rooms/pdf`);
+   if(!response.ok||!response.headers.get("Content-Type")?.includes("application/pdf"))throw new Error("Download failed");
+   const blob=await response.blob();
+   const url=URL.createObjectURL(blob);
+   const link=document.createElement("a");
+   link.href=url;
+   link.download=response.headers.get("Content-Disposition")?.match(/filename="([^"]+)"/)?.[1]??"Door-Styles-And-Finishes.pdf";
+   document.body.appendChild(link);link.click();link.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }catch{setDownloadError("Unable to download rooms. Please try again.");}
+  finally{setDownloading(false);}
+ }
  const [toggling,setToggling]=useState<string[]>([]);
  const [toggleError,setToggleError]=useState("");
  const [current,setCurrent]=useState<ProjectRoom|null|undefined>(undefined);
@@ -33,7 +50,8 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
   return ()=>document.removeEventListener("keydown",esc);
  },[current,jkOpen]);
  return <>
-  <div className="crm-rooms-heading"><h2><ButtonIcon kind="layers"/>Rooms ({rooms.length})</h2>{canEdit&&<button type="button" onClick={()=>openRoom(null)}><ButtonIcon kind="add"/>Add Room</button>}</div>
+  <div className="crm-rooms-heading"><h2><ButtonIcon kind="layers"/>Rooms ({rooms.length})</h2>{!canEdit&&<button type="button" onClick={downloadRooms} disabled={downloading} aria-busy={downloading}><ButtonIcon kind="download"/>{downloading?"Downloading…":"Download"}</button>}{canEdit&&<button type="button" onClick={()=>openRoom(null)}><ButtonIcon kind="add"/>Add Room</button>}</div>
+  {downloadError&&<p role="alert" className="contact-form-error">{downloadError}</p>}
   {toggleError&&<p role="alert" className="contact-form-error">{toggleError}</p>}
   {rooms.length>0&&<div className="crm-rooms-scroll"><table className={`contact-table crm-room-table ${canEdit?"crm-room-table-editable":""}`}><thead><tr>{canEdit&&<th>Order</th>}<th>Room</th><th>Door Style</th><th>Drawer Style</th><th>Species</th><th>Finish</th><th>Construction</th><th>Manufacturer</th>{isAdmin&&<th className="crm-room-cost">Cost</th>}{canEdit&&<th className="crm-room-actions-column">Actions</th>}</tr></thead>
   <tbody>{rooms.map((room,index)=><tr key={room.id} className={!canEdit&&!room.enabled?"crm-room-row-disabled":undefined} style={{"--room-row-color":/^#[0-9a-f]{6}$/i.test(room.manufacturer_color??"")?room.manufacturer_color!:undefined} as CSSProperties}>

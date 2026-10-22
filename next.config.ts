@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  serverExternalPackages: ["pdfkit"],
+  outputFileTracingIncludes: {"/api/projects/*/rooms/pdf": ["./node_modules/pdfkit/js/data/*.afm"]},
   experimental: {serverActions: {bodySizeLimit: "6mb"}},
 };
 

@@ -1,6 +1,6 @@
 # ACC CRM V3 Project Index
 
-Last updated: 2026-10-20
+Last updated: 2026-10-22
 
 This file is the fast-entry index for the repository. Update it whenever routes,
 domain boundaries, database modules, or major shared components change.
@@ -596,3 +596,13 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 
 - `project-rooms.tsx`, `globals.css`: Project View removes the Disabled label and applies 40% opacity to the entire disabled room row, including manufacturer background and all contents. Project Edit retains its label and checkbox controls.
 - Validation: inspected view/edit conditions and whitespace checks passed.
+
+## Rooms PDF download — 2026-10-22
+
+- Project View: top-right Rooms Download button with download icon, busy state and inline retry error. Downloads a PDF directly; no print dialog.
+- `/api/projects/[id]/rooms/pdf` (`src/app/api/projects/[id]/rooms/pdf/route.ts`): Node route with active-user and projects:read checks, UUID/existing-project validation, private/no-store caching and attachment headers.
+- `src/features/projects/reports/rooms-table.ts`: reusable PDF table section accepting only nonfinancial room fields; preserves all rooms (including disabled rooms) in saved order, wraps text, repeats table headers across pages and handles zero rooms. Reuse `drawRoomsTable` in the future full-project report.
+- `src/features/projects/reports/rooms-pdf.ts`: Letter PDF wrapper with project title, Door Styles and Finishes heading, date, room count and page footer; safe dated filename. Columns: Room, Door Style, Species, Finish, Construction, Manufacturer. No prices, discounts, drawer-style column, J&K configuration or J&K order list. No financial queries.
+- `src/components/button-icon.tsx`: shared download icon. `next.config.ts`: PDFKit remains server-external with its standard font metrics included in traced deployments.
+- Index review: existing `project_rooms(project_id, sort_order, id)` index serves this report's ordered lookup; no schema migration or additional database index needed.
+- Validation: lint, TypeScript and 15 existing tests passed; production build completed with placeholder database configuration (no live database/auth session available). Visually reviewed PDF output and checked empty, single-page and multi-page reports, repeated headers and footers.
