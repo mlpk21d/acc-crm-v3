@@ -591,3 +591,8 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 
 - `src/app/globals.css`: centers items vertically in the room Actions flex row so enable checkboxes align with edit/delete controls.
 - Validation: inspected the scoped rule and whitespace checks passed.
+
+## Disabled room appearance on Project View — 2026-10-22
+
+- `project-rooms.tsx`, `globals.css`: Project View removes the Disabled label and applies 40% opacity to the entire disabled room row, including manufacturer background and all contents. Project Edit retains its label and checkbox controls.
+- Validation: inspected view/edit conditions and whitespace checks passed.

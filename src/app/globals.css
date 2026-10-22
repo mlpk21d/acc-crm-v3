@@ -577,3 +577,5 @@ a { color: inherit; text-decoration: none; }
 .crm-room-row-actions .crm-room-enabled-checkbox{width:16px;height:16px;margin:0 6px 0 0;accent-color:#111827;cursor:pointer;flex-shrink:0}
 .crm-room-row-actions .crm-room-enabled-checkbox:disabled{cursor:wait;opacity:.6}
 .crm-room-disabled-label{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:3px}
+
+.crm-room-table .crm-room-row-disabled{opacity:.4}
