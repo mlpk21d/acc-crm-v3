@@ -586,3 +586,8 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `rooms-data.ts`, `financial-data.ts`, `project-financial-panel.tsx`, `list-data.ts`: expose enabled state and exclude disabled rooms from Room Costs, Total, Total Cost and Profit in both project summaries and the project list. Re-enabling restores the room's discounted contribution.
 - Validation: lint, TypeScript, 15 unit tests and whitespace checks passed. PGlite executed migration and actual server action, checked disable/re-enable financial contribution, ownership and staff authorization. Existing cabinet/room transaction regression checks passed.
 - Deployment: run `npm run db:migrate` before starting this version.
+
+## Room action checkbox alignment — 2026-10-22
+
+- `src/app/globals.css`: centers items vertically in the room Actions flex row so enable checkboxes align with edit/delete controls.
+- Validation: inspected the scoped rule and whitespace checks passed.
