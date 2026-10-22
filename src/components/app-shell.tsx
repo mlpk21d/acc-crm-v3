@@ -31,7 +31,7 @@ function NavIcon({ name }: { name: IconName }) {
     case "proposals": return <svg {...common}><path d="M14 3H5v18h14V10M9 15l1-4 8-8 3 3-8 8-4 1zM16 5l3 3M9 18h6"/></svg>;
     case "door-orders": return <svg {...common}><path d="M4 21h16M6 21V3h12v18M9 6h6v5H9zM9 14h6v4H9z"/><circle cx="16" cy="12.5" r=".5"/></svg>;
     case "users": return <svg {...common}><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></svg>;
-    case "settings": return <svg {...common}><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9 7 7m10 10 2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>;
+    case "settings": return <svg {...common}><path d="m9.5 3-.6 2.1-1.3.8-2.2-.5-2.5 4.2 1.6 1.6v1.6l-1.6 1.6 2.5 4.2 2.2-.5 1.3.8.6 2.1h5l.6-2.1 1.3-.8 2.2.5 2.5-4.2-1.6-1.6v-1.6l1.6-1.6-2.5-4.2-2.2.5-1.3-.8-.6-2.1z"/><circle cx="12" cy="12" r="3"/></svg>;
     case "menu": return <svg {...common}><path d="M4 6h16M4 12h16M4 18h16"/></svg>;
     case "close": return <svg {...common}><path d="M5 5l14 14M19 5 5 19"/></svg>;
   }

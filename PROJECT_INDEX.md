@@ -567,3 +567,8 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `src/components/app-shell.tsx`: adds Proposals then Door Orders directly below Invoices in desktop/mobile navigation with matching outline icons and existing active-page behavior. Uses the same read access as Invoices.
 - `/proposals` and `/door-orders`: placeholder destinations matching the existing Invoices page, ready for future features.
 - Validation: lint, TypeScript and whitespace checks passed. No migration required.
+
+## Settings navigation gear icon — 2026-10-22
+
+- `src/components/app-shell.tsx`: replaces the Settings radial icon with an outlined cog/gear in desktop and mobile menus, matching existing navigation stroke styling.
+- Validation: lint and whitespace checks passed.
