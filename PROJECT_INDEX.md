@@ -561,3 +561,9 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 
 - `src/app/globals.css`: centralizes the existing Project View/Edit system font stack in `--font-family` and applies inherited font family to all elements, pseudo-elements and native file-upload buttons. Native buttons, inputs, selects, textareas and code text now use the same family across authentication, dashboard, contacts, projects, invoices, Settings and user management. Existing font sizes, weights and layout remain intact.
 - Validation: audited all source font declarations (one global stylesheet, no component/inline font-family overrides), lint and whitespace checks passed. Browser fixture could not run because the local Chromium runtime failed to launch. No migration required.
+
+## Proposals and Door Orders navigation — 2026-10-22
+
+- `src/components/app-shell.tsx`: adds Proposals then Door Orders directly below Invoices in desktop/mobile navigation with matching outline icons and existing active-page behavior. Uses the same read access as Invoices.
+- `/proposals` and `/door-orders`: placeholder destinations matching the existing Invoices page, ready for future features.
+- Validation: lint, TypeScript and whitespace checks passed. No migration required.
