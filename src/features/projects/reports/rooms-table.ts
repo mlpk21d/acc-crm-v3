@@ -4,6 +4,7 @@ import type PDFKit from "pdfkit";
 export type RoomReportRow = {
   room_name: string;
   door_style: string | null;
+  drawer_style: string | null;
   species: string | null;
   finish: string | null;
   construction: string | null;
@@ -11,11 +12,12 @@ export type RoomReportRow = {
 };
 
 export const roomReportColumns = [
-  { key: "room_name", label: "Room", width: 0.22 },
-  { key: "door_style", label: "Door Style", width: 0.15 },
-  { key: "species", label: "Species", width: 0.16 },
-  { key: "finish", label: "Finish", width: 0.20 },
-  { key: "construction", label: "Construction", width: 0.14 },
+  { key: "room_name", label: "Room", width: 0.20 },
+  { key: "door_style", label: "Door Style", width: 0.11 },
+  { key: "drawer_style", label: "Drawer Style", width: 0.12 },
+  { key: "species", label: "Species", width: 0.14 },
+  { key: "finish", label: "Finish", width: 0.17 },
+  { key: "construction", label: "Construction", width: 0.13 },
   { key: "manufacturer", label: "Manufacturer", width: 0.13 },
 ] as const;
 
