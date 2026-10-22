@@ -572,3 +572,9 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 
 - `src/components/app-shell.tsx`: replaces the Settings radial icon with an outlined cog/gear in desktop and mobile menus, matching existing navigation stroke styling.
 - Validation: lint and whitespace checks passed.
+
+## Files navigation — 2026-10-22
+
+- `src/components/app-shell.tsx`: adds Files directly below Door Orders in desktop/mobile menus with an outline folder icon, active-page behavior and the same read visibility as Projects.
+- `/files`: placeholder destination for future file management.
+- Validation: lint, TypeScript and whitespace checks passed. No migration required.
