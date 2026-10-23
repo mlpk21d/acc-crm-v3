@@ -10,6 +10,7 @@ import { getProjectFinancials } from "@/features/projects/financial-data";
 import { ProjectFinancialPanel } from "@/features/projects/project-financial-panel";
 
 import { listProjectJkCabinets } from "@/features/projects/reports/jk-cabinet-data";
+import { ProjectDownloadButton } from "@/features/projects/project-download-button";
 import { JkDownloadButton } from "@/features/projects/jk-download-button";
 
 const labels:Record<(typeof checklistFields)[number],string>={
@@ -40,6 +41,7 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
   <div className="page-heading crm-project-heading">
    <div><Link className="crm-project-back" href="/projects"><ButtonIcon kind="arrow-left"/>Back</Link><div className="crm-project-title-row"><h1>{project.name}</h1><span className="crm-project-status" style={statusStyle}>{project.status}</span></div></div>
    <div className="crm-project-heading-actions">{jkCabinets.length>0&&<JkDownloadButton projectId={id}/>}
+   <ProjectDownloadButton projectId={id}/>
    {can(user.role,"projects:write")&&<Link className="crm-project-edit-link" href={`/projects/${id}/edit`}><ButtonIcon kind="edit"/>Edit Project</Link>}</div>
   </div>
   <section className="content-card crm-project-detail-card"><h2>Project Details</h2>

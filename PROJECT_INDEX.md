@@ -625,3 +625,12 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 ## Project button icon spacing
 
 - Project View and Edit share the `crm-project-page` scope. Icon-bearing buttons/links use an 8px gap and reset legacy icon margins, covering leading/trailing icons and nested dialogs. Contact result rows retain their layout with an 8px icon margin.
+
+## Full Project Report PDF — 2026-10-23
+
+- `project-download-button.tsx`: Download PDF action immediately left of Edit on Project View; icon/text spacing, busy and retry error states follow existing buttons.
+- `/api/projects/[id]/report/pdf`: authenticated projects:read endpoint with UUID/existing-project validation and private/no-store attachment response. Financial data is queried and included only for administrators, matching Project View.
+- `reports/project-pdf.ts`: project title/status, two-column details/contact, 50/50 financial summary (six metrics on left, Total Cost on right), margin, paginated notes, and shared `drawRoomsTable` with repeated headers. Disabled rooms omitted; no room prices or J&K items. Uses existing financial calculation including freight/doors-pulls in totals.
+- Filename: `<Project-Name>-Project-Report-YYYY-MM-DD.pdf`, using Eastern date. PDFKit font tracing included in next.config.ts.
+- Index review: existing project PK, financial project lookup and ordered room indexes support this report; no schema changes needed.
+- Validation: lint, TypeScript, 15 unit tests and webpack production build passed (placeholder DB; live authentication unverified). PDF checks covered repeated room headers, disabled-room exclusion, empty rooms, long notes and Eastern filenames; six mocked route checks verified authentication, permissions, missing/invalid projects and admin-only financial loading.
