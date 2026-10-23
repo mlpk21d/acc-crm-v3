@@ -606,3 +606,12 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `src/components/button-icon.tsx`: shared download icon. `next.config.ts`: PDFKit remains server-external with its standard font metrics included in traced deployments.
 - Index review: existing `project_rooms(project_id, sort_order, id)` index serves this report's ordered lookup; no schema migration or additional database index needed.
 - Validation: lint, TypeScript and 15 existing tests passed; production build completed with placeholder database configuration (no live database/auth session available). Visually reviewed PDF output and checked empty, single-page and multi-page reports, repeated headers and footers.
+
+## J&K cabinet PDF download — 2026-10-22
+
+- Project View: Download J&K Cabinets with download icon appears immediately left of Edit Project only when an enabled J&K room contains cabinet items. Available to project readers, with busy and error states.
+- `/api/projects/[id]/jk-cabinets/pdf`: authenticated projects:read route; validates the project, excludes disabled/non-J&K rooms, returns 404 when no items remain, and sends a private, no-store PDF attachment.
+- `reports/jk-cabinet-data.ts`: nonfinancial project-wide cabinet query ordered by room and item saved order. Existing project_rooms_project_order_idx and jk_room_cabinet_items_order_idx cover the joins/order; no migration required.
+- `reports/jk-cabinet-table.ts`: reusable table with Room, Series, Item, Hinge, Description, Qty; groups rows by room, repeats headers and splits long descriptions across pages. Saved labels supply series/item where available; catalog metadata provides fallback; custom items retain their names.
+- `reports/jk-cabinet-pdf.ts`: renders original path/polygon geometry from public/images/acc-logo.svg, J&K Cabinet List title, project name, Eastern generated date and page numbers. Logo/font assets included in route tracing. No prices or financial fields.
+- Validation: lint, TypeScript and 15 existing tests passed; webpack production build checked with placeholder database configuration. Rendered sample PDFs to inspect logo, columns, room grouping and repeated headers. Live authenticated download requires the deployed database/session.

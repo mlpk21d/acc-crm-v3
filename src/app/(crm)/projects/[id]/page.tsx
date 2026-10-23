@@ -9,6 +9,9 @@ import { ProjectRooms } from "@/features/projects/project-rooms";
 import { getProjectFinancials } from "@/features/projects/financial-data";
 import { ProjectFinancialPanel } from "@/features/projects/project-financial-panel";
 
+import { listProjectJkCabinets } from "@/features/projects/reports/jk-cabinet-data";
+import { JkDownloadButton } from "@/features/projects/jk-download-button";
+
 const labels:Record<(typeof checklistFields)[number],string>={
  drawing_approved:"Drawing Approved",appliance_specs:"Appliance Specs",ceiling_height:"Ceiling Height",
  floor_thickness:"Floor Thickness",hardware:"Hardware",door_styles:"Door Styles",finishes:"Finishes"
@@ -25,6 +28,7 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
  const statusBrightness=statusColor?0.299*parseInt(statusColor.slice(1,3),16)+0.587*parseInt(statusColor.slice(3,5),16)+0.114*parseInt(statusColor.slice(5,7),16):255;
  const statusStyle=statusColor?{backgroundColor:statusColor,color:statusBrightness<150?"#fff":"#111827"}:undefined;
  const rooms=await listProjectRooms(id);
+ const jkCabinets=await listProjectJkCabinets(id);
  const financials=user.role==="admin"?await getProjectFinancials(id):null;
  const details=[
   ["Project Address",project.project_address],["Current Status",project.status],
@@ -35,7 +39,8 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
  return <section className="crm-project-page">
   <div className="page-heading crm-project-heading">
    <div><Link className="crm-project-back" href="/projects"><ButtonIcon kind="arrow-left"/>Back</Link><div className="crm-project-title-row"><h1>{project.name}</h1><span className="crm-project-status" style={statusStyle}>{project.status}</span></div></div>
-   {can(user.role,"projects:write")&&<Link className="crm-project-edit-link" href={`/projects/${id}/edit`}><ButtonIcon kind="edit"/>Edit Project</Link>}
+   <div className="crm-project-heading-actions">{jkCabinets.length>0&&<JkDownloadButton projectId={id}/>}
+   {can(user.role,"projects:write")&&<Link className="crm-project-edit-link" href={`/projects/${id}/edit`}><ButtonIcon kind="edit"/>Edit Project</Link>}</div>
   </div>
   <section className="content-card crm-project-detail-card"><h2>Project Details</h2>
    <div className="crm-project-detail-grid">
