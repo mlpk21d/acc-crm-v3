@@ -23,10 +23,10 @@ export function drawRevAShelfTable(doc: PDFKit.PDFDocument, rooms: readonly Acce
     doc.font("Helvetica-Bold").fontSize(8).fillColor("#94a3b8")
       .text(`Rev-A-Shelf Items${continued ? " - CONTINUED" : ""}`, left, y, { width });
     y = doc.y + 8;
-    doc.rect(left, y, width, 25).fill("#0f172a");
+    doc.rect(left, y, width, 25).fill("#e5e7eb");
     let x = left;
     columns.forEach((label, index) => {
-      doc.font("Helvetica-Bold").fontSize(7.5).fillColor("white")
+      doc.font("Helvetica-Bold").fontSize(7.5).fillColor("#374151")
         .text(label, x + padding, y + 8, { width: widths[index] - 2 * padding, lineBreak: false });
       x += widths[index];
     });

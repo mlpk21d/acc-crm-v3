@@ -660,3 +660,10 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 
 - `reports/project-pdf.ts`: first-page top-right header displays Generated, Created and Updated. Saved project dates (including manual imports) use Eastern calendar dates, matching Record Info. Title/status reserve a separate left column to prevent overlap. No query or database index changes needed.
 - Validation: TypeScript, scoped lint and PDF visual checks passed; imported historical dates confirmed in the header.
+
+## Record Info and report style refinements — 2026-10-23
+
+- `globals.css`: Record Info title matches Rooms at 14px/600; read-only dates use 13px muted gray.
+- `reports/project-pdf.ts`, `next.config.ts`: removed Project Report watermark and its SVG dependency/tracing. J&K report logo retained.
+- `reports/rev-a-shelf-table.ts`: light gray header with dark gray text distinguishes accessories from the dark Rooms header, including continuation pages. No database/index changes needed.
+- Validation: TypeScript, scoped lint, whitespace checks and PDF visual review passed; watermark absence verified across all generated report pages.
