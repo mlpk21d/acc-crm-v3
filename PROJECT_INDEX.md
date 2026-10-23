@@ -594,7 +594,7 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 
 ## Disabled room appearance on Project View — 2026-10-22
 
-- `project-rooms.tsx`, `globals.css`: Project View removes the Disabled label and applies 40% opacity to the entire disabled room row, including manufacturer background and all contents. Project Edit retains its label and checkbox controls.
+- `project-rooms.tsx`, `globals.css`: Project View removes the Disabled label and applies 40% opacity to the entire disabled room row, including manufacturer background and all contents. Project Edit retains its checkbox controls; both view and edit lists omit the Disabled label and fade the entire disabled row to 40% opacity.
 - Validation: inspected view/edit conditions and whitespace checks passed.
 
 ## Rooms PDF download — 2026-10-22
@@ -615,3 +615,5 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `reports/jk-cabinet-table.ts`: reusable table with Room, Series, Item, Hinge, Description, Qty; groups rows by room, repeats headers and splits long descriptions across pages. Saved labels supply series/item where available; catalog metadata provides fallback; custom items retain their names.
 - `reports/jk-cabinet-pdf.ts`: renders original path/polygon geometry from public/images/acc-logo.svg, J&K Cabinet List title, project name, Eastern generated date and page numbers. Logo/font assets included in route tracing. No prices or financial fields.
 - Validation: lint, TypeScript and 15 existing tests passed; webpack production build checked with placeholder database configuration. Rendered sample PDFs to inspect logo, columns, room grouping and repeated headers. Live authenticated download requires the deployed database/session.
+
+- Disabled-room display correction: shared room list now applies whole-row 40% opacity in both view/edit modes and removes the visible Disabled label and its unused CSS. Checkbox remains available to re-enable rooms.
