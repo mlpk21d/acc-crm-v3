@@ -1,3 +1,4 @@
+import { ProjectRecordInfo } from "@/features/projects/project-record-info";
 import Link from "next/link";
 import {ButtonIcon} from "@/components/button-icon";
 import { notFound } from "next/navigation";
@@ -62,5 +63,6 @@ export default async function ProjectDetails({params}:{params:Promise<{id:string
    </div></section>
   </div>
   <section className="content-card crm-project-rooms"><ProjectRooms projectId={id} rooms={rooms} manufacturers={[]} canEdit={false} isAdmin={user.role==="admin"} roomFinancials={financials?.rooms??[]}/></section>
+  <ProjectRecordInfo created={project.created_at} updated={project.updated_at}/>
  </section>;
 }

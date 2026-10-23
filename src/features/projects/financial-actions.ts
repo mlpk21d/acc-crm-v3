@@ -21,6 +21,8 @@ export async function saveProjectFinancials(form:FormData) {
  [v.project_id,v.install_cost,v.misc_cost,v.drawing_cost,v.freight,v.doors_pulls,v.margin_type,v.margin_type==="other"?v.custom_margin/100:0]);
  if(!res.rowCount)throw new Error("Project not found.");
  revalidatePath("/projects/"+v.project_id);
+ revalidatePath("/projects/"+v.project_id+"/edit");
+ revalidatePath("/projects");
 }
 export async function saveRoomFinancials(form:FormData) {
  await requirePermission("settings:manage");
@@ -33,4 +35,6 @@ export async function saveRoomFinancials(form:FormData) {
  [v.room_id,v.project_id,v.room_cost,v.manufacturer_discount]);
  if(!result.rowCount)throw new Error("Room is unavailable.");
  revalidatePath("/projects/"+v.project_id);
+ revalidatePath("/projects/"+v.project_id+"/edit");
+ revalidatePath("/projects");
 }

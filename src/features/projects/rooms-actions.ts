@@ -81,6 +81,8 @@ export async function deleteProjectRoom(form:FormData) {
  const id=z.uuid().parse(form.get("id"));
  await getDbPool().query("DELETE FROM public.project_rooms WHERE id=$1 AND project_id=$2 AND EXISTS (SELECT 1 FROM public.projects WHERE id=$2 AND deleted_at IS NULL)",[id,projectId]);
  revalidatePath("/projects/"+projectId);
+ revalidatePath("/projects/"+projectId+"/edit");
+ revalidatePath("/projects");
 }
 
 export async function moveProjectRoom(form:FormData) {
@@ -103,6 +105,8 @@ export async function moveProjectRoom(form:FormData) {
   await client.query("COMMIT");
  } catch(e){await client.query("ROLLBACK");throw e;}finally{client.release();}
  revalidatePath("/projects/"+projectId);
+ revalidatePath("/projects/"+projectId+"/edit");
+ revalidatePath("/projects");
 }
 const rasSchema=z.object({
  project_id:z.uuid(),room_id:z.uuid(),item_name:z.string().trim().min(1).max(200),
@@ -117,6 +121,8 @@ export async function addRoomAccessory(form:FormData) {
  WHERE r.id=$1 AND r.project_id=$2 AND p.deleted_at IS NULL RETURNING id`,[v.room_id,v.project_id,v.item_name,v.code||null,v.link||null]);
  if(!result.rowCount) throw new Error("Room not found.");
  revalidatePath("/projects/"+v.project_id);
+ revalidatePath("/projects/"+v.project_id+"/edit");
+ revalidatePath("/projects");
 }
 export async function deleteRoomAccessory(form:FormData) {
  await requirePermission("projects:write");
@@ -126,6 +132,8 @@ export async function deleteRoomAccessory(form:FormData) {
  await getDbPool().query(`DELETE FROM public.rev_a_shelf_items i USING public.project_rooms r,public.projects p
  WHERE i.id=$1 AND i.room_id=$2 AND r.id=i.room_id AND r.project_id=$3 AND p.id=r.project_id AND p.deleted_at IS NULL`,[id,roomId,projectId]);
  revalidatePath("/projects/"+projectId);
+ revalidatePath("/projects/"+projectId+"/edit");
+ revalidatePath("/projects");
 }
 
 export async function setProjectRoomEnabled(input:{projectId:string;roomId:string;enabled:boolean}) {

@@ -647,3 +647,11 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `reports/project-pdf.ts`: appends accessories from enabled rooms in saved room/item order; existing watermark/footer covers the added pages.
 - Uses `listProjectRooms`' existing `ras_items` data; no additional queries or migrations. Existing `rev_a_shelf_items_room_order_idx(room_id,sort_order,id)` supports retrieval.
 - Validation: lint, TypeScript and 15 existing tests passed. Generated PDFs verified item ordering/counts, disabled exclusion, clickable links, empty state and repeated headers; visually reviewed the Rooms-to-accessories transition and continuation page.
+
+## Project Record Info — 2026-10-23
+
+- `project-record-info.tsx`: bottom-left half-width card on Project View and Edit; Created/Updated dates display in Eastern time. Edit inputs participate in Save Changes; only deliberately changed dates are submitted as import overrides. Mobile uses full width.
+- `data.ts`: exposes existing persisted created_at/updated_at as UTC ISO strings. `record-info-validation.ts` validates optional calendar-date overrides; `actions.ts` applies them last in the project save transaction. Unchanged Created is retained; normal saves stamp Updated with now().
+- Migration `0017_project_record_updates.sql`: child-table triggers refresh project Updated after room, order/enabled, accessory, J&K, finance and checklist changes, including deletes. No existing timestamps are rewritten. Existing project PK and active date indexes suffice; no new indexes needed.
+- Child actions revalidate View/Edit/list so Record Info stays current. Apply migration with `npm run db:migrate` before use.
+- Validation: lint, TypeScript, 17 unit tests and production build passed (placeholder database). PGlite exercised all seven child trigger tables, historical date overrides and subsequent automatic updates; live database migration/UI review remains pending.

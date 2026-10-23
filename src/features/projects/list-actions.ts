@@ -12,7 +12,7 @@ export async function setProjectFeatured(id:string,featured:boolean){
  try{
  const result=await getDbPool().query('UPDATE public.projects SET featured=$2,updated_by=$3,updated_at=now() WHERE id=$1 AND deleted_at IS NULL RETURNING id',[id,featured,user.id]);
  if(!result.rowCount)return {error:'Project no longer exists.'};
- revalidatePath('/projects');revalidatePath('/');revalidatePath(`/projects/${id}`);
+ revalidatePath('/projects');revalidatePath('/');revalidatePath(`/projects/${id}`);revalidatePath(`/projects/${id}/edit`);
  return {error:null};
  }catch{return {error:'Unable to update featured project. Please try again.'};}
 }

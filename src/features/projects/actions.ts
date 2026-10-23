@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requirePermission } from "@/features/auth/session";
 import { getDbPool } from "@/lib/db";
+import { parseProjectRecordDates } from "./record-info-validation";
 import { parseProjectForm } from "@/features/projects/validation";
 import { checklistFields } from "@/features/projects/data";
 import { can } from "@/features/auth/permissions";
@@ -13,6 +14,8 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
   const user = await requirePermission("projects:write");
   const parsed = parseProjectForm(form);
   if (!parsed.success) return { error: parsed.error.issues.map(i=>i.message).join("; ") };
+  const recordDates = parseProjectRecordDates(form);
+  if (!recordDates.success) return { error: "Enter valid Created and Updated dates." };
   const rawId = form.get("id");
   const id = typeof rawId === "string" && z.uuid().safeParse(rawId).success ? rawId : null;
   if (rawId && !id) return { error: "Invalid project identifier." };
@@ -126,6 +129,11 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
         }
       }
     }
+    // Apply deliberate import overrides last, after child triggers have run.
+    await client.query(`UPDATE public.projects SET
+      created_at=COALESCE($2::date::timestamp AT TIME ZONE 'America/New_York',created_at),
+      updated_at=COALESCE($3::date::timestamp AT TIME ZONE 'America/New_York',now())
+      WHERE id=$1`,[saved,recordDates.data.created??null,recordDates.data.updated??null]);
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");
@@ -133,5 +141,7 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
     return {error:"Unable to save project."};
   } finally {client.release();}
   revalidatePath("/projects");
+  revalidatePath(`/projects/${saved}`);
+  revalidatePath(`/projects/${saved}/edit`);
   redirect("/projects/"+saved);
 }
