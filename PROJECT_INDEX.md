@@ -655,3 +655,8 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - Migration `0017_project_record_updates.sql`: child-table triggers refresh project Updated after room, order/enabled, accessory, J&K, finance and checklist changes, including deletes. No existing timestamps are rewritten. Existing project PK and active date indexes suffice; no new indexes needed.
 - Child actions revalidate View/Edit/list so Record Info stays current. Apply migration with `npm run db:migrate` before use.
 - Validation: lint, TypeScript, 17 unit tests and production build passed (placeholder database). PGlite exercised all seven child trigger tables, historical date overrides and subsequent automatic updates; live database migration/UI review remains pending.
+
+## Project Report record dates — 2026-10-23
+
+- `reports/project-pdf.ts`: first-page top-right header displays Generated, Created and Updated. Saved project dates (including manual imports) use Eastern calendar dates, matching Record Info. Title/status reserve a separate left column to prevent overlap. No query or database index changes needed.
+- Validation: TypeScript, scoped lint and PDF visual checks passed; imported historical dates confirmed in the header.

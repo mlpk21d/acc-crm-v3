@@ -37,10 +37,18 @@ export async function createProjectPdf(project: Project, rooms: readonly (RoomRe
   const heading = (title: string, x: number, top: number) => {
     doc.font("Helvetica-Bold").fontSize(8).fillColor("#94a3b8").text(title, x, top, { width: 510 });
   };
-  doc.font("Helvetica").fontSize(8).fillColor("#94a3b8").text(`Generated: ${generated}`, 36, y, { width: 540, align: "right" });
-  doc.font("Helvetica-Bold").fontSize(18).fillColor("#0f172a").text(project.name, 36, y + 19, { width: 540 });
-  doc.font("Helvetica").fontSize(9).fillColor("#475569").text(project.status, 36, doc.y + 7, { width: 540 });
-  y = doc.y + 16;
+  const recordDate = (value: string) => new Date(value).toLocaleDateString("en-US", {
+    year: "numeric", month: "short", day: "numeric", timeZone: timezone,
+  });
+  const dates = [`Generated: ${generated}`, `Created: ${recordDate(project.created_at)}`, `Updated: ${recordDate(project.updated_at)}`];
+  dates.forEach((label, index) => {
+    doc.font("Helvetica").fontSize(8).fillColor("#94a3b8")
+      .text(label, 396, y + index * 12, { width: 180, align: "right" });
+  });
+  // Reserve the right column for record dates even when the project title wraps.
+  doc.font("Helvetica-Bold").fontSize(18).fillColor("#0f172a").text(project.name, 36, y + 19, { width: 344 });
+  doc.font("Helvetica").fontSize(9).fillColor("#475569").text(project.status, 36, doc.y + 7, { width: 344 });
+  y = Math.max(doc.y, y + 36) + 16;
   doc.moveTo(36, y).lineTo(576, y).lineWidth(1).strokeColor("#0f172a").stroke();
   y += 14;
 
