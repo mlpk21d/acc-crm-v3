@@ -593,3 +593,8 @@ a { color: inherit; text-decoration: none; }
 .crm-jk-footer{padding:0 24px 24px;background:white}
 .crm-jk-footer .crm-room-modal-actions{margin-top:16px}
 @media(max-width:640px){.crm-jk-footer{padding:0 16px 16px}.crm-jk-footer .crm-jk-totals{gap:8px 12px}}
+
+/* Shared icon/text spacing for Project View, Edit and their dialogs. */
+.crm-project-page :is(button,a):has(>svg):not(.crm-room-modal-backdrop):not([role="option"]){display:inline-flex;align-items:center;column-gap:8px}
+.crm-project-page :is(button,a)>svg{margin-inline:0!important;flex-shrink:0}
+.crm-project-page button[role="option"]>svg{margin-inline-start:8px!important}

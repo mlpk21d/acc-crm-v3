@@ -16,7 +16,7 @@ export default async function EditProject({params}:{params:Promise<{id:string}>}
  if(!project) notFound();
  const financials=user.role==="admin"?await getProjectFinancials(id):null;
  const [rooms,manufacturers]=await Promise.all([listProjectRooms(id),manufacturerChoices()]);
- return <section><div className="page-heading crm-project-heading"><div><Link className="crm-project-back" href={`/projects/${id}`}><ButtonIcon kind="arrow-left"/>Back</Link><h1>Edit project</h1></div></div>
+ return <section className="crm-project-page"><div className="page-heading crm-project-heading"><div><Link className="crm-project-back" href={`/projects/${id}`}><ButtonIcon kind="arrow-left"/>Back</Link><h1>Edit project</h1></div></div>
  <ProjectForm project={project} contacts={await contactChoices()} statuses={await projectStatusOptions()}
  financialPanel={financials?<ProjectFinancialPanel editable projectId={id} financials={financials.project} rooms={financials.rooms} roomNames={Object.fromEntries(rooms.map(r=>[r.id,r.room_name]))}/>:undefined}
  initialRoomsPanel={<section className="content-card crm-project-rooms"><ProjectRooms projectId={id} rooms={rooms} manufacturers={manufacturers} canEdit isAdmin={user.role==="admin"} roomFinancials={financials?.rooms??[]}/></section>}/></section>;

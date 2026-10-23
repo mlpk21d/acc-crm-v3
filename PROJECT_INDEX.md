@@ -621,3 +621,7 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 ## J&K configuration scrolling
 
 - `jk-configurator.tsx`, `globals.css`: cabinet list uses a fixed 320px height capped at 40% of the viewport, independent scrolling and sticky column headers. Modal uses a bounded flex layout with totals and Cancel/Apply Configuration in a non-scrolling footer; shorter screens can scroll search/custom controls while save controls remain visible.
+
+## Project button icon spacing
+
+- Project View and Edit share the `crm-project-page` scope. Icon-bearing buttons/links use an 8px gap and reset legacy icon margins, covering leading/trailing icons and nested dialogs. Contact result rows retain their layout with an 8px icon margin.
