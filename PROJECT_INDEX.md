@@ -634,3 +634,9 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - Filename: `<Project-Name>-Project-Report-YYYY-MM-DD.pdf`, using Eastern date. PDFKit font tracing included in next.config.ts.
 - Index review: existing project PK, financial project lookup and ordered room indexes support this report; no schema changes needed.
 - Validation: lint, TypeScript, 15 unit tests and webpack production build passed (placeholder DB; live authentication unverified). PDF checks covered repeated room headers, disabled-room exclusion, empty rooms, long notes and Eastern filenames; six mocked route checks verified authentication, permissions, missing/invalid projects and admin-only financial loading.
+
+## Project Report refinements — 2026-10-23
+
+- `reports/project-pdf.ts`: adds a subtle centered vector watermark from `public/images/acc-logo.svg` to every report page. Removes Current Status, Next Step and Sample Signoff Status from Project Details; retains status under the project title.
+- `next.config.ts`: includes the SVG in Project Report route deployment tracing. No database/index changes required.
+- Validation: TypeScript, scoped lint and PDF visual checks passed; watermark presence verified on every page of regular, long-notes and nonfinancial reports.
