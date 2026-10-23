@@ -640,3 +640,10 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `reports/project-pdf.ts`: adds a subtle centered vector watermark from `public/images/acc-logo.svg` to every report page. Removes Current Status, Next Step and Sample Signoff Status from Project Details; retains status under the project title.
 - `next.config.ts`: includes the SVG in Project Report route deployment tracing. No database/index changes required.
 - Validation: TypeScript, scoped lint and PDF visual checks passed; watermark presence verified on every page of regular, long-notes and nonfinancial reports.
+
+## Project Report Rev-A-Shelf Items — 2026-10-23
+
+- `reports/rev-a-shelf-table.ts`: reusable nonfinancial table below Rooms, titled Rev-A-Shelf Items with Room, Item Name, Code, Link. Matches Rooms colors/striping, wraps long values, repeats section/table headers across pages, and makes HTTP(S) links clickable. Shows an empty state when no items exist.
+- `reports/project-pdf.ts`: appends accessories from enabled rooms in saved room/item order; existing watermark/footer covers the added pages.
+- Uses `listProjectRooms`' existing `ras_items` data; no additional queries or migrations. Existing `rev_a_shelf_items_room_order_idx(room_id,sort_order,id)` supports retrieval.
+- Validation: lint, TypeScript and 15 existing tests passed. Generated PDFs verified item ordering/counts, disabled exclusion, clickable links, empty state and repeated headers; visually reviewed the Rooms-to-accessories transition and continuation page.

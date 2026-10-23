@@ -2,6 +2,7 @@ import PDFDocument from "pdfkit";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { Project } from "../data";
+import { drawRevAShelfTable, type AccessoryReportRoom } from "./rev-a-shelf-table";
 import { drawRoomsTable, type RoomReportRow } from "./rooms-table";
 
 export type ProjectReportFinancials = {
@@ -19,7 +20,7 @@ const display = (value: string | null) => value?.trim() || "—";
 const dateValue = (value: string | null) => value ? new Date(`${value}T12:00:00Z`).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }) : "—";
 const money = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
-export async function createProjectPdf(project: Project, rooms: readonly RoomReportRow[], financials: ProjectReportFinancials | null, date = new Date()): Promise<Buffer> {
+export async function createProjectPdf(project: Project, rooms: readonly (RoomReportRow & AccessoryReportRoom)[], financials: ProjectReportFinancials | null, date = new Date()): Promise<Buffer> {
   const logo = await readFile(path.join(process.cwd(), "public/images/acc-logo.svg"), "utf8");
   const doc = new PDFDocument({ size: "LETTER", margins: { top: 40, bottom: 55, left: 36, right: 36 }, bufferPages: true,
     info: { Title: `${project.name} | Project Report`, Author: "ACC CRM" } });
@@ -118,7 +119,8 @@ export async function createProjectPdf(project: Project, rooms: readonly RoomRep
     y += 14;
     if (remaining) { doc.addPage(); y = 40; continued = true; }
   }
-  drawRoomsTable(doc, rooms, y);
+  const roomsEnd = drawRoomsTable(doc, rooms, y);
+  drawRevAShelfTable(doc, rooms, roomsEnd);
   const range = doc.bufferedPageRange();
   for (let i = range.start; i < range.start + range.count; i++) {
     doc.switchToPage(i);
