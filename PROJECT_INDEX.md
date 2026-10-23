@@ -617,3 +617,7 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - Validation: lint, TypeScript and 15 existing tests passed; webpack production build checked with placeholder database configuration. Rendered sample PDFs to inspect logo, columns, room grouping and repeated headers. Live authenticated download requires the deployed database/session.
 
 - Disabled-room display correction: shared room list now applies whole-row 40% opacity in both view/edit modes and removes the visible Disabled label and its unused CSS. Checkbox remains available to re-enable rooms.
+
+## J&K configuration scrolling
+
+- `jk-configurator.tsx`, `globals.css`: cabinet list uses a fixed 320px height capped at 40% of the viewport, independent scrolling and sticky column headers. Modal uses a bounded flex layout with totals and Cancel/Apply Configuration in a non-scrolling footer; shorter screens can scroll search/custom controls while save controls remain visible.
