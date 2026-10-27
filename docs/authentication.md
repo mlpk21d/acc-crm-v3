@@ -129,7 +129,8 @@ npm run auth:reset-password
 ```
 
 It prompts for the existing administrator email and new password twice without
-echoing password input. The operator must confirm the exact email. This command
+echoing password input. To approve the reset, type `YES` at the final
+confirmation prompt (case-insensitive; surrounding whitespace is ignored). This command
 requires an interactive terminal, matching loopback HTTP `APP_URL` and
 `BETTER_AUTH_URL`, a local PostgreSQL connection, and a process not running
 with `NODE_ENV=production`. It refuses missing, inactive, banned, unlinked, or
@@ -232,3 +233,8 @@ password without browser autofill. The expected result is `YES`.
 If the command still says `NO`, report the safe status lines and compare its
 `Database used` with the Next.js `runtimeDatabase` value. Avoid sending
 passwords, password hashes, or database connection strings.
+
+A `Reset cancelled` message indicates that the confirmation was not accepted;
+no database credential change is attempted. After the reset reports success,
+run `npm run auth:verify-password` to check that the new password matches the
+stored credential.
