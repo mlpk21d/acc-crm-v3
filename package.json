@@ -20,6 +20,7 @@
     "auth:admin:cli": "auth create-admin --config scripts/auth/cli-config.ts",
     "auth:bootstrap-admin": "node --env-file=.env.local scripts/auth/bootstrap-admin.mjs",
     "auth:reset-password": "node --env-file=.env.local scripts/auth/reset-password.mjs",
+    "auth:verify-password": "node --env-file=.env.local scripts/auth/verify-password.mjs",
     "test:unit": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:integration": "node --env-file=.env.local --test tests/integration/*.test.mjs"
   },
