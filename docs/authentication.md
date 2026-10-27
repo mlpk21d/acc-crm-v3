@@ -207,3 +207,28 @@ terminal; use `npm run auth:reset-password` again after checking the email.
 
 These commands are local-terminal-only; do not paste passwords or secret
 credentials into chat, logs, or shell command arguments.
+
+## Recover if a prior reset reported success but verification says NO
+
+If `npm run auth:verify-password` reports an existing credential but
+`Stored password matches entered password: NO`, the password entered at
+that prompt does not verify against the selected administrator credential.
+
+The local `auth:reset-password` command now does two cryptographic self-checks
+before committing changes: it verifies the newly generated Better Auth hash
+and reads the updated hash back from PostgreSQL to verify the new password.
+A failed check rolls the transaction back and does not revoke sessions.
+The credential query also requires `accountId = user.id`, matching Better Auth's
+sign-in lookup.
+
+To recover, run `npm run auth:reset-password` again and look for:
+
+```text
+Administrator password updated and verified against its stored hash. Existing sessions have been revoked.
+```
+
+Then immediately run `npm run auth:verify-password` and enter the *exact same*
+password without browser autofill. The expected result is `YES`.
+If the command still says `NO`, report the safe status lines and compare its
+`Database used` with the Next.js `runtimeDatabase` value. Avoid sending
+passwords, password hashes, or database connection strings.
