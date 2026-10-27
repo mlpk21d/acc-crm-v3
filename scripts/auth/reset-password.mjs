@@ -76,8 +76,11 @@ async function main() {
       throw new Error("Password must be between 8 and 128 characters.");
     }
     if (newPassword !== confirmation) throw new Error("Passwords do not match.");
-    if ((await prompt.question(`Type RESET ${email} to confirm: `)) !== `RESET ${email}`) {
-      throw new Error("Reset cancelled.");
+    const approval = (await prompt.question(`Reset password for ${email}? Type YES to continue: `))
+      .trim()
+      .toUpperCase();
+    if (approval !== "YES") {
+      throw new Error("Reset cancelled: enter YES at the confirmation prompt to approve the change.");
     }
   } finally {
     prompt.close();
