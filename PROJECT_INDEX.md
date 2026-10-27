@@ -698,3 +698,7 @@ The runtime explicitly sets `advanced.disableCSRFCheck` only if `NODE_ENV=develo
 ## Password reset stored-hash integrity (2026-10-27)
 
 The local reset script now uses the same `userId`, `providerId='credential'`, and `accountId=user.id` linkage that Better Auth's sign-in flow expects. It verifies the newly created password hash, writes it in a transaction, reads that stored hash back and verifies again before committing and revoking sessions. Failed verification rolls back the credential change. `tests/auth-password-roundtrip.test.mjs` covers a correct/incorrect password hash round-trip using Better Auth's own helpers. When a prior reset's verification says NO, reset once using the updated command and then immediately run read-only `auth:verify-password` using the exact same input. A pass has not been confirmed against the user's local database.
+
+## Local password-reset confirmation usability (2026-10-27)
+
+The interactive `npm run auth:reset-password` flow now asks `Reset password for <email>? Type YES to continue:` instead of requiring the operator to retype `RESET <email>`. Confirmation accepts `YES` case-insensitively after trimming whitespace; any other response cancels before database mutation. All prior local-only safeguards and in-transaction stored-password verification remain unchanged. See `docs/authentication.md`.
