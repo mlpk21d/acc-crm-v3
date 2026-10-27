@@ -672,7 +672,7 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 
 ## Authentication origin handling (2026-10-27)
 
-Runtime Better Auth now derives its origin from `BETTER_AUTH_URL` (when set) or validated `APP_URL` and trusts only that exact origin. Keep `BETTER_AUTH_URL` / `APP_URL` aligned with the hostname, scheme, and port users actually visit, in both development and production. Cross-site navigation login protection remains enabled. A browser or extension that sends cross-site navigation metadata to the authentication endpoint may still be blocked; investigate request headers rather than disabling CSRF checks. The login UI displays a targeted message for `CROSS_SITE_NAVIGATION_LOGIN_BLOCKED`. No UI layout, routes, or database migrations changed. Local runtime verification remains pending.
+Runtime Better Auth now derives its origin from `BETTER_AUTH_URL` (when set) or validated `APP_URL` and trusts only that exact origin. Keep `BETTER_AUTH_URL` / `APP_URL` aligned with the hostname, scheme, and port users actually visit, in both development and production. Production cross-site navigation login protection remains enabled. The development-only exception is documented below; investigate unexpected request metadata instead of broadening that exception. The login UI displays a targeted message for `CROSS_SITE_NAVIGATION_LOGIN_BLOCKED`. No UI layout, routes, or database migrations changed. Local runtime verification remains pending.
 
 ## Development-only CSRF exception (2026-10-27)
 
