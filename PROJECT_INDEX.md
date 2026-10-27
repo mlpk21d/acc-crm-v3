@@ -17,7 +17,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 
 | Path | Purpose |
 | --- | --- |
-| `package.json` | Next.js/React/PostgreSQL dependencies, core scripts, and local `auth:reset-password` command |
+| `package.json` | Next.js/React/PostgreSQL dependencies, core scripts, local `auth:reset-password` and `auth:verify-password` commands |
 | `tsconfig.json` | Strict TypeScript and `@/*` source alias |
 | `next.config.ts` | Next.js application configuration |
 | `eslint.config.mjs` | Next.js + TypeScript linting |
@@ -40,6 +40,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `scripts/auth/link-admin.mjs` | Transactional Better Auth-to-CRM administrator linkage |
 | `scripts/auth/bootstrap-admin.mjs` | One-time initial administrator from `.env.local`, refuses existing user stores |
 | `scripts/auth/reset-password.mjs` | Local interactive administrator credential reset with Better Auth hashing, active-account checks, and session revocation |
+| `scripts/auth/verify-password.mjs` | Read-only local password verification against the active linked administrator credential using Better Auth verifier |
 | `docs/authentication.md` | Setup sequence, security constraints, local CSRF policy and verification checklist |
 | `src/features/auth/session.ts` | Session-to-CRM-user authorization lookup |
 | `src/features/auth/permissions.ts` | Explicit role/permission matrix |
@@ -688,3 +689,7 @@ The runtime explicitly sets `advanced.disableCSRFCheck` only if `NODE_ENV=develo
 ## Login CSRF diagnostics (2026-10-27)
 
 `src/app/api/auth/[...all]/route.ts` now writes `[ACC CRM auth diagnostic]` to the **local Next.js server terminal only in development** for `POST /api/auth/sign-in/email`. It records the incoming fetch metadata headers, origin equality, effective development-only CSRF setting, HTTP status and Better Auth response error code. No credentials, request bodies, cookies, authorization headers, user emails, or raw response bodies are logged. This allows direct comparison of the server's headers with Firefox's Network tab and distinguishes environment misconfiguration from a different request or application instance. See `docs/authentication.md` and tests in `tests/auth-diagnostics.test.mjs`. CSRF configuration and production behavior are unchanged by diagnostics. Interactive verification not performed in the user's local environment.
+
+## Password-versus-database diagnosis (2026-10-27)
+
+`npm run auth:verify-password` is a **read-only** terminal-only diagnostic of an existing linked administrator. It uses Better Auth's published password verifier against the active credential account selected with `providerId = credential` and `accountId = user.id`. It outputs YES/NO for whether the entered password matches, credential presence, and a password-free connection label (`host:port/database`). The development-only `[ACC CRM auth diagnostic]` log now includes `runtimeDatabase` with the same sanitized label, enabling detection of local CLI/runtime database misalignment. Neither passwords nor hashes are logged, and no CRM data, UI, routes, or schema were modified. Live browser/database validation requires the user's machine.
