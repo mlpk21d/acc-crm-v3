@@ -23,7 +23,11 @@ export function LoginForm() {
         password: String(data.get("password") ?? ""),
       });
       if (signInError) {
-        setError("Invalid credentials or account unavailable.");
+        if (signInError.code === "CROSS_SITE_NAVIGATION_LOGIN_BLOCKED") {
+          setError("Your browser blocked sign-in for security reasons. Open this app directly at its configured URL and try again.");
+        } else {
+          setError("Invalid credentials or account unavailable.");
+        }
         return;
       }
       router.replace("/");
