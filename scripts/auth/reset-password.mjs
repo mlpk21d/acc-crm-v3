@@ -2,7 +2,7 @@ import { createInterface } from "node:readline/promises";
 import { Writable } from "node:stream";
 import process from "node:process";
 
-import { hashPassword } from "better-auth/crypto";
+import { hashPassword, verifyPassword } from "better-auth/crypto";
 import { Client } from "pg";
 
 const loopbackHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
@@ -111,7 +111,7 @@ async function main() {
 
     const credential = await client.query(
       `SELECT id FROM public."account"
-       WHERE "userId" = $1 AND "providerId" = 'credential'
+       WHERE "userId" = $1 AND "providerId" = 'credential' AND "accountId" = $1
        FOR UPDATE`,
       [owner.id],
     );
@@ -121,16 +121,36 @@ async function main() {
 
     // Better Auth's own scrypt hashing format; never write plaintext passwords.
     const hashedPassword = await hashPassword(newPassword);
-    await client.query(
+    // Fail before touching PostgreSQL if this runtime cannot verify its own hash.
+    if (!(await verifyPassword({ hash: hashedPassword, password: newPassword }))) {
+      throw new Error("Password hashing self-check failed; nothing was changed.");
+    }
+    const update = await client.query(
       `UPDATE public."account"
        SET "password" = $1, "updatedAt" = now()
        WHERE id = $2`,
       [hashedPassword, credential.rows[0].id],
     );
+    if (update.rowCount !== 1) {
+      throw new Error("Password credential update did not affect exactly one row.");
+    }
+    // Read the saved value back and verify it BEFORE committing.
+    // A mismatch rolls back the password update and preserves prior sessions.
+    const saved = await client.query(
+      `SELECT "password" FROM public."account" WHERE id = $1`,
+      [credential.rows[0].id],
+    );
+    if (
+      saved.rowCount !== 1 ||
+      typeof saved.rows[0].password !== "string" ||
+      !(await verifyPassword({ hash: saved.rows[0].password, password: newPassword }))
+    ) {
+      throw new Error("Stored password verification failed; changes were rolled back.");
+    }
     // Old browser sessions must not remain valid after administrator recovery.
     await client.query('DELETE FROM public."session" WHERE "userId" = $1', [owner.id]);
     await client.query("COMMIT");
-    console.log("Administrator password updated. Existing sessions have been revoked.");
+    console.log("Administrator password updated and verified against its stored hash. Existing sessions have been revoked.");
   } catch (error) {
     await client.query("ROLLBACK").catch(() => {});
     throw error;
