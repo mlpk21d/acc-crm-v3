@@ -1,6 +1,6 @@
 # ACC CRM V3 Project Index
 
-Last updated: 2026-10-22
+Last updated: 2026-10-27
 
 This file is the fast-entry index for the repository. Update it whenever routes,
 domain boundaries, database modules, or major shared components change.
@@ -25,7 +25,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `scripts/db/migrate.mjs` | Versioned, checksummed, locked PostgreSQL migration runner |
 | `src/db/README.md` | Database setup, migration policy, safety notes |
 | `src/db/migrations/0001_crm_foundation.sql` | CRM users and contacts base tables + partial indexes |
-| `src/lib/auth.ts` | Server-only runtime Better Auth instance |
+| `src/lib/auth.ts` | Server-only runtime Better Auth instance with explicit configured base URL and same-origin trust |
 | `src/lib/auth-options.ts` | Shared, CLI-safe Better Auth options and plugins |
 | `scripts/auth/cli-config.ts` | CLI-only Better Auth instance without `server-only` imports |
 | `auth` devDependency | Current supported Better Auth CLI, aligned with runtime version |
@@ -38,7 +38,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `docs/authentication.md` | Setup sequence, security constraints, and verification checklist |
 | `src/features/auth/session.ts` | Session-to-CRM-user authorization lookup |
 | `src/features/auth/permissions.ts` | Explicit role/permission matrix |
-| `src/features/auth/login-form.tsx` | Email/password sign-in form |
+| `src/features/auth/login-form.tsx` | Email/password sign-in form; distinguishes cross-site navigation security rejection from credential errors |
 | `src/features/auth/sign-out-button.tsx` | Session sign-out in CRM header |
 | `src/app/api/auth/access/route.ts` | No-store check of active CRM session authorization |
 | `tests/auth-permissions.test.mjs` | Node test of role permission matrix |
@@ -667,3 +667,7 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 - `reports/project-pdf.ts`, `next.config.ts`: removed Project Report watermark and its SVG dependency/tracing. J&K report logo retained.
 - `reports/rev-a-shelf-table.ts`: light gray header with dark gray text distinguishes accessories from the dark Rooms header, including continuation pages. No database/index changes needed.
 - Validation: TypeScript, scoped lint, whitespace checks and PDF visual review passed; watermark absence verified across all generated report pages.
+
+## Authentication origin handling (2026-10-27)
+
+Runtime Better Auth now derives its origin from `BETTER_AUTH_URL` (when set) or validated `APP_URL` and trusts only that exact origin. Keep `BETTER_AUTH_URL` / `APP_URL` aligned with the hostname, scheme, and port users actually visit, in both development and production. Cross-site navigation login protection remains enabled. A browser or extension that sends cross-site navigation metadata to the authentication endpoint may still be blocked; investigate request headers rather than disabling CSRF checks. The login UI displays a targeted message for `CROSS_SITE_NAVIGATION_LOGIN_BLOCKED`. No UI layout, routes, or database migrations changed. Local runtime verification remains pending.
