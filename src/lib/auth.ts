@@ -10,7 +10,7 @@ import { getServerEnv } from "@/lib/env";
 const appUrl = getServerEnv().APP_URL;
 const configuredUrl = process.env.BETTER_AUTH_URL || appUrl;
 const appOrigin = new URL(configuredUrl).origin;
-const disableCsrfCheck = shouldDisableCsrfCheck({
+export const disableCsrfCheck = shouldDisableCsrfCheck({
   nodeEnv: process.env.NODE_ENV,
   appUrl,
   authUrl: configuredUrl,
