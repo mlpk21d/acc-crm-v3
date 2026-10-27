@@ -702,3 +702,47 @@ The local reset script now uses the same `userId`, `providerId='credential'`, an
 ## Local password-reset confirmation usability (2026-10-27)
 
 The interactive `npm run auth:reset-password` flow now asks `Reset password for <email>? Type YES to continue:` instead of requiring the operator to retype `RESET <email>`. Confirmation accepts `YES` case-insensitively after trimming whitespace; any other response cancels before database mutation. All prior local-only safeguards and in-transaction stored-password verification remain unchanged. See `docs/authentication.md`.
+
+## Proposals — 2026-10-27
+
+Replaces the `/proposals` placeholder with project-linked proposals using the existing CRM UI.
+
+| Route / module | Purpose |
+| --- | --- |
+| `/proposals` | Search by project, 25-row pagination, Project Name / Contact / Created Date / Edit and View icons |
+| `/proposals/new`, `/proposals/[id]/edit` | Required searchable project modal; read-only contact, selling price and calculated deposit; 10–90% in 10% steps, default 50%; PDF-only room finishes toggle |
+| `/proposals/[id]` | Proposal details, ordered render images, PDF download; room finishes not shown on this page |
+| `/api/proposals/projects` | Authenticated paginated-size autocomplete search and selected-project pricing lookup |
+| `/api/proposals/[id]/media/[mediaId]` | Private, no-store PNG/JPEG image serving with proposal ownership check |
+| `/api/proposals/[id]/pdf` | Proposal summary, optional enabled-room finishes table and ordered titled render pages |
+| `src/features/proposals/model.ts` | Shared types, upload bounds, integer-cent deposit rounding |
+| `src/features/proposals/data.ts` | Authorized list/detail/project queries; selling total reuses Project financial calculation |
+| `src/features/proposals/actions.ts` | Server validation; transactional proposal/media save; project existence and media ownership checks |
+| `src/features/proposals/proposal-form.tsx` | Project selection, drag/drop files, optional titles, up/down order and removal |
+| `src/features/proposals/search.tsx` | Debounced project-name list search |
+| `src/features/proposals/api.ts` | API session/admin checks and private response headers |
+| `src/features/proposals/pdf.ts` | PDFKit proposal output and existing room-table renderer |
+| `src/db/migrations/0018_proposals.sql` | Required project FK (RESTRICT), percentage constraint, project-name trigram search, proposal date/project and ordered-media indexes |
+| `tests/proposals.test.mjs` | Deposit rounding and invalid-input coverage |
+| `tests/integration/proposals-db.test.mjs` | Transactional checks for required project, FK, deposit constraints and ordered media lifecycle |
+
+Access follows existing administrator-only project financial visibility, including the sidebar,
+all routes, reads, actions, image responses and PDF export. Contact/price are live values from
+the selected project; proposal submissions cannot override them. There may be multiple proposals
+per project. Deleted projects cannot be selected or accessed through proposals.
+
+Images are stored privately as PostgreSQL bytea, so database backups include them. Up to 20
+PNG/JPEG images, 2 MiB each, 24 megapixels, and 5 MiB combined per proposal; PDFKit validates
+image readability on upload. Titles, order, removals and new bytes save atomically. The existing
+6 MB server-action limit remains. No public upload directory or server disk configuration needed.
+
+Apply `npm run db:migrate` before using these routes. No user/production database was accessed.
+Index review: new partial project-name trigram index plus proposal project/date and media order indexes
+support filtering, joins and retrieval. `next.config.ts` traces PDFKit fonts for the proposal PDF.
+
+Validation: lint, TypeScript, 25 unit tests and production build passed (build-only database
+configuration; Better Auth reports the absent live DB). All 18 migrations applied to an isolated
+PGlite PostgreSQL engine with pg_trgm; required-project/FK/default/percentage/order/cascade and
+index checks passed. PDF rendered and inspected, with optional room inclusion, disabled-room
+exclusion and titled image-page checks. Authenticated browser interaction has not been tested
+against the user's database. Apply migration 0018 using a database role able to install pg_trgm.

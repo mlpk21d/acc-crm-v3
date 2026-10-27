@@ -1,5 +1,9 @@
-import { PagePlaceholder } from "@/components/page-placeholder";
-
-export default function Page() {
-  return <PagePlaceholder title="Proposals" description="Create, review, and manage customer proposals."/>;
+import Link from 'next/link';
+import {ButtonIcon} from '@/components/button-icon';
+import {listProposals} from '@/features/proposals/data';
+import {ProposalSearch} from '@/features/proposals/search';
+export default async function Proposals({searchParams}:{searchParams:Promise<{q?:string;page?:string}>}){
+ const params=await searchParams;const q=typeof params.q==='string'?params.q.slice(0,100):'';const page=Math.max(1,Math.min(10000,Math.trunc(Number(params.page))||1));
+ const rows=await listProposals(q,page);
+ return <section><div className="page-heading"><h1>Proposals</h1><Link className="proposal-button proposal-primary" href="/proposals/new"><ButtonIcon kind="add"/>New Proposal</Link></div><ProposalSearch initialQuery={q}/><div className="content-card contact-list-card"><table className="contact-table"><thead><tr><th>Project Name</th><th>Contact</th><th>Created Date</th><th>Actions</th></tr></thead><tbody>{rows.slice(0,25).map(row=><tr key={row.id}><td><Link href={`/proposals/${row.id}`}><strong>{row.name}</strong></Link></td><td>{row.contact||'—'}</td><td>{row.created_at.toLocaleDateString('en-US',{timeZone:'America/New_York'})}</td><td><div className="proposal-actions"><Link className="proposal-button" href={`/proposals/${row.id}/edit`} aria-label={`Edit proposal for ${row.name}`} title="Edit"><ButtonIcon kind="edit"/></Link><Link className="proposal-button" href={`/proposals/${row.id}`} aria-label={`View proposal for ${row.name}`} title="View"><ButtonIcon kind="eye"/></Link></div></td></tr>)}{!rows.length&&<tr><td colSpan={4}>No proposals found.</td></tr>}</tbody></table></div><div className="contact-actions contact-list-pagination">{page>1&&<Link href={`/proposals?q=${encodeURIComponent(q)}&page=${page-1}`}><ButtonIcon kind="back"/>Previous</Link>}<span>Page {page}</span>{rows.length>25&&<Link href={`/proposals?q=${encodeURIComponent(q)}&page=${page+1}`}><ButtonIcon kind="down"/>Next</Link>}</div></section>;
 }

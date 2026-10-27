@@ -15,7 +15,7 @@ const navigation = [
   { href: "/contacts", label: "Contacts", icon: "contacts", permission: "contacts:read" },
   { href: "/projects", label: "Projects", icon: "projects", permission: "projects:read" },
   { href: "/invoices", label: "Invoices", icon: "invoices", permission: "invoices:read" },
-  { href: "/proposals", label: "Proposals", icon: "proposals", permission: "invoices:read" },
+  { href: "/proposals", label: "Proposals", icon: "proposals", permission: "settings:manage" },
   { href: "/door-orders", label: "Door Orders", icon: "door-orders", permission: "invoices:read" },
   { href: "/files", label: "Files", icon: "files", permission: "projects:read" },
   { href: "/users", label: "Users", icon: "users", permission: "users:manage" },
