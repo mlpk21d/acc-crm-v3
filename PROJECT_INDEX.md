@@ -39,8 +39,9 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `src/db/migrations/0003_projects_foundation.sql` | Provisional projects table, optional contact FK, statuses, audit fields and indexes (NOT applied) |
 | `scripts/auth/link-admin.mjs` | Transactional Better Auth-to-CRM administrator linkage |
 | `scripts/auth/bootstrap-admin.mjs` | One-time initial administrator from `.env.local`, refuses existing user stores |
-| `scripts/auth/reset-password.mjs` | Local interactive administrator credential reset with Better Auth hashing, active-account checks, and session revocation |
+| `scripts/auth/reset-password.mjs` | Local interactive administrator reset with credential account linkage, in-transaction saved-hash verification, and session revocation |
 | `scripts/auth/verify-password.mjs` | Read-only local password verification against the active linked administrator credential using Better Auth verifier |
+| `tests/auth-password-roundtrip.test.mjs` | Better Auth password hash and verification compatibility regression test |
 | `docs/authentication.md` | Setup sequence, security constraints, local CSRF policy and verification checklist |
 | `src/features/auth/session.ts` | Session-to-CRM-user authorization lookup |
 | `src/features/auth/permissions.ts` | Explicit role/permission matrix |
@@ -693,3 +694,7 @@ The runtime explicitly sets `advanced.disableCSRFCheck` only if `NODE_ENV=develo
 ## Password-versus-database diagnosis (2026-10-27)
 
 `npm run auth:verify-password` is a **read-only** terminal-only diagnostic of an existing linked administrator. It uses Better Auth's published password verifier against the active credential account selected with `providerId = credential` and `accountId = user.id`. It outputs YES/NO for whether the entered password matches, credential presence, and a password-free connection label (`host:port/database`). The development-only `[ACC CRM auth diagnostic]` log now includes `runtimeDatabase` with the same sanitized label, enabling detection of local CLI/runtime database misalignment. Neither passwords nor hashes are logged, and no CRM data, UI, routes, or schema were modified. Live browser/database validation requires the user's machine.
+
+## Password reset stored-hash integrity (2026-10-27)
+
+The local reset script now uses the same `userId`, `providerId='credential'`, and `accountId=user.id` linkage that Better Auth's sign-in flow expects. It verifies the newly created password hash, writes it in a transaction, reads that stored hash back and verifies again before committing and revoking sessions. Failed verification rolls back the credential change. `tests/auth-password-roundtrip.test.mjs` covers a correct/incorrect password hash round-trip using Better Auth's own helpers. When a prior reset's verification says NO, reset once using the updated command and then immediately run read-only `auth:verify-password` using the exact same input. A pass has not been confirmed against the user's local database.
