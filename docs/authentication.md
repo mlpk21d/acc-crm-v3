@@ -149,3 +149,30 @@ A previously observed `CROSS_SITE_NAVIGATION_LOGIN_BLOCKED` response happens
 before checking the password and **will not** be resolved merely by a
 credential reset. Investigate the exact failed request's headers and runtime
 logging if it persists.
+
+## Diagnose persistent local sign-in CSRF errors
+
+The sign-in HTTP route logs one sanitized line to the `npm run dev`
+**server terminal** for each `POST /api/auth/sign-in/email`:
+
+```text
+[ACC CRM auth diagnostic] {"csrfCheckDisabled":true,"requestMethod":"POST","secFetchSite":"same-origin","secFetchMode":"cors","secFetchDest":"empty","origin":"http://localhost:3000","originMatchesRequest":true,"status":401,"errorCode":"INVALID_EMAIL_OR_PASSWORD"}
+```
+
+That line is an **illustrative example**, not the result of a live test.
+It includes only request metadata, the effective local CSRF setting,
+response status, and the error code. It does not log credentials,
+cookies, authorization headers, user email, or raw request/response bodies.
+This instrumentation runs only with `NODE_ENV=development`.
+
+Run `npm run dev`, submit the login form once, then inspect the
+`[ACC CRM auth diagnostic]` line. If `csrfCheckDisabled` is false
+while using localhost, compare `APP_URL`, `BETTER_AUTH_URL`, and
+`NODE_ENV` with the local-only policy above. If the error code is
+`CROSS_SITE_NAVIGATION_LOGIN_BLOCKED` but the server reports
+`secFetchSite: same-origin` and `secFetchMode: cors`, inspect
+whether the browser and terminal refer to the same app instance and
+whether the installed Better Auth version matches `package.json`.
+Do not bypass production CSRF protection to suppress the error.
+
+See `src/lib/auth-diagnostics.ts` and `tests/auth-diagnostics.test.mjs`.
