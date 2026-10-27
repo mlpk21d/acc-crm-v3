@@ -89,3 +89,32 @@ Use `scripts/auth/cli-config.ts` for schema generation rather than
 `server-only` guards. The CLI uses shared `src/lib/auth-options.ts` so plugin
 and password settings remain aligned. `npm run auth:schema` reads `.env.local`
 with Node 24 before invoking the CLI. Do not remove `server-only` imports.
+
+## Local development CSRF policy
+
+Runtime Better Auth leaves CSRF protection enabled except when **all** of these
+conditions are true:
+
+- Next.js runs with `NODE_ENV=development` (normally `npm run dev`).
+- Both `APP_URL` and `BETTER_AUTH_URL` (or its APP_URL fallback) use `http:`.
+- Both URLs have the **same origin** (scheme, hostname, and port).
+- The hostname is exactly `localhost`, `127.0.0.1`, or IPv6 loopback `[::1]`.
+
+The decision is in `src/lib/auth-security.ts` and covered by
+`tests/auth-security.test.mjs`. The runtime uses the Better Auth
+`advanced.disableCSRFCheck` option; the separate trusted-origin check
+remains enabled. Production processes never disable CSRF checks, even if
+configured for a loopback URL. Do **not** run the development server on a
+public network when using this exception.
+
+For local setup, use the **same** URL for both variables, e.g.:
+
+```dotenv
+APP_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3000
+```
+
+Restart the development server after modifying environment configuration.
+Use `npm run check` to run the security policy tests with the rest of the
+validation suite. This exception is a local-development workaround and does
+not establish the root cause of any observed cross-site navigation error.
