@@ -17,7 +17,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 
 | Path | Purpose |
 | --- | --- |
-| `package.json` | Next.js/React/PostgreSQL dependencies and core scripts |
+| `package.json` | Next.js/React/PostgreSQL dependencies, core scripts, and local `auth:reset-password` command |
 | `tsconfig.json` | Strict TypeScript and `@/*` source alias |
 | `next.config.ts` | Next.js application configuration |
 | `eslint.config.mjs` | Next.js + TypeScript linting |
@@ -37,6 +37,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `src/db/migrations/0003_projects_foundation.sql` | Provisional projects table, optional contact FK, statuses, audit fields and indexes (NOT applied) |
 | `scripts/auth/link-admin.mjs` | Transactional Better Auth-to-CRM administrator linkage |
 | `scripts/auth/bootstrap-admin.mjs` | One-time initial administrator from `.env.local`, refuses existing user stores |
+| `scripts/auth/reset-password.mjs` | Local interactive administrator credential reset with Better Auth hashing, active-account checks, and session revocation |
 | `docs/authentication.md` | Setup sequence, security constraints, local CSRF policy and verification checklist |
 | `src/features/auth/session.ts` | Session-to-CRM-user authorization lookup |
 | `src/features/auth/permissions.ts` | Explicit role/permission matrix |
@@ -677,3 +678,7 @@ Runtime Better Auth now derives its origin from `BETTER_AUTH_URL` (when set) or 
 ## Development-only CSRF exception (2026-10-27)
 
 The runtime explicitly sets `advanced.disableCSRFCheck` only if `NODE_ENV=development`, `APP_URL` and `BETTER_AUTH_URL` (or fallback) resolve to **the same** `http:` loopback origin (`localhost`, `127.0.0.1`, or `[::1]`). All other configurations retain CSRF checks; trusted-origin validation remains active regardless. Never expose a local development server with this exception to the public internet. See `src/lib/auth-security.ts`, `tests/auth-security.test.mjs`, and `docs/authentication.md`. No routes, UI, or migrations changed. Verify locally with `npm run check`, `npm run build`, and an interactive browser login (not yet executed against the user's local environment).
+
+## Local administrator password recovery (2026-10-27)
+
+`npm run auth:reset-password` starts `scripts/auth/reset-password.mjs`, an interactive terminal-only reset of an *existing* active, linked Better Auth/CRM administrator. It requires matching loopback HTTP app/auth URLs, local PostgreSQL, and `NODE_ENV != production`; rejects ambiguous/missing credentials, prompts twice for a private password, uses Better Auth's published scrypt hash helper, and transactionally updates the credential while revoking that user's existing sessions. It does not affect projects, contacts, invoices, or migrations. The password is never a CLI argument. See `docs/authentication.md`. The user's login-CSRF rejection is a separate issue that credential reset alone may not fix. Live local validation not performed from GitHub-connected workspace.
