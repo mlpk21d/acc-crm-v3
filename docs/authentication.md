@@ -118,3 +118,34 @@ Restart the development server after modifying environment configuration.
 Use `npm run check` to run the security policy tests with the rest of the
 validation suite. This exception is a local-development workaround and does
 not establish the root cause of any observed cross-site navigation error.
+
+## Recover an existing local administrator password
+
+Use the interactive local recovery command rather than rerunning
+`auth:bootstrap-admin` or creating a second account:
+
+```bash
+npm run auth:reset-password
+```
+
+It prompts for the existing administrator email and new password twice without
+echoing password input. The operator must confirm the exact email. This command
+requires an interactive terminal, matching loopback HTTP `APP_URL` and
+`BETTER_AUTH_URL`, a local PostgreSQL connection, and a process not running
+with `NODE_ENV=production`. It refuses missing, inactive, banned, unlinked, or
+non-administrator accounts and refuses missing or ambiguous existing credential
+rows. The replacement password is hashed with Better Auth's exported
+`hashPassword` implementation, then only the existing credential row is
+updated and that administrator's sessions are revoked in one transaction.
+The command does not delete CRM business data, migrate the schema, or reset
+other users.
+
+Never put the password on a command line or commit it in environment files.
+Run the script only on your trusted local development machine. There is no
+production password recovery bypass in this command; configure a secure,
+verified reset-email workflow for production use.
+
+A previously observed `CROSS_SITE_NAVIGATION_LOGIN_BLOCKED` response happens
+before checking the password and **will not** be resolved merely by a
+credential reset. Investigate the exact failed request's headers and runtime
+logging if it persists.
