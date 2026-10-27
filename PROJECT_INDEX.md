@@ -28,6 +28,8 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `src/lib/auth.ts` | Server-only Better Auth instance; guarded local-only CSRF exception with production CSRF enforcement |
 | `src/lib/auth-options.ts` | Shared, CLI-safe Better Auth options and plugins |
 | `src/lib/auth-security.ts` | Fail-closed CSRF exception guard: development + identical HTTP loopback origins only |
+| `src/lib/auth-diagnostics.ts` | Pure helper for redacted local sign-in request metadata and error-code logging |
+| `tests/auth-diagnostics.test.mjs` | Test that login diagnostic omits credentials, cookies, auth headers and response bodies |
 | `tests/auth-security.test.mjs` | Unit tests for development-only bypass and production/public URL safeguards |
 | `scripts/auth/cli-config.ts` | CLI-only Better Auth instance without `server-only` imports |
 | `auth` devDependency | Current supported Better Auth CLI, aligned with runtime version |
@@ -45,7 +47,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `src/features/auth/sign-out-button.tsx` | Session sign-out in CRM header |
 | `src/app/api/auth/access/route.ts` | No-store check of active CRM session authorization |
 | `tests/auth-permissions.test.mjs` | Node test of role permission matrix |
-| `src/app/api/auth/[...all]/route.ts` | Better Auth HTTP endpoints |
+| `src/app/api/auth/[...all]/route.ts` | Better Auth HTTP endpoints; development-only, redacted POST sign-in diagnostic logging |
 
 ## Application shell
 
@@ -682,3 +684,7 @@ The runtime explicitly sets `advanced.disableCSRFCheck` only if `NODE_ENV=develo
 ## Local administrator password recovery (2026-10-27)
 
 `npm run auth:reset-password` starts `scripts/auth/reset-password.mjs`, an interactive terminal-only reset of an *existing* active, linked Better Auth/CRM administrator. It requires matching loopback HTTP app/auth URLs, local PostgreSQL, and `NODE_ENV != production`; rejects ambiguous/missing credentials, prompts twice for a private password, uses Better Auth's published scrypt hash helper, and transactionally updates the credential while revoking that user's existing sessions. It does not affect projects, contacts, invoices, or migrations. The password is never a CLI argument. See `docs/authentication.md`. The user's login-CSRF rejection is a separate issue that credential reset alone may not fix. Live local validation not performed from GitHub-connected workspace.
+
+## Login CSRF diagnostics (2026-10-27)
+
+`src/app/api/auth/[...all]/route.ts` now writes `[ACC CRM auth diagnostic]` to the **local Next.js server terminal only in development** for `POST /api/auth/sign-in/email`. It records the incoming fetch metadata headers, origin equality, effective development-only CSRF setting, HTTP status and Better Auth response error code. No credentials, request bodies, cookies, authorization headers, user emails, or raw response bodies are logged. This allows direct comparison of the server's headers with Firefox's Network tab and distinguishes environment misconfiguration from a different request or application instance. See `docs/authentication.md` and tests in `tests/auth-diagnostics.test.mjs`. CSRF configuration and production behavior are unchanged by diagnostics. Interactive verification not performed in the user's local environment.
