@@ -2,6 +2,7 @@ import { toNextJsHandler } from "better-auth/next-js";
 
 import { getLoginRequestDiagnostic } from "@/lib/auth-diagnostics";
 import { auth, disableCsrfCheck } from "@/lib/auth";
+import { getServerEnv } from "@/lib/env";
 
 const handlers = toNextJsHandler(auth);
 
@@ -21,7 +22,14 @@ export async function POST(request: Request): Promise<Response> {
       response,
       disableCsrfCheck,
     );
-    console.info("[ACC CRM auth diagnostic]", JSON.stringify(diagnostic));
+    // Database coordinates only (never the database username or password).
+    // Compare this with the read-only local password verification command.
+    const dbUrl = new URL(getServerEnv().DATABASE_URL);
+    const runtimeDatabase = `${dbUrl.hostname}:${dbUrl.port || "5432"}${dbUrl.pathname}`;
+    console.info(
+      "[ACC CRM auth diagnostic]",
+      JSON.stringify({ ...diagnostic, runtimeDatabase }),
+    );
   }
 
   return response;
