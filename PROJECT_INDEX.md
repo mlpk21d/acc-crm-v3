@@ -25,8 +25,10 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `scripts/db/migrate.mjs` | Versioned, checksummed, locked PostgreSQL migration runner |
 | `src/db/README.md` | Database setup, migration policy, safety notes |
 | `src/db/migrations/0001_crm_foundation.sql` | CRM users and contacts base tables + partial indexes |
-| `src/lib/auth.ts` | Server-only runtime Better Auth instance with explicit configured base URL and same-origin trust |
+| `src/lib/auth.ts` | Server-only Better Auth instance; guarded local-only CSRF exception with production CSRF enforcement |
 | `src/lib/auth-options.ts` | Shared, CLI-safe Better Auth options and plugins |
+| `src/lib/auth-security.ts` | Fail-closed CSRF exception guard: development + identical HTTP loopback origins only |
+| `tests/auth-security.test.mjs` | Unit tests for development-only bypass and production/public URL safeguards |
 | `scripts/auth/cli-config.ts` | CLI-only Better Auth instance without `server-only` imports |
 | `auth` devDependency | Current supported Better Auth CLI, aligned with runtime version |
 | `src/db/migrations/0002_better_auth.sql` | Committed Better Auth tables and indexes; user reports local migration applied |
@@ -35,7 +37,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `src/db/migrations/0003_projects_foundation.sql` | Provisional projects table, optional contact FK, statuses, audit fields and indexes (NOT applied) |
 | `scripts/auth/link-admin.mjs` | Transactional Better Auth-to-CRM administrator linkage |
 | `scripts/auth/bootstrap-admin.mjs` | One-time initial administrator from `.env.local`, refuses existing user stores |
-| `docs/authentication.md` | Setup sequence, security constraints, and verification checklist |
+| `docs/authentication.md` | Setup sequence, security constraints, local CSRF policy and verification checklist |
 | `src/features/auth/session.ts` | Session-to-CRM-user authorization lookup |
 | `src/features/auth/permissions.ts` | Explicit role/permission matrix |
 | `src/features/auth/login-form.tsx` | Email/password sign-in form; distinguishes cross-site navigation security rejection from credential errors |
@@ -671,3 +673,7 @@ Fixed React `react-hooks/set-state-in-effect` lint error in `src/features/projec
 ## Authentication origin handling (2026-10-27)
 
 Runtime Better Auth now derives its origin from `BETTER_AUTH_URL` (when set) or validated `APP_URL` and trusts only that exact origin. Keep `BETTER_AUTH_URL` / `APP_URL` aligned with the hostname, scheme, and port users actually visit, in both development and production. Cross-site navigation login protection remains enabled. A browser or extension that sends cross-site navigation metadata to the authentication endpoint may still be blocked; investigate request headers rather than disabling CSRF checks. The login UI displays a targeted message for `CROSS_SITE_NAVIGATION_LOGIN_BLOCKED`. No UI layout, routes, or database migrations changed. Local runtime verification remains pending.
+
+## Development-only CSRF exception (2026-10-27)
+
+The runtime explicitly sets `advanced.disableCSRFCheck` only if `NODE_ENV=development`, `APP_URL` and `BETTER_AUTH_URL` (or fallback) resolve to **the same** `http:` loopback origin (`localhost`, `127.0.0.1`, or `[::1]`). All other configurations retain CSRF checks; trusted-origin validation remains active regardless. Never expose a local development server with this exception to the public internet. See `src/lib/auth-security.ts`, `tests/auth-security.test.mjs`, and `docs/authentication.md`. No routes, UI, or migrations changed. Verify locally with `npm run check`, `npm run build`, and an interactive browser login (not yet executed against the user's local environment).
