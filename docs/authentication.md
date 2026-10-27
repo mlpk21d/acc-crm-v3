@@ -176,3 +176,34 @@ whether the installed Better Auth version matches `package.json`.
 Do not bypass production CSRF protection to suppress the error.
 
 See `src/lib/auth-diagnostics.ts` and `tests/auth-diagnostics.test.mjs`.
+
+## Verify a locally reset password (read-only)
+
+If the reset command succeeded but browser sign-in still returns
+`INVALID_EMAIL_OR_PASSWORD`, run:
+
+```bash
+npm run auth:verify-password
+```
+
+Enter the *existing administrator email* and the password you are entering in
+the browser. The script reads the active, linked administrator's credential
+record (including Better Auth's required `accountId = user.id` mapping) and
+uses Better Auth 1.7.10's exported `verifyPassword` function. It **does not**
+update credentials or revoke sessions. It prints:
+
+- `Database used: host:port/database` (never credentials)
+- `Existing administrator credential: found/not found or ambiguous`
+- `Stored password matches entered password: YES/NO`
+
+Compare `Database used` with `runtimeDatabase` on the
+`[ACC CRM auth diagnostic]` line printed by the development server at login.
+If the database locations differ, reconcile the running Next.js environment
+with `.env.local` and restart. If both match but the CLI says YES while the
+browser continues to get 401, check whether Firefox autofill is sending the
+old password and enter the new password manually in a private window.
+If it says NO, the stored credential differs from the password typed at the
+terminal; use `npm run auth:reset-password` again after checking the email.
+
+These commands are local-terminal-only; do not paste passwords or secret
+credentials into chat, logs, or shell command arguments.
