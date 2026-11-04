@@ -17,6 +17,15 @@ test('proposals enforce required projects and valid deposits, and persist ordere
   await rejected('DELETE FROM public.projects WHERE id=$1',[project],'23503');
   await db.query("INSERT INTO public.proposal_media(proposal_id,title,filename,mime_type,image_data,sort_order) VALUES($1,'Second','two.png','image/png',$2,1),($1,'First','one.png','image/png',$2,0)",[proposal.id,Buffer.from([1])]);
   assert.deepEqual((await db.query('SELECT title FROM public.proposal_media WHERE proposal_id=$1 ORDER BY sort_order,id',[proposal.id])).rows.map(row=>row.title),['First','Second']);
+  const room=(await db.query("INSERT INTO public.project_rooms(project_id,room_name) VALUES($1,'Kitchen') RETURNING id",[project])).rows[0].id;
+  await db.query('UPDATE public.proposal_media SET room_id=$1 WHERE proposal_id=$2',[room,proposal.id]);
+  const images=(await db.query('SELECT id FROM public.proposal_media WHERE proposal_id=$1 ORDER BY sort_order,id',[proposal.id])).rows;
+  await db.query('UPDATE public.proposal_media SET is_main=true WHERE id=$1',[images[0].id]);
+  await rejected('UPDATE public.proposal_media SET is_main=true WHERE id=$1',[images[1].id],'23505');
+  await rejected("UPDATE public.proposal_media SET room_id='00000000-0000-4000-8000-000000000001' WHERE id=$1",[images[0].id],'23503');
+  await db.query('UPDATE public.proposal_media SET is_main=false WHERE proposal_id=$1',[proposal.id]);
+  await db.query('UPDATE public.proposal_media SET is_main=true WHERE id=$1',[images[1].id]);
+  assert.equal((await db.query('SELECT id FROM public.proposal_media WHERE proposal_id=$1 AND is_main',[proposal.id])).rows[0].id,images[1].id);
   await db.query('DELETE FROM public.proposals WHERE id=$1',[proposal.id]);
   assert.equal((await db.query('SELECT id FROM public.proposal_media WHERE proposal_id=$1',[proposal.id])).rowCount,0);
  }finally{await db.query('ROLLBACK');await db.end();}

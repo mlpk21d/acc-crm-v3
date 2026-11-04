@@ -3,20 +3,21 @@ import {z} from 'zod';
 import {getDbPool} from '@/lib/db';
 import {requirePermission} from '@/features/auth/session';
 import {getProjectFinancials,summarizeProjectFinancials} from '@/features/projects/financial-data';
-import type {Proposal,ProposalMedia,ProposalProject} from './model';
+import type {Proposal,ProposalMedia,ProposalProject,ProposalRoom} from './model';
 const contactSql=`COALESCE(NULLIF(trim(concat_ws(' ',c.first_name,c.last_name)),''),c.company_name,NULLIF(p.project_contact_name,''),'')`;
 export async function searchProposalProjects(query:string) {
  await requirePermission('settings:manage');
  const q=query.trim().slice(0,100).replace(/[\\%_]/g,'\\$&');
- return (await getDbPool().query<Omit<ProposalProject,'price'>>(`SELECT p.id,p.name,${contactSql} AS contact FROM public.projects p LEFT JOIN public.contacts c ON c.id=p.contact_id WHERE p.deleted_at IS NULL AND ($1='' OR p.name ILIKE '%'||$1||'%') ORDER BY p.name,p.id LIMIT 25`,[q])).rows;
+ return (await getDbPool().query<Pick<ProposalProject,'id'|'name'|'contact'>>(`SELECT p.id,p.name,${contactSql} AS contact FROM public.projects p LEFT JOIN public.contacts c ON c.id=p.contact_id WHERE p.deleted_at IS NULL AND ($1='' OR p.name ILIKE '%'||$1||'%') ORDER BY p.name,p.id LIMIT 25`,[q])).rows;
 }
 export async function getProposalProject(id:string):Promise<ProposalProject|null> {
  await requirePermission('settings:manage');
  if(!z.uuid().safeParse(id).success)return null;
- const project=(await getDbPool().query<Omit<ProposalProject,'price'>>(`SELECT p.id,p.name,${contactSql} AS contact FROM public.projects p LEFT JOIN public.contacts c ON c.id=p.contact_id WHERE p.id=$1 AND p.deleted_at IS NULL`,[id])).rows[0];
+ const project=(await getDbPool().query<Pick<ProposalProject,'id'|'name'|'contact'>>(`SELECT p.id,p.name,${contactSql} AS contact FROM public.projects p LEFT JOIN public.contacts c ON c.id=p.contact_id WHERE p.id=$1 AND p.deleted_at IS NULL`,[id])).rows[0];
  if(!project)return null;
  const financials=await getProjectFinancials(id);
- return {...project,price:summarizeProjectFinancials(financials.project,financials.rooms).totalCost.toFixed(2)};
+ const rooms=(await getDbPool().query<ProposalRoom>('SELECT id,room_name FROM public.project_rooms WHERE project_id=$1 ORDER BY sort_order,id',[id])).rows;
+ return {...project,rooms,price:summarizeProjectFinancials(financials.project,financials.rooms).totalCost.toFixed(2)};
 }
 export async function listProposals(query:string,page:number) {
  await requirePermission('settings:manage');
@@ -30,6 +31,6 @@ export async function getProposal(id:string) {
  if(!proposal)return null;
  const project=await getProposalProject(proposal.project_id);
  if(!project)return null;
- const media=(await getDbPool().query<ProposalMedia>('SELECT id,title,filename FROM public.proposal_media WHERE proposal_id=$1 ORDER BY sort_order,id',[id])).rows;
+ const media=(await getDbPool().query<ProposalMedia>('SELECT id,title,filename,room_id,is_main FROM public.proposal_media WHERE proposal_id=$1 ORDER BY sort_order,id',[id])).rows;
  return {proposal,project,media};
 }

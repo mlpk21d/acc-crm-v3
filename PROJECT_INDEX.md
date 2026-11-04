@@ -754,3 +754,37 @@ fit narrow screens and showing the complete render without cropping. Create/edit
 previews stay fixed at 120 × 85 px alongside the existing title and reorder controls.
 Original uploads and PDF image sizing are unchanged. Site index reviewed; no routes,
 queries, or database indexes change for this presentation-only update.
+
+## Proposal room media and landscape PDF — 2026-11-03
+
+- `src/features/proposals/proposal-form.tsx`: media card grid, project-first uploads,
+  required per-image project room, one main image for the cover; optional titles/order retained.
+  Changing projects clears room assignments for reassignment. Empty media lists remain allowed.
+- `src/features/proposals/data.ts`: selected project includes ordered room choices;
+  media reads include room assignment and main-image flag.
+- `src/features/proposals/actions.ts`: checks room ownership with row locks and exactly
+  one main image for nonempty media, saves all metadata transactionally.
+- `src/features/proposals/pdf.ts`: landscape Letter cover titled with project name,
+  selected main image, room-grouped mosaics (up to five images per page, first larger),
+  optional upper-right style/finish/species/manufacturer details. No finishes table.
+  The cover image also appears in its room group. All assigned rooms are eligible.
+- `src/features/proposals/pdf-layout.ts`: tested mosaic geometry, room grouping and
+  deduplicated door/drawer styles.
+- `src/db/migrations/0019_proposal_media_rooms.sql`: nullable legacy room FK with
+  delete restriction, main-image partial unique index, room/order and FK indexes.
+  Existing images are preserved without invented assignments; first existing image
+  becomes main. Legacy unassigned images export under Unassigned room until edited.
+- `src/app/globals.css`: responsive grid on view and editor; other page layouts preserved.
+
+Run `npm run db:migrate` before using the updated proposal pages. No live user database
+was modified. Room ownership is enforced by the save action; legacy null room IDs are
+kept readable for backwards compatibility. Database index review covered room grouping,
+foreign-key deletion lookup and uniqueness of the main-image selection.
+
+Validation for the room-media update: lint, TypeScript, 28 unit tests and production
+build pass (temporary build-only configuration). All 19 migrations pass in isolated
+PGlite with pg_trgm, including preservation/backfill of legacy renders, room FK,
+single-main uniqueness, transactional reselection and cascade deletion. Rendered and
+inspected landscape PDFs with 8 images across 2 rooms; verified [1,5,1,2] image page
+counts, selected cover image, combined styles and metadata toggle. No authenticated
+browser test or live user database migration was performed in this environment.

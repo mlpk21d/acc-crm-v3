@@ -6,13 +6,13 @@ import PDFDocument from 'pdfkit';
 import {requirePermission} from '@/features/auth/session';
 import {getDbPool} from '@/lib/db';
 import {depositPercentages,maxImageBytes,maxMediaBytes} from './model';
-const mediaSchema=z.array(z.object({id:z.uuid(),title:z.string().trim().max(200),fresh:z.boolean()})).max(20).refine(items=>new Set(items.map(i=>i.id)).size===items.length);
+const mediaSchema=z.array(z.object({id:z.uuid(),title:z.string().trim().max(200),fresh:z.boolean(),room_id:z.uuid(),is_main:z.boolean()})).max(20).refine(items=>new Set(items.map(i=>i.id)).size===items.length).refine(items=>!items.length||items.filter(i=>i.is_main).length===1);
 export async function saveProposal(_state:{error:string|null},form:FormData):Promise<{error:string|null}> {
  const user=await requirePermission('settings:manage');
  const parsed=z.object({id:z.union([z.uuid(),z.literal('')]),project_id:z.uuid(),percentage:z.coerce.number().refine(n=>depositPercentages.includes(n as typeof depositPercentages[number]))}).safeParse({id:form.get('id')??'',project_id:form.get('project_id'),percentage:form.get('deposit_percentage')});
  if(!parsed.success)return {error:'Select a project and a deposit percentage between 10% and 90%.'};
  let items:z.infer<typeof mediaSchema>;
- try {items=mediaSchema.parse(JSON.parse(String(form.get('media')??'[]')));}catch{return {error:'Invalid media list. Use up to 20 images with titles of at most 200 characters.'};}
+ try {items=mediaSchema.parse(JSON.parse(String(form.get('media')??'[]')));}catch{return {error:'Assign a room to every image and select one main image. Use up to 20 images with titles of at most 200 characters.'};}
  const uploads=new Map<string,{data:Buffer;filename:string;mime:string}>();
  try {
   for(const item of items.filter(i=>i.fresh)) {
@@ -35,6 +35,8 @@ export async function saveProposal(_state:{error:string|null},form:FormData):Pro
   const {id,project_id,percentage}=parsed.data;
   const project=await client.query('SELECT id FROM public.projects WHERE id=$1 AND deleted_at IS NULL FOR SHARE',[project_id]);
   if(!project.rowCount)throw new Error('Select an existing project.');
+  const rooms=await client.query<{id:string}>('SELECT id FROM public.project_rooms WHERE project_id=$1 FOR SHARE',[project_id]);
+  if(items.some(item=>!rooms.rows.some(room=>room.id===item.room_id)))throw new Error('Every image must belong to a room in the selected project.');
   if(id){
    const exists=await client.query('SELECT id FROM public.proposals WHERE id=$1 FOR UPDATE',[id]);
    if(!exists.rowCount)throw new Error('Proposal not found.');
@@ -50,10 +52,12 @@ export async function saveProposal(_state:{error:string|null},form:FormData):Pro
   if(id){await client.query('UPDATE public.proposals SET project_id=$1,deposit_percentage=$2,include_room_finishes=$3,updated_by=$4,updated_at=now() WHERE id=$5',[...values,id]);saved=id;}
   else{saved=(await client.query<{id:string}>('INSERT INTO public.proposals(project_id,deposit_percentage,include_room_finishes,created_by,updated_by) VALUES($1,$2,$3,$4,$4) RETURNING id',values)).rows[0].id;}
   await client.query('DELETE FROM public.proposal_media WHERE proposal_id=$1 AND NOT (id=ANY($2::uuid[]))',[saved,items.filter(i=>!i.fresh).map(i=>i.id)]);
+  // Clear the previous selection before setting the new main image (unique partial index).
+  await client.query('UPDATE public.proposal_media SET is_main=false WHERE proposal_id=$1 AND is_main',[saved]);
   for(const [index,item] of items.entries()){
    const upload=uploads.get(item.id);
-   if(upload)await client.query('INSERT INTO public.proposal_media(id,proposal_id,title,filename,mime_type,image_data,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7)',[item.id,saved,item.title,upload.filename,upload.mime,upload.data,index]);
-   else await client.query('UPDATE public.proposal_media SET title=$1,sort_order=$2 WHERE id=$3 AND proposal_id=$4',[item.title,index,item.id,saved]);
+   if(upload)await client.query('INSERT INTO public.proposal_media(id,proposal_id,title,filename,mime_type,image_data,sort_order,room_id,is_main) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)',[item.id,saved,item.title,upload.filename,upload.mime,upload.data,index,item.room_id,item.is_main]);
+   else await client.query('UPDATE public.proposal_media SET title=$1,sort_order=$2,room_id=$5,is_main=$6 WHERE id=$3 AND proposal_id=$4',[item.title,index,item.id,saved,item.room_id,item.is_main]);
   }
   await client.query('COMMIT');
  }catch(error){await client.query('ROLLBACK');console.error('Proposal save failed',error);return {error:error instanceof Error&& !('code' in error)?error.message:'Unable to save proposal. Please try again.'};}
