@@ -852,3 +852,22 @@ Validation: lint, TypeScript and 30 tests pass. All 20 migrations applied in an
 isolated database; new default and persisted hidden preference verified without
 changing the calculation percentage. Rendered and inspected both percentage modes;
 price and deposit align beneath the title and the main image region is preserved.
+
+## Show Deposit behavior and cover alignment — 2026-11-03
+
+- Proposal editor checkbox is now Show Deposit. It controls both amount and
+  percentage together on the view page and PDF; editing and calculation retain
+  the percentage regardless of display choice.
+- Existing `proposals.show_deposit_percentage` storage is reused with corrected
+  semantics, exposed as `show_deposit` by `data.ts` and saved from `show_deposit`
+  form input. Existing choices are preserved; no additional migration needed.
+- PDF title visually aligns with the logo artwork, accounting for SVG whitespace.
+  Pricing follows the measured title height with a small gap. Price and deposit
+  sit closer together; long titles use a smaller font to stay inside the header.
+
+Site/index review: no routes, queries needing new indexes, or schema changes.
+
+Validation: lint, TypeScript and 30 tests pass. Rendered visible/hidden deposit
+PDFs and a long-title cover; checked that both deposit values disappear when off,
+price remains, title top aligns within 1 pt of logo artwork and pricing stays
+above the main image region. View page renders amount/percentage under one gate.

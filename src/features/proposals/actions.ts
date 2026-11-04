@@ -48,7 +48,7 @@ export async function saveProposal(_state:{error:string|null},form:FormData):Pro
    else {const existing=old.find(m=>m.id===item.id);if(!existing)throw new Error('An image is no longer available. Reload this proposal.');bytes+=existing.bytes;}
   }
   if(bytes>maxMediaBytes)throw new Error('Keep the combined image size under 5 MB per proposal.');
-  const values=[project_id,percentage,form.get('include_room_finishes')==='on',user.id,form.get('show_deposit_percentage')==='on'];
+  const values=[project_id,percentage,form.get('include_room_finishes')==='on',user.id,form.get('show_deposit')==='on'];
   if(id){await client.query('UPDATE public.proposals SET project_id=$1,deposit_percentage=$2,include_room_finishes=$3,updated_by=$4,show_deposit_percentage=$5,updated_at=now() WHERE id=$6',[...values,id]);saved=id;}
   else{saved=(await client.query<{id:string}>('INSERT INTO public.proposals(project_id,deposit_percentage,include_room_finishes,created_by,updated_by,show_deposit_percentage) VALUES($1,$2,$3,$4,$4,$5) RETURNING id',values)).rows[0].id;}
   await client.query('DELETE FROM public.proposal_media WHERE proposal_id=$1 AND NOT (id=ANY($2::uuid[]))',[saved,items.filter(i=>!i.fresh).map(i=>i.id)]);

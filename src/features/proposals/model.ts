@@ -4,7 +4,7 @@ export const maxImageBytes = 2 * 1024 * 1024;
 export type ProposalRoom = {id:string;room_name:string};
 export type ProposalProject = {id:string;name:string;contact:string;price:string;rooms:ProposalRoom[]};
 export type ProposalMedia = {id:string;title:string;filename:string;room_id:string|null;is_main:boolean};
-export type Proposal = {id:string;project_id:string;deposit_percentage:number;show_deposit_percentage:boolean;include_room_finishes:boolean;created_at:string;updated_at:string};
+export type Proposal = {id:string;project_id:string;deposit_percentage:number;show_deposit:boolean;include_room_finishes:boolean;created_at:string;updated_at:string};
 export function depositAmount(price:string, percentage:number):string {
  if(!/^\d+(\.\d{1,2})?$/.test(price)||!depositPercentages.includes(percentage as typeof depositPercentages[number])) throw new Error('Invalid proposal amount.');
  const [whole,fraction='']=price.split('.');

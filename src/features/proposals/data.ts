@@ -27,7 +27,7 @@ export async function listProposals(query:string,page:number) {
 export async function getProposal(id:string) {
  await requirePermission('settings:manage');
  if(!z.uuid().safeParse(id).success)return null;
- const proposal=(await getDbPool().query<Proposal>('SELECT pr.* FROM public.proposals pr JOIN public.projects p ON p.id=pr.project_id WHERE pr.id=$1 AND p.deleted_at IS NULL',[id])).rows[0];
+ const proposal=(await getDbPool().query<Proposal>('SELECT pr.*,pr.show_deposit_percentage AS show_deposit FROM public.proposals pr JOIN public.projects p ON p.id=pr.project_id WHERE pr.id=$1 AND p.deleted_at IS NULL',[id])).rows[0];
  if(!proposal)return null;
  const project=await getProposalProject(proposal.project_id);
  if(!project)return null;

@@ -25,11 +25,19 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
   const date=new Date(proposal.created_at).toLocaleDateString('en-US',{timeZone:'America/New_York'});
   text(date,620,18,136,8,false,14,'right');
   drawProposalLogo(doc,logo,36,49,225);
-  text(project.name,290,38,466,24,true,58);
-  text('PRICE',290,103,200,8,false,12);
-  text(money(project.price),290,119,200,15,true,22);
-  text(proposal.show_deposit_percentage?`DEPOSIT (${proposal.deposit_percentage}%)`:'DEPOSIT',520,103,236,8,false,12);
-  text(money(depositAmount(project.price,proposal.deposit_percentage)),520,119,236,15,true,22);
+  // Align visible text with the SVG artwork (whose viewBox includes top whitespace).
+  doc.font('Helvetica-Bold').fontSize(24);
+  const titleSize=doc.heightOfString(project.name,{width:466})>32?20:24;
+  doc.fontSize(titleSize);
+  const titleHeight=Math.min(48,doc.heightOfString(project.name,{width:466}));
+  text(project.name,290,62.3,466,titleSize,true,48);
+  const pricingY=62.3+titleHeight+5;
+  text('PRICE',290,pricingY,140,8,false,12);
+  text(money(project.price),290,pricingY+16,140,15,true,22);
+  if(proposal.show_deposit){
+   text(`DEPOSIT (${proposal.deposit_percentage}%)`,450,pricingY,240,8,false,12);
+   text(money(depositAmount(project.price,proposal.deposit_percentage)),450,pricingY+16,240,15,true,22);
+  }
   const main=media.find(item=>item.is_main);
   if(main)image(main,{x:36,y:153,width:720,height:435},false);
   const groups=groupRoomMedia(media.filter(item=>!item.is_main||item.room_id!==null));
