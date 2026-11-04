@@ -14,12 +14,15 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
  function image(item:ProposalPdfMedia,box:MosaicBox,caption=true) {
   const captionHeight=caption&&item.title?20:0;
   const source=(doc as PDFKit.PDFDocument&{openImage(source:Buffer):{width:number;height:number}}).openImage(item.image_data);
-  const scale=Math.min(box.width/source.width,(box.height-captionHeight)/source.height);
+  const border=3.75; // 5 CSS pixels at 96 dpi, expressed in PDF points.
+  const scale=Math.min((box.width-2*border)/source.width,(box.height-captionHeight-2*border)/source.height);
   const width=source.width*scale,height=source.height*scale;
   const x=box.x+(box.width-width)/2;
-  const y=caption?box.y:box.y+(box.height-height)/2;
+  const y=caption?box.y+border:box.y+(box.height-height)/2;
   doc.image(item.image_data,x,y,{width,height});
-  if(captionHeight)text(item.title,x,y+height+5,width,8,false,15);
+  doc.save().lineWidth(border).strokeColor('#d1d5db')
+   .rect(x-border/2,y-border/2,width+border,height+border).stroke().restore();
+  if(captionHeight)text(item.title,x,y+height+border+5,width,8,false,15);
  }
  try {
   const date=new Date(proposal.created_at).toLocaleDateString('en-US',{timeZone:'America/New_York'});

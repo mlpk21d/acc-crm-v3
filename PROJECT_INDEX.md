@@ -906,3 +906,13 @@ labels share a left leading edge. Wrapped values determine row height. No route,
 
 Validation: lint and TypeScript pass. Final PDF rendered and inspected; five
 compact lines verified with aligned bold labels and Construction value.
+
+## Proposal image border preview — 2026-11-03
+
+`src/features/proposals/pdf.ts` draws a light gray (#d1d5db) 5 CSS pixel border
+(3.75 PDF points) outside each cover/room render. Image fitting reserves border
+space so neither images nor borders overflow their slots. Captions remain outside
+the border; vector logos are unaffected. No route/schema/index changes required.
+
+Validation: lint and TypeScript pass; cover and five-image room page rendered and
+inspected. Border count, thickness and image-slot bounds verified in the PDF.
