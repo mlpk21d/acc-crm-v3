@@ -927,3 +927,12 @@ No route, schema, query or database index changes.
 
 Validation: lint and TypeScript pass. Rendered cover inspected; 2px border
 thickness, visible logo/image edge alignment and preserved pricing spacing verified.
+
+## Restore centered cover and borderless images — 2026-11-03
+
+`src/features/proposals/pdf.ts` restores the centered logo/title/pricing header
+from before the left-alignment update. All cover and room image borders are
+removed and image fitting uses the full slot again. No schema/index changes.
+
+Validation: lint and TypeScript pass. Rendered cover inspected; centered header,
+image counts and absence of image border strokes verified across cover/room pages.
