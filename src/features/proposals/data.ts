@@ -16,7 +16,7 @@ export async function getProposalProject(id:string):Promise<ProposalProject|null
  const project=(await getDbPool().query<Pick<ProposalProject,'id'|'name'|'contact'>>(`SELECT p.id,p.name,${contactSql} AS contact FROM public.projects p LEFT JOIN public.contacts c ON c.id=p.contact_id WHERE p.id=$1 AND p.deleted_at IS NULL`,[id])).rows[0];
  if(!project)return null;
  const financials=await getProjectFinancials(id);
- const rooms=(await getDbPool().query<ProposalRoom>('SELECT id,room_name FROM public.project_rooms WHERE project_id=$1 ORDER BY sort_order,id',[id])).rows;
+ const rooms=(await getDbPool().query<ProposalRoom>('SELECT id,room_name FROM public.project_rooms WHERE project_id=$1 AND enabled=true ORDER BY sort_order,id',[id])).rows;
  return {...project,rooms,price:summarizeProjectFinancials(financials.project,financials.rooms).totalCost.toFixed(2)};
 }
 export async function listProposals(query:string,page:number) {

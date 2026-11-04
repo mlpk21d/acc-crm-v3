@@ -6,13 +6,13 @@ import PDFDocument from 'pdfkit';
 import {requirePermission} from '@/features/auth/session';
 import {getDbPool} from '@/lib/db';
 import {depositPercentages,maxImageBytes,maxMediaBytes} from './model';
-const mediaSchema=z.array(z.object({id:z.uuid(),title:z.string().trim().max(200),fresh:z.boolean(),room_id:z.uuid(),is_main:z.boolean()})).max(20).refine(items=>new Set(items.map(i=>i.id)).size===items.length).refine(items=>!items.length||items.filter(i=>i.is_main).length===1);
+import {mediaSchema} from './media-validation';
 export async function saveProposal(_state:{error:string|null},form:FormData):Promise<{error:string|null}> {
  const user=await requirePermission('settings:manage');
  const parsed=z.object({id:z.union([z.uuid(),z.literal('')]),project_id:z.uuid(),percentage:z.coerce.number().refine(n=>depositPercentages.includes(n as typeof depositPercentages[number]))}).safeParse({id:form.get('id')??'',project_id:form.get('project_id'),percentage:form.get('deposit_percentage')});
  if(!parsed.success)return {error:'Select a project and a deposit percentage between 10% and 90%.'};
  let items:z.infer<typeof mediaSchema>;
- try {items=mediaSchema.parse(JSON.parse(String(form.get('media')??'[]')));}catch{return {error:'Assign a room to every image and select one main image. Use up to 20 images with titles of at most 200 characters.'};}
+ try {items=mediaSchema.parse(JSON.parse(String(form.get('media')??'[]')));}catch{return {error:'Assign an enabled room to every image except the optional Main Image. Select at most one Main Image. Use up to 20 images with titles of at most 200 characters.'};}
  const uploads=new Map<string,{data:Buffer;filename:string;mime:string}>();
  try {
   for(const item of items.filter(i=>i.fresh)) {
@@ -35,8 +35,8 @@ export async function saveProposal(_state:{error:string|null},form:FormData):Pro
   const {id,project_id,percentage}=parsed.data;
   const project=await client.query('SELECT id FROM public.projects WHERE id=$1 AND deleted_at IS NULL FOR SHARE',[project_id]);
   if(!project.rowCount)throw new Error('Select an existing project.');
-  const rooms=await client.query<{id:string}>('SELECT id FROM public.project_rooms WHERE project_id=$1 FOR SHARE',[project_id]);
-  if(items.some(item=>!rooms.rows.some(room=>room.id===item.room_id)))throw new Error('Every image must belong to a room in the selected project.');
+  const rooms=await client.query<{id:string}>('SELECT id FROM public.project_rooms WHERE project_id=$1 AND enabled=true FOR SHARE',[project_id]);
+  if(items.some(item=>item.room_id!==null&&!rooms.rows.some(room=>room.id===item.room_id)))throw new Error('Select an enabled room in this project for each assigned image.');
   if(id){
    const exists=await client.query('SELECT id FROM public.proposals WHERE id=$1 FOR UPDATE',[id]);
    if(!exists.rowCount)throw new Error('Proposal not found.');

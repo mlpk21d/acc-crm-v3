@@ -44,11 +44,10 @@ export function ProposalForm({proposal,initialProject,initialMedia=[]}:{proposal
  function addFiles(files:File[]){
   setError('');
   if(!project){setError('Select a project before adding images.');return;}
-  if(!project.rooms.length){setError('Add a room to the selected project before adding images.');return;}
   if(media.length+files.length>20){setError('You can add up to 20 images.');return;}
   if(files.some(f=>!['image/png','image/jpeg'].includes(f.type)||f.size>maxImageBytes||f.size===0)){setError('Choose PNG or JPEG images under 2 MB each.');return;}
   if([...media.map(m=>m.file?.size??0),...files.map(f=>f.size)].reduce((a,b)=>a+b,0)>maxMediaBytes){setError('Keep the combined image size under 5 MB.');return;}
-  setMedia(previous=>[...previous,...files.map(file=>{const preview=URL.createObjectURL(file);urls.current.add(preview);return {id:crypto.randomUUID(),filename:file.name,title:'',room_id:null,is_main:previous.length===0&&file===files[0],file,preview};})]);
+  setMedia(previous=>[...previous,...files.map(file=>{const preview=URL.createObjectURL(file);urls.current.add(preview);return {id:crypto.randomUUID(),filename:file.name,title:'',room_id:null,is_main:false,file,preview};})]);
  }
  function move(index:number,offset:number){setMedia(previous=>{const next=[...previous];[next[index],next[index+offset]]=[next[index+offset],next[index]];return next;});}
  return <form className="contact-form proposal-form" action={form=>{media.forEach(m=>{if(m.file)form.set(`image_${m.id}`,m.file);});action(form);}}>
@@ -64,16 +63,17 @@ export function ProposalForm({proposal,initialProject,initialMedia=[]}:{proposal
    </div><label className="proposal-toggle"><input type="checkbox" role="switch" name="include_room_finishes" defaultChecked={proposal?.include_room_finishes??false}/>Add Room Door Styles and Finishes</label><p className="contact-help">Show room styles, finish, species and manufacturer on room image pages in the PDF.</p></section>
    <section className="crm-form-panel"><h2>Media</h2>
     <div className="proposal-dropzone" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(!pending)addFiles(Array.from(e.dataTransfer.files));}}>
-     <p>{!project?'Select a project before adding images.':!project.rooms.length?'Add a room to this project before adding images.':'Drag and drop room renders here'}</p><button type="button" className="proposal-button" disabled={!project||!project.rooms.length} onClick={()=>upload.current?.click()}><ButtonIcon kind="upload"/>Choose Images</button>
-     <input ref={upload} type="file" disabled={!project||!project.rooms.length} hidden multiple accept="image/png,image/jpeg" onChange={e=>{addFiles(Array.from(e.target.files??[]));e.target.value='';}}/>
+     <p>{!project?'Select a project before adding images.':'Drag and drop room renders here'}</p><button type="button" className="proposal-button" disabled={!project} onClick={()=>upload.current?.click()}><ButtonIcon kind="upload"/>Choose Images</button>
+     <input ref={upload} type="file" disabled={!project} hidden multiple accept="image/png,image/jpeg" onChange={e=>{addFiles(Array.from(e.target.files??[]));e.target.value='';}}/>
      <p className="contact-help">PNG or JPEG · 2 MB per image · 5 MB total · Up to 20 images</p>
     </div>
+    <p className="contact-help">Main Image is optional and may be left without a room. All other images require an enabled room.</p>
     <ol className="proposal-media-list">{media.map((m,index)=><li key={m.id}>
      <Image unoptimized width={280} height={196} src={m.preview??`/api/proposals/${proposal!.id}/media/${m.id}`} alt={m.title||m.filename}/>
      <label><span>{m.filename}</span><input aria-label={`Title for ${m.filename}`} placeholder="Optional title" maxLength={200} value={m.title} onChange={e=>setMedia(previous=>previous.map(item=>item.id===m.id?{...item,title:e.target.value}:item))}/></label>
-     <label>Room <span aria-hidden="true">*</span><select required value={m.room_id??''} onChange={e=>setMedia(previous=>previous.map(item=>item.id===m.id?{...item,room_id:e.target.value}:item))}><option value="">Select a room</option>{project?.rooms.map(room=><option key={room.id} value={room.id}>{room.room_name}</option>)}</select></label>
-     <label className="proposal-main-choice"><input type="radio" name="main_image" checked={m.is_main} onChange={()=>setMedia(previous=>previous.map(item=>({...item,is_main:item.id===m.id})))}/>Main image (first page)</label>
-     <div className="proposal-actions"><button type="button" className="proposal-button" disabled={index===0} onClick={()=>move(index,-1)}><ButtonIcon kind="up"/>Up</button><button type="button" className="proposal-button" disabled={index===media.length-1} onClick={()=>move(index,1)}><ButtonIcon kind="down"/>Down</button><button type="button" className="proposal-button" onClick={()=>{if(m.preview){URL.revokeObjectURL(m.preview);urls.current.delete(m.preview);}setMedia(previous=>{const remaining=previous.filter(item=>item.id!==m.id);return m.is_main?remaining.map((item,i)=>({...item,is_main:i===0})):remaining;});}}><ButtonIcon kind="delete"/>Remove</button></div>
+     <label>Room {!m.is_main&&<span aria-hidden="true">*</span>}<select required={!m.is_main} value={m.room_id??''} onChange={e=>setMedia(previous=>previous.map(item=>item.id===m.id?{...item,room_id:e.target.value||null}:item))}><option value="">{m.is_main?'No room (optional)':'Select a room'}</option>{project?.rooms.map(room=><option key={room.id} value={room.id}>{room.room_name}</option>)}</select></label>
+     <label className="proposal-main-choice"><input type="checkbox" checked={m.is_main} onChange={e=>{const checked=e.target.checked;setMedia(previous=>previous.map(item=>({...item,is_main:checked?item.id===m.id:false})));}}/>Main Image</label>
+     <div className="proposal-actions"><button type="button" className="proposal-button" disabled={index===0} onClick={()=>move(index,-1)}><ButtonIcon kind="up"/>Up</button><button type="button" className="proposal-button" disabled={index===media.length-1} onClick={()=>move(index,1)}><ButtonIcon kind="down"/>Down</button><button type="button" className="proposal-button" onClick={()=>{if(m.preview){URL.revokeObjectURL(m.preview);urls.current.delete(m.preview);}setMedia(previous=>previous.filter(item=>item.id!==m.id));}}><ButtonIcon kind="delete"/>Remove</button></div>
     </li>)}</ol>
    </section>
    <div className="proposal-actions proposal-save"><Link className="proposal-button" href={proposal?`/proposals/${proposal.id}`:'/proposals'}><ButtonIcon kind="close"/>Cancel</Link><button className="proposal-button proposal-primary" disabled={!project||loading} type="submit"><ButtonIcon kind="save"/>{pending?'Saving…':'Save Proposal'}</button></div>

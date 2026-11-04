@@ -788,3 +788,27 @@ single-main uniqueness, transactional reselection and cascade deletion. Rendered
 inspected landscape PDFs with 8 images across 2 rooms; verified [1,5,1,2] image page
 counts, selected cover image, combined styles and metadata toggle. No authenticated
 browser test or live user database migration was performed in this environment.
+
+## Optional Main Image and enabled room selection — 2026-11-03
+
+- `src/features/proposals/data.ts` returns only enabled rooms in project room choices.
+- `src/features/proposals/proposal-form.tsx` labels the toggle Main Image; new uploads
+  are never selected automatically. Checkboxes allow clearing the main selection,
+  selecting another clears the former selection, and deletion selects no replacement.
+  A main image may omit its room; other images require an enabled room. Uploads still
+  require a project and may be added even when it has no enabled rooms.
+- `src/features/proposals/media-validation.ts` validates zero or one main image and
+  the conditional room requirement, shared by the save action and regression tests.
+- `src/features/proposals/actions.ts` verifies assigned rooms are enabled and belong
+  to the selected project. Existing invalid assignments must be corrected on save.
+- `src/features/proposals/pdf.ts` draws a cover image only when explicitly selected;
+  unassigned main images appear on the cover only, assigned main images also appear
+  in their room group. Existing saved selections remain editable and are preserved.
+
+Index review: existing project room order and partial single-main indexes remain
+appropriate; no routes, database indexes or migrations change in this update.
+
+Validation: lint, TypeScript and 30 unit tests pass. PDF checks confirm no fallback
+cover image when none is selected, and an unassigned Main Image appears on the cover
+without adding an Unassigned room page. Saved selections are preserved, and users
+can clear them through the Main Image checkbox.

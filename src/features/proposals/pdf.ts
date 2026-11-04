@@ -21,9 +21,9 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
   text(`Contact: ${project.contact||'—'}`,36,158,220,11,false,80);
   text(`Price: ${money(project.price)}`,36,258,220,13,true);
   text(`Deposit (${proposal.deposit_percentage}%): ${money(depositAmount(project.price,proposal.deposit_percentage))}`,36,300,220,11,false,60);
-  const main=media.find(item=>item.is_main)??media[0];
+  const main=media.find(item=>item.is_main);
   if(main)image(main,{x:280,y:122,width:476,height:418});
-  const groups=groupRoomMedia(media);
+  const groups=groupRoomMedia(media.filter(item=>!item.is_main||item.room_id!==null));
   // Project room order first; the legacy unassigned group is retained until edited.
   const ids=[...rooms.map(room=>room.id).filter(id=>groups.has(id)),...Array.from(groups.keys()).filter(id=>!rooms.some(room=>room.id===id))];
   for(const roomId of ids){
