@@ -1,6 +1,6 @@
 # ACC CRM V3 Project Index
 
-Last updated: 2026-10-27
+Last updated: 2026-11-03
 
 This file is the fast-entry index for the repository. Update it whenever routes,
 domain boundaries, database modules, or major shared components change.
@@ -746,3 +746,11 @@ PGlite PostgreSQL engine with pg_trgm; required-project/FK/default/percentage/or
 index checks passed. PDF rendered and inspected, with optional room inclusion, disabled-room
 exclusion and titled image-page checks. Authenticated browser interaction has not been tested
 against the user's database. Apply migration 0018 using a database role able to install pg_trgm.
+
+## Proposal media thumbnails — 2026-11-03
+
+`src/app/globals.css` limits proposal view previews to 280 × 196 px, shrinking to
+fit narrow screens and showing the complete render without cropping. Create/edit
+previews stay fixed at 120 × 85 px alongside the existing title and reorder controls.
+Original uploads and PDF image sizing are unchanged. Site index reviewed; no routes,
+queries, or database indexes change for this presentation-only update.
