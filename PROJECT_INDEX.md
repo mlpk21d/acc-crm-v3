@@ -885,3 +885,13 @@ above the main image region. View page renders amount/percentage under one gate.
 Validation: lint, TypeScript and 31 tests pass. Cover PDF rendered and inspected;
 header bounds and unchanged 160 pt pricing separation verified. Filename tests
 cover safe naming and Eastern-time date rollover. No migration needed.
+
+## Room finish detail alignment — 2026-11-03
+
+`src/features/proposals/pdf.ts` retains the upper-right room details region at
+x=420, y=30, with left-aligned rows and bold Door/Drawer, Finish, Species and
+Manufacturer labels. Values remain regular weight. Site/index review: no route,
+query, database index or migration changes.
+
+Validation: lint and TypeScript pass. Rendered room page inspected; verified
+all four labels share x=420, use bold fonts, and values use regular fonts.

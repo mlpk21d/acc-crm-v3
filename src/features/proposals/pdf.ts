@@ -63,8 +63,13 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
     text(project.name,36,578,570,8,false,14);
     drawProposalLogo(doc,logo,672,571,84);
     if(proposal.include_room_finishes&&room){
-     const details=[`Door/Drawer: ${combinedStyles(room.door_style,room.drawer_style)}`,`Finish: ${room.finish?.trim()||'—'}`,`Species: ${room.species?.trim()||'—'}`,`Manufacturer: ${room.manufacturer?.trim()||'—'}`].join('\n');
-     text(details,420,30,336,9,false,90,'right');
+     const details=[['Door/Drawer',combinedStyles(room.door_style,room.drawer_style)],['Finish',room.finish?.trim()||'—'],['Species',room.species?.trim()||'—'],['Manufacturer',room.manufacturer?.trim()||'—']];
+     details.forEach(([label,value],index)=>{
+      doc.font('Helvetica-Bold').fontSize(9);
+      const labelWidth=doc.widthOfString(`${label}: `);
+      text(`${label}:`,420,30+index*22,labelWidth,9,true,22);
+      text(value,420+labelWidth,30+index*22,336-labelWidth,9,false,22);
+     });
     }
     const pageItems=items.slice(start,start+5);
     const boxes=mosaicBoxes(pageItems.length,36,130,720,420);
