@@ -63,12 +63,22 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
     text(project.name,36,578,570,8,false,14);
     drawProposalLogo(doc,logo,672,571,84);
     if(proposal.include_room_finishes&&room){
-     const details=[['Door/Drawer',combinedStyles(room.door_style,room.drawer_style)],['Finish',room.finish?.trim()||'—'],['Species',room.species?.trim()||'—'],['Manufacturer',room.manufacturer?.trim()||'—']];
-     details.forEach(([label,value],index)=>{
+     const details=[['Door/Drawer',combinedStyles(room.door_style,room.drawer_style)],['Finish',room.finish?.trim()||'—'],['Species',room.species?.trim()||'—'],['Manufacturer',room.manufacturer?.trim()||'—'],['Construction',room.construction?.trim()||'—']];
+     const detailWidth=Math.min(336,Math.max(...details.map(([label,value])=>{
       doc.font('Helvetica-Bold').fontSize(9);
       const labelWidth=doc.widthOfString(`${label}: `);
-      text(`${label}:`,420,30+index*22,labelWidth,9,true,22);
-      text(value,420+labelWidth,30+index*22,336-labelWidth,9,false,22);
+      return labelWidth+doc.font('Helvetica').widthOfString(value)+12;
+     })));
+     const detailX=756-detailWidth;
+     let detailY=30;
+     details.forEach(([label,value])=>{
+      doc.font('Helvetica-Bold').fontSize(9);
+      const labelWidth=doc.widthOfString(`${label}: `);
+      doc.font('Helvetica');
+      const rowHeight=Math.min(22,doc.heightOfString(value,{width:detailWidth-labelWidth+.1}));
+      text(`${label}:`,detailX,detailY,labelWidth,9,true,rowHeight);
+      text(value,detailX+labelWidth,detailY,detailWidth-labelWidth+.1,9,false,rowHeight);
+      detailY+=rowHeight;
      });
     }
     const pageItems=items.slice(start,start+5);

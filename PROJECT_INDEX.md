@@ -895,3 +895,14 @@ query, database index or migration changes.
 
 Validation: lint and TypeScript pass. Rendered room page inspected; verified
 all four labels share x=420, use bold fonts, and values use regular fonts.
+
+## Compact room details and construction — 2026-11-03
+
+`src/features/proposals/pdf.ts` restores tightly stacked room detail lines at the
+original upper-right area (right edge 756, top 30), with no added row gaps. Bold labels lead
+each line; regular values follow immediately. Construction follows Manufacturer.
+The block is sized to its content and anchored to the right margin, while all
+labels share a left leading edge. Wrapped values determine row height. No route, schema or database index changes.
+
+Validation: lint and TypeScript pass. Final PDF rendered and inspected; five
+compact lines verified with aligned bold labels and Construction value.
