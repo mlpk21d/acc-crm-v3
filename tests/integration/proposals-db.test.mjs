@@ -9,7 +9,9 @@ test('proposals enforce required projects and valid deposits, and persist ordere
   await db.query('BEGIN');
   const project=(await db.query("INSERT INTO public.projects(name,status) VALUES('Proposal integration test','planned') RETURNING id")).rows[0].id;
   const proposal=(await db.query('INSERT INTO public.proposals(project_id) VALUES($1) RETURNING *',[project])).rows[0];
-  assert.equal(proposal.deposit_percentage,50);assert.equal(proposal.include_room_finishes,false);
+  assert.equal(proposal.deposit_percentage,50);assert.equal(proposal.show_deposit_percentage,true);assert.equal(proposal.include_room_finishes,false);
+  await db.query('UPDATE public.proposals SET show_deposit_percentage=false WHERE id=$1',[proposal.id]);
+  assert.equal((await db.query('SELECT show_deposit_percentage,deposit_percentage FROM public.proposals WHERE id=$1',[proposal.id])).rows[0].show_deposit_percentage,false);
   async function rejected(sql,params,code){await db.query('SAVEPOINT invalid_input');await assert.rejects(db.query(sql,params),error=>error.code===code);await db.query('ROLLBACK TO SAVEPOINT invalid_input');}
   await rejected('INSERT INTO public.proposals DEFAULT VALUES',[],'23502');
   await rejected("INSERT INTO public.proposals(project_id) VALUES('00000000-0000-4000-8000-000000000001')",[],'23503');

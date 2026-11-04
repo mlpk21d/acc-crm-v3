@@ -833,3 +833,22 @@ Validation: lint, TypeScript, 30 tests and production build pass with build-only
 configuration. Landscape cover and room/continued pages rendered and inspected;
 image counts and footer placement verified. Logo is included in the deployed
 proposal route trace. Images are never cropped or drawn over background boxes.
+
+## Optional deposit percentage display and cover header — 2026-11-03
+
+- `src/db/migrations/0020_proposal_deposit_display.sql` adds persisted
+  `show_deposit_percentage`, default true to preserve existing displays.
+- Proposal form includes Show Deposit Percentage, saved transactionally by the
+  proposal action. It controls percentage visibility on the view page and PDF;
+  percentage entry and deposit calculation remain in the editor.
+- Cover logo grows from 155 to 225 pt; project title shifts right to x=290 with
+  price and deposit displayed side by side underneath. Cover image area retained.
+- Integration checks cover the default and persisted hidden setting.
+
+Site and database index review: no query/filter/index changes; existing proposal
+lookup indexes cover preference reads. Apply migration 0020 before updated routes.
+
+Validation: lint, TypeScript and 30 tests pass. All 20 migrations applied in an
+isolated database; new default and persisted hidden preference verified without
+changing the calculation percentage. Rendered and inspected both percentage modes;
+price and deposit align beneath the title and the main image region is preserved.
