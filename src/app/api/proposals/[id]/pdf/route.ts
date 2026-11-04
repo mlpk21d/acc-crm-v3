@@ -3,6 +3,7 @@ import {getDbPool} from '@/lib/db';
 import {listProjectRooms} from '@/features/projects/rooms-data';
 import {privateHeaders,proposalApiDenied} from '@/features/proposals/api';
 import {createProposalPdf,type ProposalPdfMedia} from '@/features/proposals/pdf';
+import {proposalPdfFilename} from '@/features/proposals/pdf-filename';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 export async function GET(_request:Request,{params}:{params:Promise<{id:string}>}){
@@ -12,6 +13,6 @@ export async function GET(_request:Request,{params}:{params:Promise<{id:string}>
  const rooms=await listProjectRooms(data.project.id);
  const media=(await getDbPool().query<ProposalPdfMedia>('SELECT title,image_data,room_id,is_main FROM public.proposal_media WHERE proposal_id=$1 ORDER BY sort_order,id',[id])).rows;
  const pdf=await createProposalPdf(data.proposal,data.project,rooms,media);
- const name=data.project.name.replace(/[^a-zA-Z0-9]+/g,'-').slice(0,100)||'Project';
- return new Response(new Uint8Array(pdf),{headers:{...privateHeaders,'Content-Type':'application/pdf','Content-Disposition':`attachment; filename="${name}-Proposal.pdf"`}});
+ const filename=proposalPdfFilename(data.project.name);
+ return new Response(new Uint8Array(pdf),{headers:{...privateHeaders,'Content-Type':'application/pdf','Content-Disposition':`attachment; filename="${filename}"`}});
 }

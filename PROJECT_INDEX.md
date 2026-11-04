@@ -871,3 +871,17 @@ Validation: lint, TypeScript and 30 tests pass. Rendered visible/hidden deposit
 PDFs and a long-title cover; checked that both deposit values disappear when off,
 price remains, title top aligns within 1 pt of logo artwork and pricing stays
 above the main image region. View page renders amount/percentage under one gate.
+
+## Centered proposal cover and dated downloads — 2026-11-03
+
+- `src/features/proposals/pdf.ts`: center the logo/title/pricing group using measured
+  visible text width, preserving logo-to-title and price-to-deposit spacing. Date,
+  image region and subsequent pages retain their positions.
+- `src/features/proposals/pdf-filename.ts`: sanitized project name plus Proposal and
+  download date as YYYY-MM-DD in America/New_York. Download route uses this helper.
+- `tests/proposal-filename.test.mjs`: accented names, unsafe characters, fallback and
+  business-date rollover checks. No schema, query or database index changes needed.
+
+Validation: lint, TypeScript and 31 tests pass. Cover PDF rendered and inspected;
+header bounds and unchanged 160 pt pricing separation verified. Filename tests
+cover safe naming and Eastern-time date rollover. No migration needed.
