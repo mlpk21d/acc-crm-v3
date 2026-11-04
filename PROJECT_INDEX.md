@@ -916,3 +916,14 @@ the border; vector logos are unaffected. No route/schema/index changes required.
 
 Validation: lint and TypeScript pass; cover and five-image room page rendered and
 inspected. Border count, thickness and image-slot bounds verified in the PDF.
+
+## Thin image borders and left-aligned cover header — 2026-11-03
+
+`src/features/proposals/pdf.ts` uses 2 CSS pixel light gray borders (1.5 PDF
+points). The cover header shifts as one group, preserving internal spacing, so
+the visible logo edge aligns with the main image outer border, including narrow
+images centered in their slot. Without a main image it aligns to the left margin.
+No route, schema, query or database index changes.
+
+Validation: lint and TypeScript pass. Rendered cover inspected; 2px border
+thickness, visible logo/image edge alignment and preserved pricing spacing verified.

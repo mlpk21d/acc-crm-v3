@@ -14,7 +14,7 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
  function image(item:ProposalPdfMedia,box:MosaicBox,caption=true) {
   const captionHeight=caption&&item.title?20:0;
   const source=(doc as PDFKit.PDFDocument&{openImage(source:Buffer):{width:number;height:number}}).openImage(item.image_data);
-  const border=3.75; // 5 CSS pixels at 96 dpi, expressed in PDF points.
+  const border=1.5; // 2 CSS pixels at 96 dpi, expressed in PDF points.
   const scale=Math.min((box.width-2*border)/source.width,(box.height-captionHeight-2*border)/source.height);
   const width=source.width*scale,height=source.height*scale;
   const x=box.x+(box.width-width)/2;
@@ -23,26 +23,23 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
   doc.save().lineWidth(border).strokeColor('#d1d5db')
    .rect(x-border/2,y-border/2,width+border,height+border).stroke().restore();
   if(captionHeight)text(item.title,x,y+height+border+5,width,8,false,15);
+  return x-border;
  }
  try {
   const date=new Date(proposal.created_at).toLocaleDateString('en-US',{timeZone:'America/New_York'});
   text(date,620,18,136,8,false,14,'right');
+  const main=media.find(item=>item.is_main);
+  const imageLeft=main?image(main,{x:36,y:153,width:720,height:435},false):36;
 
   // Align visible text with the SVG artwork (whose viewBox includes top whitespace).
   doc.font('Helvetica-Bold').fontSize(24);
   const titleSize=doc.heightOfString(project.name,{width:466})>32?20:24;
   doc.fontSize(titleSize);
   const titleHeight=Math.min(48,doc.heightOfString(project.name,{width:466}));
-  const titleWidth=Math.min(466,doc.widthOfString(project.name));
-  doc.font('Helvetica-Bold').fontSize(15);
-  const priceWidth=doc.widthOfString(money(project.price));
-  const depositWidth=doc.widthOfString(money(depositAmount(project.price,proposal.deposit_percentage)));
-  doc.font('Helvetica').fontSize(8);
-  const depositLabelWidth=doc.widthOfString(`DEPOSIT (${proposal.deposit_percentage}%)`);
-  const contentWidth=Math.max(titleWidth,priceWidth,proposal.show_deposit?160+Math.max(depositWidth,depositLabelWidth):0);
-  // Center the artwork rather than the logo viewBox’s blank left inset.
+  // Match the visible logo edge to the main image's outer border, including
+  // when a narrow render is centered within the image area.
   const logoInset=11.69*225/266.85;
-  const headerLeft=(doc.page.width-(254+contentWidth)-logoInset)/2;
+  const headerLeft=imageLeft-logoInset;
   drawProposalLogo(doc,logo,headerLeft,49,225);
   text(project.name,headerLeft+254,62.3,466,titleSize,true,48);
   const pricingY=62.3+titleHeight+5;
@@ -52,8 +49,6 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
    text(`DEPOSIT (${proposal.deposit_percentage}%)`,headerLeft+414,pricingY,240,8,false,12);
    text(money(depositAmount(project.price,proposal.deposit_percentage)),headerLeft+414,pricingY+16,240,15,true,22);
   }
-  const main=media.find(item=>item.is_main);
-  if(main)image(main,{x:36,y:153,width:720,height:435},false);
   const groups=groupRoomMedia(media.filter(item=>!item.is_main||item.room_id!==null));
   // Project room order first; the legacy unassigned group is retained until edited.
   const ids=[...rooms.map(room=>room.id).filter(id=>groups.has(id)),...Array.from(groups.keys()).filter(id=>!rooms.some(room=>room.id===id))];
