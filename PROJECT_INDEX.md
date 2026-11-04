@@ -812,3 +812,24 @@ Validation: lint, TypeScript and 30 unit tests pass. PDF checks confirm no fallb
 cover image when none is selected, and an unassigned Main Image appears on the cover
 without adding an Unassigned room page. Saved selections are preserved, and users
 can clear them through the Main Image checkbox.
+
+## Proposal PDF cover, gallery and branding — 2026-11-03
+
+- `src/features/proposals/pdf.ts`: cover header left-to-right logo, bold project name,
+  price, deposit; small unlabeled date upper right; optional main render fills the
+  lower three-quarters region. Later pages place a small project name bottom left
+  and small logo bottom right. First room page has a large title; continued room
+  pages use a small upper-left title. Finish metadata remains upper right.
+- `src/features/proposals/pdf-layout.ts`: horizontal gallery rows replace tall
+  image columns for groups of 3–5. Full images retain aspect ratio, with captions
+  positioned directly under the actual image; no background rectangles.
+- `src/features/proposals/pdf-logo.ts`: renders the repository ACC logo as sharp
+  vector paths and polygons on cover and footer.
+- `next.config.ts`: proposal PDF tracing now includes the logo for deployed builds.
+
+Site index reviewed: no route, query, schema or database index changes required.
+
+Validation: lint, TypeScript, 30 tests and production build pass with build-only
+configuration. Landscape cover and room/continued pages rendered and inspected;
+image counts and footer placement verified. Logo is included in the deployed
+proposal route trace. Images are never cropped or drawn over background boxes.
