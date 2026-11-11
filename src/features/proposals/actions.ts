@@ -17,7 +17,7 @@ export async function saveProposal(_state:{error:string|null},form:FormData):Pro
  try {
   for(const item of items.filter(i=>i.fresh)) {
    const file=form.get(`image_${item.id}`);
-   if(!(file instanceof File)||file.size<1||file.size>maxImageBytes)throw new Error('Each image must be a PNG or JPEG under 2 MB.');
+   if(!(file instanceof File)||file.size<1||file.size>maxImageBytes)throw new Error('Each image must be a PNG or JPEG up to 10 MB.');
    const data=Buffer.from(await file.arrayBuffer());
    const mime=data.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))?'image/png':data[0]===255&&data[1]===216&&data[2]===255?'image/jpeg':null;
    if(!mime)throw new Error('Only PNG and JPEG images are supported.');
@@ -47,7 +47,7 @@ export async function saveProposal(_state:{error:string|null},form:FormData):Pro
    if(item.fresh){bytes+=uploads.get(item.id)!.data.length;}
    else {const existing=old.find(m=>m.id===item.id);if(!existing)throw new Error('An image is no longer available. Reload this proposal.');bytes+=existing.bytes;}
   }
-  if(bytes>maxMediaBytes)throw new Error('Keep the combined image size under 5 MB per proposal.');
+  if(bytes>maxMediaBytes)throw new Error('Keep the combined image size at or below 10 MB per proposal.');
   const values=[project_id,percentage,form.get('include_room_finishes')==='on',user.id,form.get('show_deposit')==='on'];
   if(id){await client.query('UPDATE public.proposals SET project_id=$1,deposit_percentage=$2,include_room_finishes=$3,updated_by=$4,show_deposit_percentage=$5,updated_at=now() WHERE id=$6',[...values,id]);saved=id;}
   else{saved=(await client.query<{id:string}>('INSERT INTO public.proposals(project_id,deposit_percentage,include_room_finishes,created_by,updated_by,show_deposit_percentage) VALUES($1,$2,$3,$4,$4,$5) RETURNING id',values)).rows[0].id;}

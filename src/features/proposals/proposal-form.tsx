@@ -45,8 +45,8 @@ export function ProposalForm({proposal,initialProject,initialMedia=[]}:{proposal
   setError('');
   if(!project){setError('Select a project before adding images.');return;}
   if(media.length+files.length>20){setError('You can add up to 20 images.');return;}
-  if(files.some(f=>!['image/png','image/jpeg'].includes(f.type)||f.size>maxImageBytes||f.size===0)){setError('Choose PNG or JPEG images under 2 MB each.');return;}
-  if([...media.map(m=>m.file?.size??0),...files.map(f=>f.size)].reduce((a,b)=>a+b,0)>maxMediaBytes){setError('Keep the combined image size under 5 MB.');return;}
+  if(files.some(f=>!['image/png','image/jpeg'].includes(f.type)||f.size>maxImageBytes||f.size===0)){setError('Choose PNG or JPEG images up to 10 MB each.');return;}
+  if([...media.map(m=>m.file?.size??0),...files.map(f=>f.size)].reduce((a,b)=>a+b,0)>maxMediaBytes){setError('Keep the combined image size at or below 10 MB.');return;}
   setMedia(previous=>[...previous,...files.map(file=>{const preview=URL.createObjectURL(file);urls.current.add(preview);return {id:crypto.randomUUID(),filename:file.name,title:'',room_id:null,is_main:false,file,preview};})]);
  }
  function move(index:number,offset:number){setMedia(previous=>{const next=[...previous];[next[index],next[index+offset]]=[next[index+offset],next[index]];return next;});}
@@ -65,7 +65,7 @@ export function ProposalForm({proposal,initialProject,initialMedia=[]}:{proposal
     <div className="proposal-dropzone" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(!pending)addFiles(Array.from(e.dataTransfer.files));}}>
      <p>{!project?'Select a project before adding images.':'Drag and drop room renders here'}</p><button type="button" className="proposal-button" disabled={!project} onClick={()=>upload.current?.click()}><ButtonIcon kind="upload"/>Choose Images</button>
      <input ref={upload} type="file" disabled={!project} hidden multiple accept="image/png,image/jpeg" onChange={e=>{addFiles(Array.from(e.target.files??[]));e.target.value='';}}/>
-     <p className="contact-help">PNG or JPEG · 2 MB per image · 5 MB total · Up to 20 images</p>
+     <p className="contact-help">PNG or JPEG · 10 MB per image · 10 MB total · Up to 20 images</p>
     </div>
     <p className="contact-help">Main Image is optional and may be left without a room. All other images require an enabled room.</p>
     <ol className="proposal-media-list">{media.map((m,index)=><li key={m.id}>

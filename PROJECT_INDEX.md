@@ -936,3 +936,16 @@ removed and image fitting uses the full slot again. No schema/index changes.
 
 Validation: lint and TypeScript pass. Rendered cover inspected; centered header,
 image counts and absence of image border strokes verified across cover/room pages.
+
+## Proposal upload size increase
+
+Proposal media accepts up to 10 MiB per image and 10 MiB combined per proposal.
+The form and save action share these limits in `src/features/proposals/model.ts`.
+The server action allows 12 MiB to leave room for multipart overhead. Migration
+`0021_proposal_media_upload_limit.sql` raises the PostgreSQL per-image constraint
+to 10 MiB. The 24-megapixel and 20-image limits still apply. Site and database
+indexes reviewed. Existing indexes cover the same queries.
+
+Validation: lint, TypeScript and 31 tests passed. All 21 migrations applied in
+an isolated database. Existing media was preserved, 10 MiB was accepted and
+10 MiB plus one byte was rejected.

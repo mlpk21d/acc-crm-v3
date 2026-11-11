@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {"/api/proposals/*/pdf": ["./node_modules/pdfkit/js/data/*.afm", "./public/images/acc-logo.svg"],"/api/projects/*/report/pdf": ["./node_modules/pdfkit/js/data/*.afm"],
     "/api/projects/*/rooms/pdf": ["./node_modules/pdfkit/js/data/*.afm"],
     "/api/projects/*/jk-cabinets/pdf": ["./node_modules/pdfkit/js/data/*.afm", "./public/images/acc-logo.svg"]},
-  experimental: {serverActions: {bodySizeLimit: "6mb"}},
+  experimental: {serverActions: {bodySizeLimit: "12mb"}},
 };
 
 export default nextConfig;
