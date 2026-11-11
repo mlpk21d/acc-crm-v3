@@ -6,6 +6,8 @@ import { getDbPool } from "@/lib/db";
 import { z } from "zod";
 import {jkDraftSchema,persistJkConfiguration} from "@/features/projects/jk-persistence";
 
+import {cabinetrySectionsSchema,validCabinetrySectionNames} from "./cabinetry-sections";
+
 const roomInput=z.object({
  project_id:z.uuid(), id:z.union([z.uuid(),z.literal("")]), room_name:z.string().trim().min(1).max(200),
  door_style:z.string().trim().max(200), drawer_style:z.string().trim().max(200),
@@ -18,6 +20,9 @@ export async function addProjectRoom(form:FormData) {
   ["project_id","id","room_name","door_style","drawer_style","species","finish","construction","manufacturer"].map(k=>[k,form.get(k)])));
  if(!parsed.success)throw new Error("Invalid room details.");
  const v=parsed.data;
+ const rawSections=form.get("cabinetry_sections");
+ const sections=rawSections===null?null:cabinetrySectionsSchema.parse(JSON.parse(z.string().max(30000).parse(rawSections)));
+ if(sections&&!validCabinetrySectionNames(v.room_name,sections))throw new Error("Give each cabinetry section a unique name.");
  const rawConfig=form.get("jk_configuration");
  let jkConfiguration:z.infer<typeof jkDraftSchema>|null=null;
  if(rawConfig){
@@ -46,15 +51,26 @@ export async function addProjectRoom(form:FormData) {
     if(!existing?.rowCount)throw new Error("Select an active manufacturer from Settings.");
    }
   }
+  if(sections?.some(section=>section.manufacturer)){
+   const active=await client.query<{value:string}>("SELECT value FROM public.crm_settings_options WHERE category='manufacturer' AND active=true");
+   const allowed=new Set(active.rows.map(row=>row.value));
+   if(v.id){
+    const saved=await client.query<{cabinetry_sections:typeof sections;manufacturer:string|null}>(
+     "SELECT cabinetry_sections,manufacturer FROM public.project_rooms WHERE id=$1 AND project_id=$2",[v.id,v.project_id]);
+    for(const section of saved.rows[0]?.cabinetry_sections??[])allowed.add(section.manufacturer);
+    if(saved.rows[0]?.manufacturer)allowed.add(saved.rows[0].manufacturer);
+   }
+   if(sections.some(section=>section.manufacturer&&!allowed.has(section.manufacturer)))throw new Error("Select a manufacturer from Settings.");
+  }
   let roomId=v.id;
   if(v.id){
-   const updated=await client.query<{id:string}>(`UPDATE public.project_rooms SET room_name=$1,door_style=$2,drawer_style=$3,species=$4,finish=$5,construction=$6,manufacturer=$7,updated_at=now() WHERE id=$8 AND project_id=$9 RETURNING id`,[v.room_name,v.door_style||null,v.drawer_style||null,v.species||null,v.finish||null,v.construction||null,v.manufacturer||null,v.id,v.project_id]);
+   const updated=await client.query<{id:string}>(`UPDATE public.project_rooms SET room_name=$1,door_style=$2,drawer_style=$3,species=$4,finish=$5,construction=$6,manufacturer=$7,cabinetry_sections=COALESCE($10::jsonb,cabinetry_sections),updated_at=now() WHERE id=$8 AND project_id=$9 RETURNING id`,[v.room_name,v.door_style||null,v.drawer_style||null,v.species||null,v.finish||null,v.construction||null,v.manufacturer||null,v.id,v.project_id,sections===null?null:JSON.stringify(sections)]);
    if(!updated.rowCount)throw new Error("Room not found.");
   } else {
    const inserted=await client.query<{id:string}>(`INSERT INTO public.project_rooms
-    (project_id,room_name,door_style,drawer_style,species,finish,construction,manufacturer,sort_order)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,(SELECT COALESCE(MAX(sort_order)+1,1) FROM public.project_rooms WHERE project_id=$1))
-    RETURNING id`,[v.project_id,v.room_name,v.door_style||null,v.drawer_style||null,v.species||null,v.finish||null,v.construction||null,v.manufacturer||null]);
+    (project_id,room_name,door_style,drawer_style,species,finish,construction,manufacturer,sort_order,cabinetry_sections)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,(SELECT COALESCE(MAX(sort_order)+1,1) FROM public.project_rooms WHERE project_id=$1),$9::jsonb)
+    RETURNING id`,[v.project_id,v.room_name,v.door_style||null,v.drawer_style||null,v.species||null,v.finish||null,v.construction||null,v.manufacturer||null,JSON.stringify(sections??[])]);
    roomId=inserted.rows[0].id;
   }
   if(jkConfiguration)await persistJkConfiguration(client,{...jkConfiguration,projectId:v.project_id,roomId});

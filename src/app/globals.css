@@ -651,3 +651,11 @@ a { color: inherit; text-decoration: none; }
 .proposal-view-media figcaption { overflow-wrap:anywhere; }
 .proposal-view-media figcaption small { display:block; color:var(--muted); font-weight:400; margin-top:6px; }
 .proposal-main-badge { display:inline-block; margin-left:8px; padding:3px 6px; border:1px solid var(--border); border-radius:6px; font-size:11px; }
+
+
+.crm-cabinetry-primary { grid-column:1 / -1; font-size:14px; margin:0; }
+.crm-cabinetry-sections { display:grid; justify-items:start; gap:14px; margin-top:16px; }
+.crm-cabinetry-section { width:100%; min-width:0; margin:0; padding:12px; border:1px solid var(--border); border-radius:8px; }
+.crm-cabinetry-section legend { font-size:14px; font-weight:600; padding:0 6px; }
+.crm-cabinetry-section-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+@media(max-width:640px) { .crm-cabinetry-section .crm-new-room-fields { grid-template-columns:1fr; } }

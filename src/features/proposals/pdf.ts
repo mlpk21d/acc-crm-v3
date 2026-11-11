@@ -1,10 +1,10 @@
 import PDFDocument from 'pdfkit';
-import type {RoomReportRow} from '@/features/projects/reports/rooms-table';
 import {depositAmount,money,type Proposal,type ProposalProject} from './model';
 import {combinedStyles,groupRoomMedia,mosaicBoxes,type MosaicBox} from './pdf-layout';
 import {loadProposalLogo,drawProposalLogo} from './pdf-logo';
+import {cabinetryComparison,roomCabinetrySections,type ProposalRoomDetails} from './pdf-cabinetry';
 export type ProposalPdfMedia={title:string;image_data:Buffer;room_id:string|null;is_main:boolean};
-export async function createProposalPdf(proposal:Proposal,project:ProposalProject,rooms:(RoomReportRow&{id:string})[],media:ProposalPdfMedia[]) {
+export async function createProposalPdf(proposal:Proposal,project:ProposalProject,rooms:ProposalRoomDetails[],media:ProposalPdfMedia[]) {
  const logo=await loadProposalLogo();
  const doc=new PDFDocument({size:'LETTER',layout:'landscape',margins:{top:36,right:36,bottom:16,left:36},info:{Title:project.name,Author:'ACC CRM'}});
  const chunks:Buffer[]=[];const result=new Promise<Buffer>((resolve,reject)=>{doc.on('data',chunk=>chunks.push(chunk));doc.on('end',()=>resolve(Buffer.concat(chunks)));doc.on('error',reject);});
@@ -62,16 +62,36 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
   if(main)image(main,{x:36,y:coverImageY,width:720,height:588-coverImageY},false);
   const groups=groupRoomMedia(media.filter(item=>!item.is_main||item.room_id!==null));
   // Project room order first; the legacy unassigned group is retained until edited.
-  const ids=[...rooms.map(room=>room.id).filter(id=>groups.has(id)),...Array.from(groups.keys()).filter(id=>!rooms.some(room=>room.id===id))];
+  const ids=[...rooms.filter(room=>groups.has(room.id)||(proposal.include_room_finishes&&room.enabled&&room.cabinetry_sections?.length)).map(room=>room.id),
+   ...Array.from(groups.keys()).filter(id=>!rooms.some(room=>room.id===id))];
   for(const roomId of ids){
-   const items=groups.get(roomId)!;
+   const items=groups.get(roomId)??[];
    const room=rooms.find(room=>room.id===roomId);
-   for(let start=0;start<items.length;start+=5){
+   const roomName=room?.room_name||'Unassigned room';
+   const sections=proposal.include_room_finishes&&room?.cabinetry_sections?.length?roomCabinetrySections(room):[];
+   let roomPages=0;
+   function addRoomPage(titleWidth:number){
     doc.addPage();
-    text(room?.room_name||'Unassigned room',36,32,350,start?12:26,!start,start?30:72);
+    const first=roomPages++===0;
+    text(roomName,36,32,titleWidth,first?26:12,first,first?72:30);
     text(project.name,36,578,570,8,false,14);
     drawProposalLogo(doc,logo,672,571,84);
-    if(proposal.include_room_finishes&&room){
+   }
+   const comparison=sections.length?cabinetryComparison(doc,sections.slice(0,2),440):null;
+   const compact=comparison&&comparison.height<=170;
+   if(comparison&&!compact){
+    addRoomPage(720);
+    cabinetryComparison(doc,sections.slice(0,2),720).draw(36,112);
+   }
+   const galleryPages=items.length?Math.ceil(items.length/5):compact?1:0;
+   for(let page=0;page<galleryPages;page++){
+    addRoomPage(compact&&page===0?260:350);
+    let imageTop=130;
+    if(compact&&page===0){
+     comparison.draw(316,30);
+     imageTop=Math.max(imageTop,30+comparison.height+14);
+    }
+    if(proposal.include_room_finishes&&room&&!sections.length){
      const details=[['Door/Drawer',combinedStyles(room.door_style,room.drawer_style)],['Finish',room.finish?.trim()||'—'],['Species',room.species?.trim()||'—'],['Manufacturer',room.manufacturer?.trim()||'—'],['Construction',room.construction?.trim()||'—']];
      const detailWidth=Math.min(336,Math.max(...details.map(([label,value])=>{
       doc.font('Helvetica-Bold').fontSize(9);
@@ -90,9 +110,15 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
       detailY+=rowHeight;
      });
     }
-    const pageItems=items.slice(start,start+5);
-    const boxes=mosaicBoxes(pageItems.length,36,130,720,420);
-    pageItems.forEach((item,index)=>image(item,boxes[index]));
+    const pageItems=items.slice(page*5,page*5+5);
+    if(pageItems.length){
+     const boxes=mosaicBoxes(pageItems.length,36,imageTop,720,550-imageTop);
+     pageItems.forEach((item,index)=>image(item,boxes[index]));
+    }
+   }
+   for(let index=2;index<sections.length;index+=2){
+    addRoomPage(720);
+    cabinetryComparison(doc,sections.slice(index,index+2),720).draw(36,80);
    }
   }
   doc.end();

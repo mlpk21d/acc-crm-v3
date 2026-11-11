@@ -9,6 +9,8 @@ import { parseProjectForm } from "@/features/projects/validation";
 import { checklistFields } from "@/features/projects/data";
 import { can } from "@/features/auth/permissions";
 
+import {cabinetrySectionsSchema,validCabinetrySectionNames} from "./cabinetry-sections";
+
 export type ProjectFormState = { error: string | null };
 export async function saveProject(_state: ProjectFormState, form: FormData): Promise<ProjectFormState> {
   const user = await requirePermission("projects:write");
@@ -41,10 +43,11 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
     drawer_style:z.string().trim().max(200),species:z.string().trim().max(200),
     finish:z.string().trim().max(200),construction:z.string().trim().max(200),
     manufacturer:z.string().trim().max(100),
+    cabinetry_sections:cabinetrySectionsSchema.default([]),
     room_cost:money,manufacturer_discount:z.coerce.number().finite().min(0).max(100),
     ras_items:z.array(z.object({item_name:z.string().trim().min(1).max(200),
       code:z.string().trim().max(100),link:z.union([z.literal(""),z.url().refine(u=>u.startsWith("https://")||u.startsWith("http://"))])})).max(100)
-  });
+  }).refine(room=>validCabinetrySectionNames(room.room_name,room.cabinetry_sections));
   let initialRooms:z.infer<typeof roomSchema>[]=[];
   if(form.has("initial_rooms")){
     if(id)return {error:"Initial rooms may only be submitted when creating a project."};
@@ -111,12 +114,12 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
       const choices=new Set(allowed.rows.map(row=>row.value));
       for(let i=0;i<initialRooms.length;i++){
         const r=initialRooms[i];
-        if(r.manufacturer&&!choices.has(r.manufacturer))throw new Error("Invalid room manufacturer.");
+        if([r.manufacturer,...r.cabinetry_sections.map(section=>section.manufacturer)].some(manufacturer=>manufacturer&&!choices.has(manufacturer)))throw new Error("Invalid room manufacturer.");
         const created=await client.query<{id:string}>(`INSERT INTO public.project_rooms
-          (project_id,room_name,door_style,drawer_style,species,finish,construction,manufacturer,sort_order)
-          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+          (project_id,room_name,door_style,drawer_style,species,finish,construction,manufacturer,sort_order,cabinetry_sections)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb) RETURNING id`,
           [saved,r.room_name,r.door_style||null,r.drawer_style||null,r.species||null,
-            r.finish||null,r.construction||null,r.manufacturer||null,i+1]);
+            r.finish||null,r.construction||null,r.manufacturer||null,i+1,JSON.stringify(r.cabinetry_sections)]);
         const roomId=created.rows[0].id;
         if(can(user.role,"settings:manage")){
           await client.query(`INSERT INTO public.project_room_financials(room_id,room_cost,manufacturer_discount)

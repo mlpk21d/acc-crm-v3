@@ -975,3 +975,26 @@ cover the same queries.
 
 Validation: lint, TypeScript and 31 tests passed. Verified a multipart request
 containing 25 MiB of image data fits within the server action request limit.
+
+## Room cabinetry sections
+
+Rollback point before this feature is `d8b8053d7e4edb478367e4b22c33944af525e388`.
+Reverting the feature code can leave the additive database column in place so any
+saved cabinetry sections are retained for future use.
+
+- `src/features/projects/cabinetry-section-editor.tsx` adds, copies and removes
+  named cabinetry sections in both room editors. Kitchen starts with Perimeter
+  and suggests Island for the first additional section.
+- `src/features/projects/cabinetry-sections.ts` defines section specs and validates
+  unique names and limits. Existing room fields hold the primary specifications.
+- `src/db/migrations/0023_room_cabinetry_sections.sql` adds an ordered JSON array
+  to the room row. Create/edit operations save it with the existing room data.
+  Sections share the room’s cost, image gallery and enabled status.
+- `src/features/proposals/pdf-cabinetry.ts` lays out a compact comparison when
+  room finishes are enabled. Larger comparisons can use extra room pages.
+- Existing room lookup indexes cover section reads because the array lives on
+  the room row. No new routes or indexes were needed.
+
+Validation included lint, TypeScript, 31 unit tests, the production build using
+build-only configuration, all 23 migrations in an isolated database, and PDF
+inspection for single-section, multiple-section, hidden and long-value cases.
