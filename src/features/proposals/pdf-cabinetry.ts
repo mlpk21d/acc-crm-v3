@@ -26,10 +26,11 @@ export function cabinetryComparison(doc: PDFKit.PDFDocument, sections: Cabinetry
  const labelWidth = 80;
  const columnWidth = (width-labelWidth)/sections.length;
  const cellWidth = columnWidth-12;
+ const headerTopPadding = 3;
  const rows = labels.map((label,index)=>{
   const values = columns.map(column=>column[index]?.trim().replace(/\s+/gu," ") || "—");
   doc.font(index===0?"Helvetica-Bold":"Helvetica").fontSize(9);
-  const height = Math.max(...values.map(value=>doc.heightOfString(value,{width:cellWidth})))+5;
+  const height = Math.max(...values.map(value=>doc.heightOfString(value,{width:cellWidth})))+5+(index===0?headerTopPadding:0);
   return {label,values,height};
  });
 
@@ -38,11 +39,12 @@ export function cabinetryComparison(doc: PDFKit.PDFDocument, sections: Cabinetry
   draw(x:number,y:number){
    for(const [index,row] of rows.entries()){
     if(index===0)doc.save().rect(x-6,y-3,width+6,row.height).fill("#f3f4f6").restore();
+    const textY=y+(index===0?headerTopPadding:0);
     doc.font("Helvetica-Bold").fontSize(9).fillColor("#111827");
-    if(row.label)doc.text(row.label,x,y,{width:labelWidth-6});
+    if(row.label)doc.text(row.label,x,textY,{width:labelWidth-6});
     doc.font(index===0?"Helvetica-Bold":"Helvetica");
     row.values.forEach((value,column)=>{
-     doc.text(value,x+labelWidth+column*columnWidth,y,{width:cellWidth});
+     doc.text(value,x+labelWidth+column*columnWidth,textY,{width:cellWidth});
     });
     y+=row.height;
     if(index===0)doc.save().strokeColor("#d1d5db").lineWidth(.5)

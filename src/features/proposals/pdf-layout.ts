@@ -46,12 +46,13 @@ export function coverMasonryBoxes(aspectRatios: number[], area: MosaicBox): Mosa
  const naturalHeight=(availableWidth+columns.reduce((sum,column)=>sum+innerGap(column.tiles.length)/column.weight,0))/
   columns.reduce((sum,column)=>sum+1/column.weight,0);
  const gridHeight=Math.min(area.height,naturalHeight);
+ const gridTop=area.y+(area.height-gridHeight)/2;
  const boxes:MosaicBox[]=[];
  let x=area.x;
  for(const column of columns){
   const columnGap=innerGap(column.tiles.length);
   const width=(naturalHeight-columnGap)/column.weight;
-  let y=area.y;
+  let y=gridTop;
   for(const tile of column.tiles){
    const height=(gridHeight-columnGap)*tile.weight/column.weight;
    boxes[tile.index]={x,y,width,height};

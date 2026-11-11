@@ -1058,3 +1058,10 @@ selections within the existing proposal image limit.
 Lint, TypeScript and 32 tests passed. All 25 migrations ran in an isolated
 database. Verified preservation of the existing main selection, multiple saved
 selections, masonry bounds and PDF renders with 0, 1, 5 and 20 cover images.
+
+## Proposal cover centering and specification header spacing
+
+Cover masonry grids are centered vertically within the available image area.
+Comparison headers have an extra 3 pt above the label text. The table measures
+that padding when placing the room images. Existing proposal indexes and schema
+cover the same reads.

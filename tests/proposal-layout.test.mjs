@@ -34,6 +34,9 @@ test('cover masonry packs up to 20 mixed-aspect images within the available area
   const ratios=Array.from({length:count},(_,i)=>[.56,1.52,2.7,1][i%4]);
   const boxes=coverMasonryBoxes(ratios,area);
   assert.equal(boxes.length,count);
+  const top=Math.min(...boxes.map(box=>box.y));
+  const bottom=Math.max(...boxes.map(box=>box.y+box.height));
+  assert.ok(Math.abs((top+bottom)/2-(area.y+area.height/2))<.001);
   for(const [i,a] of boxes.entries()){
    assert.ok(a.width>0&&a.height>0);
    assert.ok(a.x>=area.x&&a.y>=area.y);
