@@ -998,3 +998,22 @@ saved cabinetry sections are retained for future use.
 Validation included lint, TypeScript, 31 unit tests, the production build using
 build-only configuration, all 23 migrations in an isolated database, and PDF
 inspection for single-section, multiple-section, hidden and long-value cases.
+
+## Cabinetry section costs
+
+New cabinetry sections start with a blank name. Admins can enter Room Cost and
+Mfr Discount % for each section in either room editor. Migration
+`0024_cabinetry_section_financials.sql` assigns stable IDs to existing sections
+and adds a private financial table keyed by room and section. The key covers
+financial lookups and cleanup by room. Public room reads continue to load specs
+separately from costs. Saving or removing a section updates its financial data in
+the room transaction.
+
+Room totals add each enabled room’s primary cost and section costs after each
+item’s own discount, rounded separately to cents. Project list, financial panel,
+proposal prices and project reports include those amounts. The room table shows
+combined costs before discounts. Existing sections start with zero added cost.
+
+Lint, TypeScript and 31 unit tests passed. All 24 migrations applied in an
+isolated database. Checked existing sections, independent discounts, rounding,
+disabled rooms and removal, and confirmed project list and summary totals agree.

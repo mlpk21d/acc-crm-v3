@@ -15,9 +15,13 @@ export async function getProjectList(input:ProjectListFilters):Promise<ProjectLi
  const where=`p.deleted_at IS NULL AND ($1='' OR p.name ILIKE '%' || $1 || '%')
  AND (($2<>'' AND p.status=$2) OR ($2='' AND lower(p.status) NOT IN ('canceled','cancelled','archived')))
  AND (NOT $3::boolean OR p.featured)`;
- // Only administrators query financial tables. Round each discounted room in cents, as on Project View.
+ // Only administrators query financial tables. Round each discounted room and section in cents, as on Project View.
  const finance=admin?`, amounts AS (
- SELECT p.id,COALESCE((SELECT SUM(ROUND(COALESCE(rf.room_cost,0)*100*(1-COALESCE(rf.manufacturer_discount,0)/100)))
+ SELECT p.id,COALESCE((SELECT SUM(
+  ROUND(COALESCE(rf.room_cost,0)*100*(1-COALESCE(rf.manufacturer_discount,0)/100))
+  +COALESCE((SELECT SUM(ROUND(sf.room_cost*100*(1-sf.manufacturer_discount/100)))
+   FROM public.cabinetry_section_financials sf WHERE sf.room_id=r.id),0)
+ )
  FROM public.project_rooms r LEFT JOIN public.project_room_financials rf ON rf.room_id=r.id WHERE r.project_id=p.id AND r.enabled=true),0)
  +100*(COALESCE(f.install_cost,0)+COALESCE(f.misc_cost,0)+COALESCE(f.drawing_cost,0)+COALESCE(f.freight,0)+COALESCE(f.doors_pulls,0)) AS base,
  CASE WHEN f.margin_type='other' THEN f.custom_margin WHEN f.margin_type='25' THEN 0.25 ELSE 0.35 END AS margin

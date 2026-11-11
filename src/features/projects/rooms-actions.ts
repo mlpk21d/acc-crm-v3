@@ -8,6 +8,9 @@ import {jkDraftSchema,persistJkConfiguration} from "@/features/projects/jk-persi
 
 import {cabinetrySectionsSchema,validCabinetrySectionNames} from "./cabinetry-sections";
 
+import {sectionFinancialsMatch,sectionFinancialsSchema} from "./cabinetry-section-financials";
+import {saveSectionFinancials} from "./cabinetry-section-financials-data";
+
 const roomInput=z.object({
  project_id:z.uuid(), id:z.union([z.uuid(),z.literal("")]), room_name:z.string().trim().min(1).max(200),
  door_style:z.string().trim().max(200), drawer_style:z.string().trim().max(200),
@@ -23,6 +26,11 @@ export async function addProjectRoom(form:FormData) {
  const rawSections=form.get("cabinetry_sections");
  const sections=rawSections===null?null:cabinetrySectionsSchema.parse(JSON.parse(z.string().max(30000).parse(rawSections)));
  if(sections&&!validCabinetrySectionNames(v.room_name,sections))throw new Error("Give each cabinetry section a unique name.");
+ const rawSectionFinancials=form.get("section_financials");
+ if(rawSectionFinancials!==null&&!can(user.role,"settings:manage"))throw new Error("Administrator access required for section financials.");
+ const sectionFinancials=rawSectionFinancials===null?[]:
+  sectionFinancialsSchema.parse(JSON.parse(z.string().max(5000).parse(rawSectionFinancials)));
+ if(!sectionFinancialsMatch(sections??[],sectionFinancials))throw new Error("Invalid cabinetry section financials.");
  const rawConfig=form.get("jk_configuration");
  let jkConfiguration:z.infer<typeof jkDraftSchema>|null=null;
  if(rawConfig){
@@ -73,6 +81,13 @@ export async function addProjectRoom(form:FormData) {
     RETURNING id`,[v.project_id,v.room_name,v.door_style||null,v.drawer_style||null,v.species||null,v.finish||null,v.construction||null,v.manufacturer||null,JSON.stringify(sections??[])]);
    roomId=inserted.rows[0].id;
   }
+  if(sections!==null){
+   await client.query(
+    "DELETE FROM public.cabinetry_section_financials WHERE room_id=$1 AND NOT(section_id=ANY($2::uuid[]))",
+    [roomId,sections.map(section=>section.id)],
+   );
+  }
+  await saveSectionFinancials(client,roomId,sectionFinancials);
   if(jkConfiguration)await persistJkConfiguration(client,{...jkConfiguration,projectId:v.project_id,roomId});
   if(financial){
    await client.query(`INSERT INTO public.project_room_financials(room_id,room_cost,manufacturer_discount)

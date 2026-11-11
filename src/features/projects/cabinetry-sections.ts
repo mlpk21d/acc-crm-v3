@@ -13,6 +13,7 @@ export const cabinetryConstructions = ["Inset", "Inset Beaded", "Full Overlay", 
 export const maxCabinetrySections = 12;
 
 export const cabinetrySectionSchema = z.object({
+ id: z.uuid(),
  name: z.string().trim().min(1).max(80),
  door_style: z.string().trim().max(200),
  drawer_style: z.string().trim().max(200),
@@ -22,9 +23,10 @@ export const cabinetrySectionSchema = z.object({
  manufacturer: z.string().trim().max(100),
 });
 
-export const cabinetrySectionsSchema = z.array(cabinetrySectionSchema).max(maxCabinetrySections);
+export const cabinetrySectionsSchema = z.array(cabinetrySectionSchema).max(maxCabinetrySections)
+ .refine(sections=>new Set(sections.map(section=>section.id)).size===sections.length);
 export type CabinetrySection = z.infer<typeof cabinetrySectionSchema>;
-export type CabinetrySpecs = Omit<CabinetrySection, "name">;
+export type CabinetrySpecs = Omit<CabinetrySection, "id" | "name">;
 
 export function primaryCabinetryLabel(roomName: string) {
  return /\bkitchen\b/i.test(roomName) ? "Perimeter" : "Primary Cabinetry";

@@ -1,13 +1,14 @@
 "use client";
 import { useState } from "react";
 import type { ProjectFinancials,RoomFinancial } from "@/features/projects/financial-data";
+import {totalRoomCostCents} from "./cabinetry-section-financials";
 type Props={projectId:string;financials:ProjectFinancials;rooms:RoomFinancial[];roomNames:Record<string,string>;editable?:boolean};
 const currency=(value:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(value);
 const fields=[["install_cost","Install Cost"],["misc_cost","Misc Cost"],["drawing_cost","Drawing Cost"],["freight","Freight"],["doors_pulls","Doors/Pulls"]] as const;
 export function ProjectFinancialPanel({financials,rooms,editable=false}:Props){
  const [data,setData]=useState(financials);
  const cents=(value:string)=>Math.round((Number(value)||0)*100);
- const roomTotal=rooms.filter(r=>r.enabled!==false).reduce((sum,r)=>sum+Math.round(cents(r.room_cost)*(1-Number(r.manufacturer_discount)/100)),0);
+ const roomTotal=totalRoomCostCents(rooms);
  const total=roomTotal+fields.reduce((sum,[key])=>sum+cents(data[key]),0);
  const margin=data.margin_type==="other"?Number(data.custom_margin)*100:Number(data.margin_type);
  const totalCost=margin>=0&&margin<100?Math.round(total/(1-margin/100)):total;

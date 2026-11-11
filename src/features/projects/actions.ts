@@ -11,6 +11,9 @@ import { can } from "@/features/auth/permissions";
 
 import {cabinetrySectionsSchema,validCabinetrySectionNames} from "./cabinetry-sections";
 
+import {sectionFinancialsMatch,sectionFinancialsSchema} from "./cabinetry-section-financials";
+import {saveSectionFinancials} from "./cabinetry-section-financials-data";
+
 export type ProjectFormState = { error: string | null };
 export async function saveProject(_state: ProjectFormState, form: FormData): Promise<ProjectFormState> {
   const user = await requirePermission("projects:write");
@@ -44,10 +47,12 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
     finish:z.string().trim().max(200),construction:z.string().trim().max(200),
     manufacturer:z.string().trim().max(100),
     cabinetry_sections:cabinetrySectionsSchema.default([]),
+    section_financials:sectionFinancialsSchema.default([]),
     room_cost:money,manufacturer_discount:z.coerce.number().finite().min(0).max(100),
     ras_items:z.array(z.object({item_name:z.string().trim().min(1).max(200),
       code:z.string().trim().max(100),link:z.union([z.literal(""),z.url().refine(u=>u.startsWith("https://")||u.startsWith("http://"))])})).max(100)
-  }).refine(room=>validCabinetrySectionNames(room.room_name,room.cabinetry_sections));
+  }).refine(room=>validCabinetrySectionNames(room.room_name,room.cabinetry_sections) &&
+    sectionFinancialsMatch(room.cabinetry_sections,room.section_financials));
   let initialRooms:z.infer<typeof roomSchema>[]=[];
   if(form.has("initial_rooms")){
     if(id)return {error:"Initial rooms may only be submitted when creating a project."};
@@ -58,7 +63,7 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
       if(!parsedRooms.success)return {error:"Invalid room details."};
       initialRooms=parsedRooms.data;
     }catch{return {error:"Invalid rooms payload."};}
-    if(!can(user.role,"settings:manage")&&initialRooms.some(r=>r.room_cost!==0||r.manufacturer_discount!==0))
+    if(!can(user.role,"settings:manage")&&initialRooms.some(r=>r.room_cost!==0||r.manufacturer_discount!==0||r.section_financials.length>0))
       return {error:"Room financial fields require administrator access."};
   }
   let saved: string;
@@ -124,6 +129,7 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
         if(can(user.role,"settings:manage")){
           await client.query(`INSERT INTO public.project_room_financials(room_id,room_cost,manufacturer_discount)
             VALUES($1,$2,$3)`,[roomId,r.room_cost,r.manufacturer_discount]);
+          await saveSectionFinancials(client,roomId,r.section_financials);
         }
         for(let j=0;j<r.ras_items.length;j++){
           const item=r.ras_items[j];

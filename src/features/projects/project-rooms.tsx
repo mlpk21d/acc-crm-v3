@@ -7,6 +7,7 @@ import {jkTotalCents,type JkDraft} from "@/features/projects/jk-model";
 import { JkConfigurator } from "@/features/projects/jk-configurator";
 import { addProjectRoom, deleteProjectRoom, moveProjectRoom, setProjectRoomEnabled } from "@/features/projects/rooms-actions";
 
+import type {CabinetrySectionFinancial} from "./cabinetry-section-financials";
 import {CabinetrySectionEditor} from "./cabinetry-section-editor";
 import {cabinetryFields,cabinetryConstructions,primaryCabinetryLabel,validCabinetrySectionNames,type CabinetrySection,type CabinetrySpecs} from "./cabinetry-sections";
 
@@ -37,13 +38,19 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
  const [current,setCurrent]=useState<ProjectRoom|null|undefined>(undefined);
  const [jkOpen,setJkOpen]=useState(false);
  const [roomName,setRoomName]=useState("");
+ const [sectionFinancials,setSectionFinancials]=useState<CabinetrySectionFinancial[]>([]);
  const [sections,setSections]=useState<CabinetrySection[]>([]);
  const [manufacturer,setManufacturer]=useState("");
  const [jkDraft,setJkDraft]=useState<JkDraft|undefined>();
  const [accessories,setAccessories]=useState<{item_name:string;code:string;link:string}[]>([]);
  const [roomError,setRoomError]=useState("");
  const [saving,setSaving]=useState(false);
- function openRoom(room:ProjectRoom|null){setRoomName(room?.room_name??"");setSections(room?.cabinetry_sections??[]);setManufacturer(room?.manufacturer??"");setJkDraft(undefined);setAccessories(room?.ras_items.map(i=>({item_name:i.item_name,code:i.code??"",link:i.link??""}))??[]);setRoomError("");setCurrent(room);}
+ function openRoom(room:ProjectRoom|null){setRoomName(room?.room_name??"");setSections(room?.cabinetry_sections??[]);setSectionFinancials(roomFinancials.find(finance=>finance.room_id===room?.id)?.section_financials??[]);setManufacturer(room?.manufacturer??"");setJkDraft(undefined);setAccessories(room?.ras_items.map(i=>({item_name:i.item_name,code:i.code??"",link:i.link??""}))??[]);setRoomError("");setCurrent(room);}
+ function roomGrossCost(roomId:string){
+  const finance=roomFinancials.find(entry=>entry.room_id===roomId);
+  if(!finance)return 0;
+  return [finance,...finance.section_financials].reduce((sum,cost)=>sum+Number(cost.room_cost),0);
+ }
  const [confirmDelete,setConfirmDelete]=useState<ProjectRoom|null>(null);
  const dialog=useRef<HTMLDivElement>(null);
  useEffect(()=>{
@@ -63,7 +70,7 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
    {canEdit&&<td><div className="crm-room-order-controls">{(["up","down"] as const).map(direction=><form action={moveProjectRoom} key={direction}><input type="hidden" name="project_id" value={projectId}/><input type="hidden" name="id" value={room.id}/><input type="hidden" name="direction" value={direction}/><button type="submit" aria-label={direction==="up"?"Move room up":"Move room down"} disabled={direction==="up"?index===0:index===rooms.length-1}><ButtonIcon kind={direction}/></button></form>)}</div></td>}
    <td><strong>{room.room_name}</strong>{room.ras_items.length>0&&<div className="crm-room-accessory-preview">Rev-A-Shelf ({room.ras_items.length})</div>}</td><td>{room.door_style||"—"}</td><td>{room.drawer_style||"—"}</td><td>{room.species||"—"}</td><td>{room.finish||"—"}</td><td>{room.construction||"—"}</td>
    <td><span>{room.manufacturer||"—"}</span></td>
-   {isAdmin&&<td className="crm-room-cost">{new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(roomFinancials.find(r=>r.room_id===room.id)?.room_cost??0))}</td>}
+   {isAdmin&&<td className="crm-room-cost">{new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(roomGrossCost(room.id))}</td>}
    {canEdit&&<td className="crm-room-actions-column"><div className="crm-room-row-actions"><input type="checkbox" className="crm-room-enabled-checkbox" aria-label={`Enable ${room.room_name}`} title="Include room in financial totals" checked={room.enabled} disabled={toggling.includes(room.id)} onChange={async event=>{const enabled=event.target.checked;setToggleError("");setToggling(old=>[...old,room.id]);try{await setProjectRoomEnabled({projectId,roomId:room.id,enabled});}catch{setToggleError("Unable to update room. Please try again.");}finally{setToggling(old=>old.filter(id=>id!==room.id));}}}/><button type="button" className="crm-room-icon-action" aria-label={`Edit ${room.room_name}`} title="Edit room" onClick={()=>openRoom(room)}><ButtonIcon kind="edit"/></button><button type="button" className="crm-room-icon-action crm-room-delete-action" aria-label={`Delete ${room.room_name}`} title="Delete room" onClick={()=>setConfirmDelete(room)}><ButtonIcon kind="delete"/></button></div></td>}
   </tr>)}</tbody></table></div>}
   {rooms.length===0&&<p className="crm-rooms-empty">{canEdit?<>No rooms added yet. Click &quot;Add Room&quot; to create one.</>:"No rooms added yet."}</p>}
@@ -90,7 +97,8 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
       {isAdmin&&manufacturer==="J&K"&&<button type="button" className="crm-jk-launch" disabled={saving} onClick={()=>setJkOpen(true)}><ButtonIcon kind="cabinet"/>Configure J&amp;K Cabinets</button>}
       {jkDraft&&<p className="crm-jk-draft-notice">Cabinet configuration applied. Save Room to save these cabinets.</p>}
       <input type="hidden" name="cabinetry_sections" value={JSON.stringify(sections)}/>
-      <CabinetrySectionEditor roomName={roomName} sections={sections} onChange={setSections} manufacturers={manufacturers}
+      {isAdmin&&<input type="hidden" name="section_financials" value={JSON.stringify(sectionFinancials)}/>}
+      <CabinetrySectionEditor financials={isAdmin?{values:sectionFinancials,onChange:setSectionFinancials}:undefined} roomName={roomName} sections={sections} onChange={setSections} manufacturers={manufacturers}
        readPrimary={form=>{
         const data=form?new FormData(form):null;
         return Object.fromEntries(cabinetryFields.map(([key])=>[key,String(data?.get(key)??"")])) as CabinetrySpecs;
