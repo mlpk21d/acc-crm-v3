@@ -37,7 +37,6 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
  const [toggleError,setToggleError]=useState("");
  const [current,setCurrent]=useState<ProjectRoom|null|undefined>(undefined);
  const [jkOpen,setJkOpen]=useState(false);
- const [roomName,setRoomName]=useState("");
  const [sectionFinancials,setSectionFinancials]=useState<CabinetrySectionFinancial[]>([]);
  const [sections,setSections]=useState<CabinetrySection[]>([]);
  const [manufacturer,setManufacturer]=useState("");
@@ -45,7 +44,7 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
  const [accessories,setAccessories]=useState<{item_name:string;code:string;link:string}[]>([]);
  const [roomError,setRoomError]=useState("");
  const [saving,setSaving]=useState(false);
- function openRoom(room:ProjectRoom|null){setRoomName(room?.room_name??"");setSections(room?.cabinetry_sections??[]);setSectionFinancials(roomFinancials.find(finance=>finance.room_id===room?.id)?.section_financials??[]);setManufacturer(room?.manufacturer??"");setJkDraft(undefined);setAccessories(room?.ras_items.map(i=>({item_name:i.item_name,code:i.code??"",link:i.link??""}))??[]);setRoomError("");setCurrent(room);}
+ function openRoom(room:ProjectRoom|null){setSections(room?.cabinetry_sections??[]);setSectionFinancials(roomFinancials.find(finance=>finance.room_id===room?.id)?.section_financials??[]);setManufacturer(room?.manufacturer??"");setJkDraft(undefined);setAccessories(room?.ras_items.map(i=>({item_name:i.item_name,code:i.code??"",link:i.link??""}))??[]);setRoomError("");setCurrent(room);}
  function roomGrossCost(roomId:string){
   const finance=roomFinancials.find(entry=>entry.room_id===roomId);
   if(!finance)return 0;
@@ -84,12 +83,12 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
       <input type="hidden" name="project_id" value={projectId}/>
       <input type="hidden" name="id" value={current?.id??""}/>
       <div className="crm-room-fields">
-       <label>Room Name<input name="room_name" maxLength={200} required value={roomName} onChange={event=>setRoomName(event.target.value)}/></label>
+       <label>Room Name<input name="room_name" maxLength={200} required defaultValue={current?.room_name??""}/></label>
        {isAdmin&&<div className="crm-existing-room-cost-pair">
         <label>Room Cost<input key={`${current?.id??"new"}-${jkDraft?jkTotalCents(jkDraft):"manual"}`} name="room_cost" type="number" min="0" max="99999999" step="0.01" required defaultValue={jkDraft?(jkTotalCents(jkDraft)/100).toFixed(2):roomFinancials.find(r=>r.room_id===current?.id)?.room_cost??"0"} disabled={!!jkDraft||roomFinancials.some(r=>r.room_id===current?.id&&r.jk_locked)}/></label>
         <label>Mfr Discount %<input key={current?.id??"new"} name="manufacturer_discount" type="number" min="0" max="100" step="0.001" required defaultValue={roomFinancials.find(r=>r.room_id===current?.id)?.manufacturer_discount??"0"}/></label>
        </div>}
-       {sections.length>0&&<h3 className="crm-cabinetry-primary">{primaryCabinetryLabel(roomName)}</h3>}
+       {sections.length>0&&<h3 className="crm-cabinetry-primary">{primaryCabinetryLabel}</h3>}
        {fields.filter(([name])=>name!=="room_name").map(([name,label])=><label key={name}>{label}<input name={name} maxLength={200} required={name==="room_name"} defaultValue={current?.[name]??""}/></label>)}
        <label>Construction<select name="construction" defaultValue={current?.construction??""}><option value="">Select...</option>{cabinetryConstructions.map(v=><option key={v} value={v}>{v}</option>)}</select></label>
        <label>Manufacturer<select name="manufacturer" value={manufacturer} onChange={event=>{setManufacturer(event.target.value);setJkDraft(undefined);}}><option value="">Select...</option>{manufacturers.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}{current?.manufacturer&&!manufacturers.some(m=>m.value===current.manufacturer)&&<option value={current.manufacturer}>{current.manufacturer} (inactive)</option>}</select></label>
@@ -98,7 +97,7 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
       {jkDraft&&<p className="crm-jk-draft-notice">Cabinet configuration applied. Save Room to save these cabinets.</p>}
       <input type="hidden" name="cabinetry_sections" value={JSON.stringify(sections)}/>
       {isAdmin&&<input type="hidden" name="section_financials" value={JSON.stringify(sectionFinancials)}/>}
-      <CabinetrySectionEditor financials={isAdmin?{values:sectionFinancials,onChange:setSectionFinancials}:undefined} roomName={roomName} sections={sections} onChange={setSections} manufacturers={manufacturers}
+      <CabinetrySectionEditor financials={isAdmin?{values:sectionFinancials,onChange:setSectionFinancials}:undefined} sections={sections} onChange={setSections} manufacturers={manufacturers}
        readPrimary={form=>{
         const data=form?new FormData(form):null;
         return Object.fromEntries(cabinetryFields.map(([key])=>[key,String(data?.get(key)??"")])) as CabinetrySpecs;
@@ -114,7 +113,7 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
         <button type="button" aria-label={`Remove item ${i+1}`} onClick={()=>setAccessories(old=>old.filter((_,n)=>n!==i))}><ButtonIcon kind="delete"/></button>
        </div>)}
       </div>
-      <div className="crm-room-modal-actions"><button type="button" onClick={()=>setCurrent(undefined)}>Cancel<ButtonIcon kind="close" /></button><button type="submit" disabled={saving||!validCabinetrySectionNames(roomName,sections)}>{saving?"Saving…":"Save Room"}<ButtonIcon kind="save" /></button></div>
+      <div className="crm-room-modal-actions"><button type="button" onClick={()=>setCurrent(undefined)}>Cancel<ButtonIcon kind="close" /></button><button type="submit" disabled={saving||!validCabinetrySectionNames(sections)}>{saving?"Saving…":"Save Room"}<ButtonIcon kind="save" /></button></div>
     </form>
 
    </div>

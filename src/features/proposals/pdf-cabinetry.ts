@@ -10,7 +10,7 @@ export type ProposalRoomDetails = RoomReportRow & {
 
 export function roomCabinetrySections(room: ProposalRoomDetails) {
  return [
-  {...room,name:primaryCabinetryLabel(room.room_name)},
+  {...room,name:primaryCabinetryLabel},
   ...(room.cabinetry_sections ?? []),
  ];
 }

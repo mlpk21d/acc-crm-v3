@@ -51,7 +51,7 @@ export async function saveProject(_state: ProjectFormState, form: FormData): Pro
     room_cost:money,manufacturer_discount:z.coerce.number().finite().min(0).max(100),
     ras_items:z.array(z.object({item_name:z.string().trim().min(1).max(200),
       code:z.string().trim().max(100),link:z.union([z.literal(""),z.url().refine(u=>u.startsWith("https://")||u.startsWith("http://"))])})).max(100)
-  }).refine(room=>validCabinetrySectionNames(room.room_name,room.cabinetry_sections) &&
+  }).refine(room=>validCabinetrySectionNames(room.cabinetry_sections) &&
     sectionFinancialsMatch(room.cabinetry_sections,room.section_financials));
   let initialRooms:z.infer<typeof roomSchema>[]=[];
   if(form.has("initial_rooms")){

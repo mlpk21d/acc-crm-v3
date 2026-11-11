@@ -15,7 +15,7 @@ export function NewProjectRooms({manufacturers,isAdmin}:{manufacturers:{value:st
  const update=(key:keyof DraftRoom,value:string)=>setDraft(old=>({...old,[key]:value}));
  function open(index:number|null){setEditing(index??-1);setDraft(index===null?blank():structuredClone(rooms[index]));}
  const sectionCostsValid=sectionFinancialsSchema.safeParse(draft.section_financials).success;
- const sectionNamesValid=validCabinetrySectionNames(draft.room_name,draft.cabinetry_sections);
+ const sectionNamesValid=validCabinetrySectionNames(draft.cabinetry_sections);
  function apply(){if(!sectionCostsValid||!sectionNamesValid||!draft.room_name.trim()||draft.ras_items.some(i=>!i.item_name.trim()||(i.link&&!/^https?:\/\//.test(i.link))))return;setRooms(old=>editing===-1?[...old,draft]:old.map((r,i)=>i===editing?draft:r));setEditing(null)}
  return <section className="content-card crm-project-rooms">
   <div className="crm-rooms-heading"><h2><ButtonIcon kind="layers"/>Rooms ({rooms.length})</h2><button type="button" onClick={()=>open(null)}><ButtonIcon kind="add"/>Add Room</button></div>
@@ -29,7 +29,7 @@ export function NewProjectRooms({manufacturers,isAdmin}:{manufacturers:{value:st
      <div className="crm-new-room-fields">
       <label>Room Name<input autoFocus value={draft.room_name} maxLength={200} onChange={e=>update("room_name",e.target.value)}/></label>
       {isAdmin?<div className="crm-new-room-cost-pair"><label>Room Cost<input type="number" min="0" step="0.01" value={draft.room_cost} onChange={e=>update("room_cost",e.target.value)}/></label><label>Mfr Discount %<input type="number" min="0" max="100" step="0.001" value={draft.manufacturer_discount} onChange={e=>update("manufacturer_discount",e.target.value)}/></label></div>:<div/>}
-      {draft.cabinetry_sections.length>0&&<h3 className="crm-cabinetry-primary">{primaryCabinetryLabel(draft.room_name)}</h3>}
+      {draft.cabinetry_sections.length>0&&<h3 className="crm-cabinetry-primary">{primaryCabinetryLabel}</h3>}
       <label>Door Style<input value={draft.door_style} maxLength={200} onChange={e=>update("door_style",e.target.value)}/></label>
       <label>Species<input value={draft.species} maxLength={200} onChange={e=>update("species",e.target.value)}/></label>
       <label>Drawer Style<input value={draft.drawer_style} maxLength={200} onChange={e=>update("drawer_style",e.target.value)}/></label>
@@ -37,7 +37,7 @@ export function NewProjectRooms({manufacturers,isAdmin}:{manufacturers:{value:st
       <label>Construction<select value={draft.construction} onChange={e=>update("construction",e.target.value)}><option value="">Select...</option>{cabinetryConstructions.map(v=><option value={v} key={v}>{v}</option>)}</select></label>
       <label>Manufacturer<select value={draft.manufacturer} onChange={e=>update("manufacturer",e.target.value)}><option value="">Select...</option>{manufacturers.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}</select></label>
      </div>
-     <CabinetrySectionEditor roomName={draft.room_name} sections={draft.cabinetry_sections}
+     <CabinetrySectionEditor sections={draft.cabinetry_sections}
       financials={isAdmin?{
        values:draft.section_financials,
        onChange:entries=>setDraft(old=>({...old,section_financials:entries})),

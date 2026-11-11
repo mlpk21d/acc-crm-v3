@@ -2,13 +2,12 @@
 import {ButtonIcon} from "@/components/button-icon";
 import {
  cabinetryConstructions, cabinetryFields, maxCabinetrySections,
- primaryCabinetryLabel, validCabinetrySectionNames, type CabinetrySection, type CabinetrySpecs,
+ validCabinetrySectionNames, type CabinetrySection, type CabinetrySpecs,
 } from "./cabinetry-sections";
 
 import type {CabinetrySectionFinancial} from "./cabinetry-section-financials";
 
-export function CabinetrySectionEditor({roomName, sections, onChange, readPrimary, manufacturers, financials}: {
- roomName: string;
+export function CabinetrySectionEditor({sections, onChange, readPrimary, manufacturers, financials}: {
  sections: CabinetrySection[];
  onChange: (sections: CabinetrySection[]) => void;
  readPrimary: (form: HTMLFormElement | null) => CabinetrySpecs;
@@ -18,8 +17,6 @@ export function CabinetrySectionEditor({roomName, sections, onChange, readPrimar
   onChange: (entries: CabinetrySectionFinancial[]) => void;
  };
 }) {
- const primaryLabel = primaryCabinetryLabel(roomName);
-
  function addSection() {
   onChange([...sections, {
    id: crypto.randomUUID(), name: "", door_style: "", drawer_style: "",
@@ -51,7 +48,7 @@ export function CabinetrySectionEditor({roomName, sections, onChange, readPrimar
   <button type="button" className="proposal-button" onClick={addSection} disabled={sections.length >= maxCabinetrySections}>
    <ButtonIcon kind="add"/>Add Cabinetry Section
   </button>
-  {sections.length > 0 && !validCabinetrySectionNames(roomName, sections) &&
+  {sections.length > 0 && !validCabinetrySectionNames(sections) &&
    <p className="contact-form-error" role="status">Give each cabinetry section a unique name.</p>}
   {sections.map((section, index) => <fieldset key={section.id} className="crm-cabinetry-section">
    <legend>{section.name.trim() || "New Cabinetry Section"}</legend>
@@ -79,7 +76,7 @@ export function CabinetrySectionEditor({roomName, sections, onChange, readPrimar
    </div>
    <div className="crm-cabinetry-section-actions">
     <button type="button" className="proposal-button" onClick={event=>updateSection(index,readPrimary(event.currentTarget.form))}>
-     <ButtonIcon kind="layers"/>Copy from {primaryLabel}
+     <ButtonIcon kind="layers"/>Copy from Parent
     </button>
     <button type="button" className="proposal-button" onClick={()=>removeSection(section.id)}>
      <ButtonIcon kind="delete"/>Remove Section

@@ -28,12 +28,9 @@ export const cabinetrySectionsSchema = z.array(cabinetrySectionSchema).max(maxCa
 export type CabinetrySection = z.infer<typeof cabinetrySectionSchema>;
 export type CabinetrySpecs = Omit<CabinetrySection, "id" | "name">;
 
-export function primaryCabinetryLabel(roomName: string) {
- return /\bkitchen\b/i.test(roomName) ? "Perimeter" : "Primary Cabinetry";
-}
+export const primaryCabinetryLabel = "Primary Cabinetry";
 
-export function validCabinetrySectionNames(roomName: string, sections: CabinetrySection[]) {
+export function validCabinetrySectionNames(sections: CabinetrySection[]) {
  const names = sections.map(section => section.name.trim().toLowerCase());
- const primary = primaryCabinetryLabel(roomName).toLowerCase();
- return names.every(name => name && name !== primary) && new Set(names).size === names.length;
+ return names.every(Boolean) && new Set(names).size === names.length;
 }

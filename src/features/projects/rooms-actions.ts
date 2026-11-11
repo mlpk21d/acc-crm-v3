@@ -25,7 +25,7 @@ export async function addProjectRoom(form:FormData) {
  const v=parsed.data;
  const rawSections=form.get("cabinetry_sections");
  const sections=rawSections===null?null:cabinetrySectionsSchema.parse(JSON.parse(z.string().max(30000).parse(rawSections)));
- if(sections&&!validCabinetrySectionNames(v.room_name,sections))throw new Error("Give each cabinetry section a unique name.");
+ if(sections&&!validCabinetrySectionNames(sections))throw new Error("Give each cabinetry section a unique name.");
  const rawSectionFinancials=form.get("section_financials");
  if(rawSectionFinancials!==null&&!can(user.role,"settings:manage"))throw new Error("Administrator access required for section financials.");
  const sectionFinancials=rawSectionFinancials===null?[]:

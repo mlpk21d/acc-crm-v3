@@ -1017,3 +1017,10 @@ combined costs before discounts. Existing sections start with zero added cost.
 Lint, TypeScript and 31 unit tests passed. All 24 migrations applied in an
 isolated database. Checked existing sections, independent discounts, rounding,
 disabled rooms and removal, and confirmed project list and summary totals agree.
+
+## Cabinetry parent labels
+
+The parent specifications use Primary Cabinetry in both room editors and on
+proposal comparisons. The copy button reads Copy from Parent. Additional section
+names remain user-defined and unique within the room. There are no new database
+queries or indexes.
