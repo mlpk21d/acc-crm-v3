@@ -8,7 +8,7 @@ test('proposal media allows no main image and an unassigned main image',()=>{
  assert.ok(mediaSchema.safeParse([{...image,is_main:true,room_id:null}]).success);
  assert.ok(mediaSchema.safeParse([{...image,is_main:true}]).success);
 });
-test('proposal media rejects missing rooms on nonmain images and multiple main images',()=>{
+test('proposal media allows multiple main images and requires rooms for other images',()=>{
  assert.equal(mediaSchema.safeParse([{...image,room_id:null}]).success,false);
- assert.equal(mediaSchema.safeParse([{...image,is_main:true},{...image,id:'00000000-0000-4000-8000-000000000002',is_main:true}]).success,false);
+ assert.ok(mediaSchema.safeParse([{...image,is_main:true,room_id:null},{...image,id:'00000000-0000-4000-8000-000000000002',is_main:true,room_id:null}]).success);
 });

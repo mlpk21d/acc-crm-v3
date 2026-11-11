@@ -1,6 +1,6 @@
 import PDFDocument from 'pdfkit';
 import {depositAmount,money,type Proposal,type ProposalProject} from './model';
-import {combinedStyles,groupRoomMedia,mosaicBoxes,type MosaicBox} from './pdf-layout';
+import {combinedStyles,coverMasonryBoxes,groupRoomMedia,mosaicBoxes,type MosaicBox} from './pdf-layout';
 import {loadProposalLogo,drawProposalLogo} from './pdf-logo';
 import {cabinetryComparison,roomCabinetrySections,type ProposalRoomDetails} from './pdf-cabinetry';
 export type ProposalPdfMedia={title:string;image_data:Buffer;room_id:string|null;is_main:boolean};
@@ -24,42 +24,46 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
  try {
   const date=new Date(proposal.created_at).toLocaleDateString('en-US',{timeZone:'America/New_York'});
   text(date,620,18,136,8,false,14,'right');
-  const main=media.find(item=>item.is_main);
-
-  // Align visible text with the SVG artwork (whose viewBox includes top whitespace).
-  doc.font('Helvetica-Bold').fontSize(24);
-  const titleSize=doc.heightOfString(project.name,{width:466})>32?20:24;
+  const mainImages=media.filter(item=>item.is_main);
+  const notes=proposal.additional_notes?.trim().replace(/\s+/gu,' ');
+  const headerY=44;
+  const titleX=211;
+  const notesX=466;
+  const titleWidth=notes?235:545;
+  const notesWidth=756-notesX;
+  drawProposalLogo(doc,logo,36,headerY-8,155);
+  doc.font('Helvetica-Bold').fontSize(22);
+  const titleSize=doc.heightOfString(project.name,{width:titleWidth})>53?18:22;
   doc.fontSize(titleSize);
-  const titleHeight=Math.min(48,doc.heightOfString(project.name,{width:466}));
-  const titleWidth=Math.min(466,doc.widthOfString(project.name));
-  doc.font('Helvetica-Bold').fontSize(15);
-  const priceWidth=doc.widthOfString(money(project.price));
-  const depositWidth=doc.widthOfString(money(depositAmount(project.price,proposal.deposit_percentage)));
-  doc.font('Helvetica').fontSize(8);
-  const depositLabelWidth=doc.widthOfString(`DEPOSIT (${proposal.deposit_percentage}%)`);
-  const contentWidth=Math.max(titleWidth,priceWidth,proposal.show_deposit?160+Math.max(depositWidth,depositLabelWidth):0);
-  // Center the artwork rather than the logo viewBox's blank left inset.
-  const logoInset=11.69*225/266.85;
-  const headerLeft=(doc.page.width-(254+contentWidth)-logoInset)/2;
-  drawProposalLogo(doc,logo,headerLeft,49,225);
-  text(project.name,headerLeft+254,62.3,466,titleSize,true,48);
-  const pricingY=62.3+titleHeight+5;
-  text('PRICE',headerLeft+254,pricingY,140,8,false,12);
-  text(money(project.price),headerLeft+254,pricingY+16,140,15,true,22);
-  if(proposal.show_deposit){
-   text(`DEPOSIT (${proposal.deposit_percentage}%)`,headerLeft+414,pricingY,240,8,false,12);
-   text(money(depositAmount(project.price,proposal.deposit_percentage)),headerLeft+414,pricingY+16,240,15,true,22);
-  }
-  const notes=proposal.additional_notes?.trim();
-  let coverImageY=153;
+  const titleHeight=Math.min(84,doc.heightOfString(project.name,{width:titleWidth}));
+  text(project.name,titleX,headerY,titleWidth,titleSize,true,84);
+  let notesHeight=0;
   if(notes){
-   const notesY=Math.max(153,pricingY+38);
-   doc.font('Helvetica').fontSize(10).fillColor('#111827');
-   const paragraph=notes.replace(/\s+/gu,' ');
-   doc.text(paragraph,36,notesY,{width:720,lineGap:2});
-   coverImageY=doc.y+12;
+   doc.font('Helvetica').fontSize(9).fillColor('#111827');
+   doc.text(notes,notesX,headerY,{width:notesWidth,lineGap:2});
+   notesHeight=doc.y-headerY;
   }
-  if(main)image(main,{x:36,y:coverImageY,width:720,height:588-coverImageY},false);
+  const pricingY=headerY+Math.max(titleHeight+7,notesHeight-31);
+  text('PRICE',titleX,pricingY,108,8,false,12);
+  text(money(project.price),titleX,pricingY+14,108,14,true,22);
+  if(proposal.show_deposit){
+   text(`DEPOSIT (${proposal.deposit_percentage}%)`,titleX+119,pricingY,116,8,false,12);
+   text(money(depositAmount(project.price,proposal.deposit_percentage)),titleX+119,pricingY+14,116,14,true,22);
+  }
+  const coverImageY=Math.max(130,pricingY+45,headerY+notesHeight+12);
+  const coverArea={x:36,y:coverImageY,width:720,height:588-coverImageY};
+  if(mainImages.length===1)image(mainImages[0],coverArea,false);
+  if(mainImages.length>1){
+   const aspectRatios=mainImages.map(item=>{
+    const source=(doc as PDFKit.PDFDocument&{openImage(source:Buffer):{width:number;height:number;orientation?:number}}).openImage(item.image_data);
+    return (source.orientation??1)>4?source.height/source.width:source.width/source.height;
+   });
+   coverMasonryBoxes(aspectRatios,coverArea).forEach((box,index)=>{
+    doc.save().rect(box.x,box.y,box.width,box.height).clip();
+    doc.image(mainImages[index].image_data,box.x,box.y,{cover:[box.width,box.height],align:'center',valign:'center'});
+    doc.restore();
+   });
+  }
   const groups=groupRoomMedia(media.filter(item=>!item.is_main||item.room_id!==null));
   // Project room order first; the legacy unassigned group is retained until edited.
   const ids=[...rooms.filter(room=>groups.has(room.id)||(proposal.include_room_finishes&&room.enabled&&room.cabinetry_sections?.length)).map(room=>room.id),

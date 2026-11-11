@@ -1037,3 +1037,24 @@ The saved room query resolves section colors using the existing unique index on
 manufacturer category and value. Section order is preserved from the stored
 array. No migration is needed. Lint, TypeScript and 31 tests passed. Isolated
 query and rendered-table checks verified columns, colors, costs and group order.
+
+## Proposal cover grid and room comparison headers
+
+The PDF cover header has three columns for the ACC logo, project title and
+pricing, and optional Additional Notes. Notes wrap within their column. The
+cover gallery starts below the tallest header content. Multiple Main Image
+selections render in a masonry grid with 3 pt gutters and centered crops where
+needed. A single Main Image fits its available area. Room-linked cover images
+also appear in their room gallery.
+
+Room comparison headers use Specifications, the parent room name, and the child
+section names. The comparison heading row uses a light gray background.
+
+Migration `0025_multiple_proposal_main_images.sql` drops the partial unique
+index on the main-image flag. The proposal media order index continues to
+support gallery reads. The form and save action support independent Main Image
+selections within the existing proposal image limit.
+
+Lint, TypeScript and 32 tests passed. All 25 migrations ran in an isolated
+database. Verified preservation of the existing main selection, multiple saved
+selections, masonry bounds and PDF renders with 0, 1, 5 and 20 cover images.

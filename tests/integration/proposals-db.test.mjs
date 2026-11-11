@@ -23,7 +23,8 @@ test('proposals enforce required projects and valid deposits, and persist ordere
   await db.query('UPDATE public.proposal_media SET room_id=$1 WHERE proposal_id=$2',[room,proposal.id]);
   const images=(await db.query('SELECT id FROM public.proposal_media WHERE proposal_id=$1 ORDER BY sort_order,id',[proposal.id])).rows;
   await db.query('UPDATE public.proposal_media SET is_main=true WHERE id=$1',[images[0].id]);
-  await rejected('UPDATE public.proposal_media SET is_main=true WHERE id=$1',[images[1].id],'23505');
+  await db.query('UPDATE public.proposal_media SET is_main=true WHERE id=$1',[images[1].id]);
+  assert.equal((await db.query('SELECT id FROM public.proposal_media WHERE proposal_id=$1 AND is_main',[proposal.id])).rowCount,2);
   await rejected("UPDATE public.proposal_media SET room_id='00000000-0000-4000-8000-000000000001' WHERE id=$1",[images[0].id],'23503');
   await db.query('UPDATE public.proposal_media SET is_main=false WHERE proposal_id=$1',[proposal.id]);
   await db.query('UPDATE public.proposal_media SET is_main=true WHERE id=$1',[images[1].id]);

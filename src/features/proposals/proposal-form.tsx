@@ -73,12 +73,12 @@ export function ProposalForm({proposal,initialProject,initialMedia=[]}:{proposal
      <input ref={upload} type="file" disabled={!project} hidden multiple accept="image/png,image/jpeg" onChange={e=>{addFiles(Array.from(e.target.files??[]));e.target.value='';}}/>
      <p className="contact-help">PNG or JPEG · 10 MB per image · 25 MB total · Up to 20 images</p>
     </div>
-    <p className="contact-help">Main Image is optional and may be left without a room. All other images require an enabled room.</p>
+    <p className="contact-help">Mark any images you want on the cover as Main Image. A room is optional for cover images. Other images require an enabled room.</p>
     <ol className="proposal-media-list">{media.map((m,index)=><li key={m.id}>
      <Image unoptimized width={280} height={196} src={m.preview??`/api/proposals/${proposal!.id}/media/${m.id}`} alt={m.title||m.filename}/>
      <label><span>{m.filename}</span><input aria-label={`Title for ${m.filename}`} placeholder="Optional title" maxLength={200} value={m.title} onChange={e=>setMedia(previous=>previous.map(item=>item.id===m.id?{...item,title:e.target.value}:item))}/></label>
      <label>Room {!m.is_main&&<span aria-hidden="true">*</span>}<select required={!m.is_main} value={m.room_id??''} onChange={e=>setMedia(previous=>previous.map(item=>item.id===m.id?{...item,room_id:e.target.value||null}:item))}><option value="">{m.is_main?'No room (optional)':'Select a room'}</option>{project?.rooms.map(room=><option key={room.id} value={room.id}>{room.room_name}</option>)}</select></label>
-     <label className="proposal-main-choice"><input type="checkbox" checked={m.is_main} onChange={e=>{const checked=e.target.checked;setMedia(previous=>previous.map(item=>({...item,is_main:checked?item.id===m.id:false})));}}/>Main Image</label>
+     <label className="proposal-main-choice"><input type="checkbox" checked={m.is_main} onChange={e=>{const checked=e.target.checked;setMedia(previous=>previous.map(item=>item.id===m.id?{...item,is_main:checked}:item));}}/>Main Image</label>
      <div className="proposal-actions"><button type="button" className="proposal-button" disabled={index===0} onClick={()=>move(index,-1)}><ButtonIcon kind="up"/>Up</button><button type="button" className="proposal-button" disabled={index===media.length-1} onClick={()=>move(index,1)}><ButtonIcon kind="down"/>Down</button><button type="button" className="proposal-button" onClick={()=>{if(m.preview){URL.revokeObjectURL(m.preview);urls.current.delete(m.preview);}setMedia(previous=>previous.filter(item=>item.id!==m.id));}}><ButtonIcon kind="delete"/>Remove</button></div>
     </li>)}</ol>
    </section>

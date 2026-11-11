@@ -1,6 +1,6 @@
 import type PDFKit from "pdfkit";
 import type {RoomReportRow} from "../projects/reports/rooms-table";
-import {primaryCabinetryLabel,type CabinetrySection} from "../projects/cabinetry-sections";
+import type {CabinetrySection} from "../projects/cabinetry-sections";
 import {combinedStyles} from "./pdf-layout";
 
 export type ProposalRoomDetails = RoomReportRow & {
@@ -10,7 +10,7 @@ export type ProposalRoomDetails = RoomReportRow & {
 
 export function roomCabinetrySections(room: ProposalRoomDetails) {
  return [
-  {...room,name:primaryCabinetryLabel},
+  {...room,name:room.room_name},
   ...(room.cabinetry_sections ?? []),
  ];
 }
@@ -18,7 +18,7 @@ export function roomCabinetrySections(room: ProposalRoomDetails) {
 type CabinetryColumn = ReturnType<typeof roomCabinetrySections>[number];
 
 export function cabinetryComparison(doc: PDFKit.PDFDocument, sections: CabinetryColumn[], width: number) {
- const labels = ["", "Door / Drawer", "Finish", "Species", "Manufacturer", "Construction"];
+ const labels = ["Specifications", "Door / Drawer", "Finish", "Species", "Manufacturer", "Construction"];
  const columns = sections.map(section=>[
   section.name, combinedStyles(section.door_style,section.drawer_style),
   section.finish, section.species, section.manufacturer, section.construction,
@@ -37,6 +37,7 @@ export function cabinetryComparison(doc: PDFKit.PDFDocument, sections: Cabinetry
   height: rows.reduce((sum,row)=>sum+row.height,0),
   draw(x:number,y:number){
    for(const [index,row] of rows.entries()){
+    if(index===0)doc.save().rect(x-6,y-3,width+6,row.height).fill("#f3f4f6").restore();
     doc.font("Helvetica-Bold").fontSize(9).fillColor("#111827");
     if(row.label)doc.text(row.label,x,y,{width:labelWidth-6});
     doc.font(index===0?"Helvetica-Bold":"Helvetica");

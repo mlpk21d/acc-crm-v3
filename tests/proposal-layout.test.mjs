@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {mosaicBoxes,combinedStyles,groupRoomMedia} from '../src/features/proposals/pdf-layout.ts';
+import {coverMasonryBoxes,mosaicBoxes,combinedStyles,groupRoomMedia} from '../src/features/proposals/pdf-layout.ts';
 
 test('landscape mosaics fit 1–5 images without overlaps and emphasize the first',()=>{
  for(let count=1;count<=5;count++){
@@ -26,4 +26,22 @@ test('room groups retain image ordering and legacy unassigned images',()=>{
  const groups=groupRoomMedia(media);
  assert.deepEqual(groups.get('kitchen').map(i=>i.id),[1,3]);
  assert.deepEqual(groups.get(null).map(i=>i.id),[4]);
+});
+
+test('cover masonry packs up to 20 mixed-aspect images within the available area',()=>{
+ const area={x:36,y:155,width:720,height:433};
+ for(let count=1;count<=20;count++){
+  const ratios=Array.from({length:count},(_,i)=>[.56,1.52,2.7,1][i%4]);
+  const boxes=coverMasonryBoxes(ratios,area);
+  assert.equal(boxes.length,count);
+  for(const [i,a] of boxes.entries()){
+   assert.ok(a.width>0&&a.height>0);
+   assert.ok(a.x>=area.x&&a.y>=area.y);
+   assert.ok(a.x+a.width<=area.x+area.width+.001);
+   assert.ok(a.y+a.height<=area.y+area.height+.001);
+   for(const b of boxes.slice(i+1)){
+    assert.ok(a.x+a.width<=b.x||b.x+b.width<=a.x||a.y+a.height<=b.y||b.y+b.height<=a.y);
+   }
+  }
+ }
 });

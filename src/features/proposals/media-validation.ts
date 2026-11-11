@@ -4,5 +4,4 @@ export const mediaSchema=z.array(z.object({
  room_id:z.uuid().nullable(),is_main:z.boolean(),
 })).max(20)
  .refine(items=>new Set(items.map(item=>item.id)).size===items.length)
- .refine(items=>items.filter(item=>item.is_main).length<=1)
  .refine(items=>items.every(item=>item.is_main||item.room_id!==null));

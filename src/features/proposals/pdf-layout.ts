@@ -27,3 +27,37 @@ export function groupRoomMedia<T extends {room_id:string|null}>(media:T[]):Map<s
  for(const item of media){const group=groups.get(item.room_id)??[];group.push(item);groups.set(item.room_id,group);}
  return groups;
 }
+
+
+/** Balance columns by image proportions and close their edges with a small gutter. */
+export function coverMasonryBoxes(aspectRatios: number[], area: MosaicBox): MosaicBox[] {
+ if(aspectRatios.length<=1)return aspectRatios.map(()=>area);
+ const gap=3;
+ const columnCount=Math.min(5,Math.max(2,Math.ceil(Math.sqrt(aspectRatios.length))));
+ const columns=Array.from({length:columnCount},()=>({tiles:[] as {index:number;weight:number}[],weight:0}));
+ aspectRatios.forEach((ratio,index)=>{
+  const weight=1/Math.max(.65,Math.min(2.4,ratio));
+  const column=columns.reduce((shortest,current)=>current.weight<shortest.weight?current:shortest);
+  column.tiles.push({index,weight});
+  column.weight+=weight;
+ });
+ const availableWidth=area.width-gap*(columnCount-1);
+ const innerGap=(count:number)=>gap*(count-1);
+ const naturalHeight=(availableWidth+columns.reduce((sum,column)=>sum+innerGap(column.tiles.length)/column.weight,0))/
+  columns.reduce((sum,column)=>sum+1/column.weight,0);
+ const gridHeight=Math.min(area.height,naturalHeight);
+ const boxes:MosaicBox[]=[];
+ let x=area.x;
+ for(const column of columns){
+  const columnGap=innerGap(column.tiles.length);
+  const width=(naturalHeight-columnGap)/column.weight;
+  let y=area.y;
+  for(const tile of column.tiles){
+   const height=(gridHeight-columnGap)*tile.weight/column.weight;
+   boxes[tile.index]={x,y,width,height};
+   y+=height+gap;
+  }
+  x+=width+gap;
+ }
+ return boxes;
+}

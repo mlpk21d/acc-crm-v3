@@ -14,7 +14,7 @@ export async function saveProposal(_state:{error:string|null},form:FormData):Pro
  const notes=z.string().trim().max(maxAdditionalNotesLength).safeParse(form.get('additional_notes')??'');
  if(!notes.success)return {error:`Additional Notes must be ${maxAdditionalNotesLength} characters or fewer.`};
  let items:z.infer<typeof mediaSchema>;
- try {items=mediaSchema.parse(JSON.parse(String(form.get('media')??'[]')));}catch{return {error:'Assign an enabled room to every image except the optional Main Image. Select at most one Main Image. Use up to 20 images with titles of at most 200 characters.'};}
+ try {items=mediaSchema.parse(JSON.parse(String(form.get('media')??'[]')));}catch{return {error:'Assign an enabled room to every image except images marked Main Image. Use up to 20 images with titles of at most 200 characters.'};}
  const uploads=new Map<string,{data:Buffer;filename:string;mime:string}>();
  try {
   for(const item of items.filter(i=>i.fresh)) {
@@ -54,8 +54,6 @@ export async function saveProposal(_state:{error:string|null},form:FormData):Pro
   if(id){await client.query('UPDATE public.proposals SET project_id=$1,deposit_percentage=$2,include_room_finishes=$3,updated_by=$4,show_deposit_percentage=$5,additional_notes=$6,updated_at=now() WHERE id=$7',[...values,id]);saved=id;}
   else{saved=(await client.query<{id:string}>('INSERT INTO public.proposals(project_id,deposit_percentage,include_room_finishes,created_by,updated_by,show_deposit_percentage,additional_notes) VALUES($1,$2,$3,$4,$4,$5,$6) RETURNING id',values)).rows[0].id;}
   await client.query('DELETE FROM public.proposal_media WHERE proposal_id=$1 AND NOT (id=ANY($2::uuid[]))',[saved,items.filter(i=>!i.fresh).map(i=>i.id)]);
-  // Clear the previous selection before setting the new main image (unique partial index).
-  await client.query('UPDATE public.proposal_media SET is_main=false WHERE proposal_id=$1 AND is_main',[saved]);
   for(const [index,item] of items.entries()){
    const upload=uploads.get(item.id);
    if(upload)await client.query('INSERT INTO public.proposal_media(id,proposal_id,title,filename,mime_type,image_data,sort_order,room_id,is_main) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)',[item.id,saved,item.title,upload.filename,upload.mime,upload.data,index,item.room_id,item.is_main]);
