@@ -1,6 +1,6 @@
 "use client";
 import { ButtonIcon } from "@/components/button-icon";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import type { ProjectRoom } from "@/features/projects/rooms-data";
 import type { RoomFinancial } from "@/features/projects/financial-data";
 import {jkTotalCents,type JkDraft} from "@/features/projects/jk-model";
@@ -11,6 +11,9 @@ import type {CabinetrySectionFinancial} from "./cabinetry-section-financials";
 import {CabinetrySectionEditor} from "./cabinetry-section-editor";
 import {cabinetryFields,cabinetryConstructions,primaryCabinetryLabel,validCabinetrySectionNames,type CabinetrySection,type CabinetrySpecs} from "./cabinetry-sections";
 
+import {RoomSpecCells,manufacturerRowStyle} from "./room-spec-cells";
+
+const currency=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"});
 const fields=[["room_name","Room Name"],["door_style","Door Style"],["species","Species"],["drawer_style","Drawer Style"],["finish","Finish"]] as const;
 
 export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,roomFinancials=[]}:{
@@ -45,11 +48,6 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
  const [roomError,setRoomError]=useState("");
  const [saving,setSaving]=useState(false);
  function openRoom(room:ProjectRoom|null){setSections(room?.cabinetry_sections??[]);setSectionFinancials(roomFinancials.find(finance=>finance.room_id===room?.id)?.section_financials??[]);setManufacturer(room?.manufacturer??"");setJkDraft(undefined);setAccessories(room?.ras_items.map(i=>({item_name:i.item_name,code:i.code??"",link:i.link??""}))??[]);setRoomError("");setCurrent(room);}
- function roomGrossCost(roomId:string){
-  const finance=roomFinancials.find(entry=>entry.room_id===roomId);
-  if(!finance)return 0;
-  return [finance,...finance.section_financials].reduce((sum,cost)=>sum+Number(cost.room_cost),0);
- }
  const [confirmDelete,setConfirmDelete]=useState<ProjectRoom|null>(null);
  const dialog=useRef<HTMLDivElement>(null);
  useEffect(()=>{
@@ -65,13 +63,26 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
   {downloadError&&<p role="alert" className="contact-form-error">{downloadError}</p>}
   {toggleError&&<p role="alert" className="contact-form-error">{toggleError}</p>}
   {rooms.length>0&&<div className="crm-rooms-scroll"><table className={`contact-table crm-room-table ${canEdit?"crm-room-table-editable":""}`}><thead><tr>{canEdit&&<th>Order</th>}<th>Room</th><th>Door Style</th><th>Drawer Style</th><th>Species</th><th>Finish</th><th>Construction</th><th>Manufacturer</th>{isAdmin&&<th className="crm-room-cost">Cost</th>}{canEdit&&<th className="crm-room-actions-column">Actions</th>}</tr></thead>
-  <tbody>{rooms.map((room,index)=><tr key={room.id} className={!room.enabled?"crm-room-row-disabled":undefined} style={{"--room-row-color":/^#[0-9a-f]{6}$/i.test(room.manufacturer_color??"")?room.manufacturer_color!:undefined} as CSSProperties}>
+  <tbody>{rooms.map((room,index)=>{
+   const finance=roomFinancials.find(entry=>entry.room_id===room.id);
+   const disabledClass=!room.enabled?"crm-room-row-disabled":undefined;
+   return <Fragment key={room.id}>
+   <tr className={disabledClass} style={manufacturerRowStyle(room.manufacturer_color)}>
    {canEdit&&<td><div className="crm-room-order-controls">{(["up","down"] as const).map(direction=><form action={moveProjectRoom} key={direction}><input type="hidden" name="project_id" value={projectId}/><input type="hidden" name="id" value={room.id}/><input type="hidden" name="direction" value={direction}/><button type="submit" aria-label={direction==="up"?"Move room up":"Move room down"} disabled={direction==="up"?index===0:index===rooms.length-1}><ButtonIcon kind={direction}/></button></form>)}</div></td>}
-   <td><strong>{room.room_name}</strong>{room.ras_items.length>0&&<div className="crm-room-accessory-preview">Rev-A-Shelf ({room.ras_items.length})</div>}</td><td>{room.door_style||"—"}</td><td>{room.drawer_style||"—"}</td><td>{room.species||"—"}</td><td>{room.finish||"—"}</td><td>{room.construction||"—"}</td>
-   <td><span>{room.manufacturer||"—"}</span></td>
-   {isAdmin&&<td className="crm-room-cost">{new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(roomGrossCost(room.id))}</td>}
+   <td><strong>{room.room_name}</strong>{room.ras_items.length>0&&<div className="crm-room-accessory-preview">Rev-A-Shelf ({room.ras_items.length})</div>}</td>
+   <RoomSpecCells specs={room}/>
+   {isAdmin&&<td className="crm-room-cost">{currency.format(Number(finance?.room_cost??0))}</td>}
    {canEdit&&<td className="crm-room-actions-column"><div className="crm-room-row-actions"><input type="checkbox" className="crm-room-enabled-checkbox" aria-label={`Enable ${room.room_name}`} title="Include room in financial totals" checked={room.enabled} disabled={toggling.includes(room.id)} onChange={async event=>{const enabled=event.target.checked;setToggleError("");setToggling(old=>[...old,room.id]);try{await setProjectRoomEnabled({projectId,roomId:room.id,enabled});}catch{setToggleError("Unable to update room. Please try again.");}finally{setToggling(old=>old.filter(id=>id!==room.id));}}}/><button type="button" className="crm-room-icon-action" aria-label={`Edit ${room.room_name}`} title="Edit room" onClick={()=>openRoom(room)}><ButtonIcon kind="edit"/></button><button type="button" className="crm-room-icon-action crm-room-delete-action" aria-label={`Delete ${room.room_name}`} title="Delete room" onClick={()=>setConfirmDelete(room)}><ButtonIcon kind="delete"/></button></div></td>}
-  </tr>)}</tbody></table></div>}
+   </tr>
+   {room.cabinetry_sections.map(section=><tr key={section.id} className={disabledClass} style={manufacturerRowStyle(section.manufacturer_color)}>
+    {canEdit&&<td/>}
+    <td><span className="crm-cabinetry-child-name">{section.name}</span></td>
+    <RoomSpecCells specs={section}/>
+    {isAdmin&&<td className="crm-room-cost">{currency.format(Number(finance?.section_financials.find(entry=>entry.section_id===section.id)?.room_cost??0))}</td>}
+    {canEdit&&<td/>}
+   </tr>)}
+   </Fragment>;
+  })}</tbody></table></div>}
   {rooms.length===0&&<p className="crm-rooms-empty">{canEdit?<>No rooms added yet. Click &quot;Add Room&quot; to create one.</>:"No rooms added yet."}</p>}
   {current!==undefined&&<div className="crm-room-modal-layer" inert={jkOpen} aria-hidden={jkOpen||undefined}>
    <button type="button" className="crm-room-modal-backdrop" aria-label="Close room editor" onClick={()=>setCurrent(undefined)}><ButtonIcon kind="close" /></button>

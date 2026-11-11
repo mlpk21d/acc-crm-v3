@@ -1024,3 +1024,16 @@ The parent specifications use Primary Cabinetry in both room editors and on
 proposal comparisons. The copy button reads Copy from Parent. Additional section
 names remain user-defined and unique within the room. There are no new database
 queries or indexes.
+
+## Cabinetry child rows in the Rooms list
+
+The saved room table and new-project draft table render each cabinetry section
+in an indented row immediately under its parent. Only the parent has ordering
+controls. Moving it moves the whole group. Child rows use their own manufacturer
+color and align with the existing specification and cost columns. Admin cost
+cells show each row’s individual cost before discount.
+
+The saved room query resolves section colors using the existing unique index on
+manufacturer category and value. Section order is preserved from the stored
+array. No migration is needed. Lint, TypeScript and 31 tests passed. Isolated
+query and rendered-table checks verified columns, colors, costs and group order.

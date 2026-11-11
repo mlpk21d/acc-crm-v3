@@ -659,3 +659,5 @@ a { color: inherit; text-decoration: none; }
 .crm-cabinetry-section legend { font-size:14px; font-weight:600; padding:0 6px; }
 .crm-cabinetry-section-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
 @media(max-width:640px) { .crm-cabinetry-section .crm-new-room-fields { grid-template-columns:1fr; } }
+
+.crm-cabinetry-child-name { display:inline-block; padding-inline-start:16px; }

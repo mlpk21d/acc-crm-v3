@@ -1,9 +1,13 @@
 "use client";
 import { ButtonIcon } from "@/components/button-icon";
-import {useState} from "react";
+import {Fragment,useState} from "react";
 import {sectionFinancialsSchema,type CabinetrySectionFinancial} from "./cabinetry-section-financials";
 import {CabinetrySectionEditor} from "./cabinetry-section-editor";
 import {cabinetryConstructions,primaryCabinetryLabel,validCabinetrySectionNames,type CabinetrySection} from "./cabinetry-sections";
+
+import {RoomSpecCells,manufacturerRowStyle} from "./room-spec-cells";
+
+const currency=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"});
 
 export type DraftRoom={room_name:string;door_style:string;drawer_style:string;species:string;finish:string;construction:string;manufacturer:string;room_cost:string;manufacturer_discount:string;cabinetry_sections:CabinetrySection[];section_financials:CabinetrySectionFinancial[];ras_items:{item_name:string;code:string;link:string}[]};
 const blank=():DraftRoom=>({room_name:"",door_style:"",drawer_style:"",species:"",finish:"",construction:"",manufacturer:"",room_cost:"0",manufacturer_discount:"0",cabinetry_sections:[],section_financials:[],ras_items:[]});
@@ -20,7 +24,33 @@ export function NewProjectRooms({manufacturers,isAdmin}:{manufacturers:{value:st
  return <section className="content-card crm-project-rooms">
   <div className="crm-rooms-heading"><h2><ButtonIcon kind="layers"/>Rooms ({rooms.length})</h2><button type="button" onClick={()=>open(null)}><ButtonIcon kind="add"/>Add Room</button></div>
   <input form="crm-project-core-form" name="initial_rooms" type="hidden" value={JSON.stringify(rooms)}/>
-  {rooms.length===0?<p className="crm-rooms-empty">No rooms added yet. Click &quot;Add Room&quot; to create one.</p>:<div className="crm-rooms-scroll"><table className="contact-table"><thead><tr><th>Order</th><th>Room</th><th>Door Style</th><th>Drawer Style</th><th>Species</th><th>Finish</th><th>Construction</th><th>Manufacturer</th><th>Actions</th>{isAdmin&&<th className="crm-room-cost">Cost</th>}</tr></thead><tbody>{rooms.map((r,i)=><tr key={i} style={{backgroundColor:(()=>{const color=manufacturers.find(m=>m.value===r.manufacturer)?.color;return /^#[0-9a-f]{6}$/i.test(color??"")?color!:undefined})()}}><td><button type="button" aria-label="Move room up" disabled={i===0} onClick={()=>setRooms(old=>{const a=[...old];[a[i-1],a[i]]=[a[i],a[i-1]];return a})}><ButtonIcon kind="up" /></button><button type="button" aria-label="Move room down" disabled={i===rooms.length-1} onClick={()=>setRooms(old=>{const a=[...old];[a[i],a[i+1]]=[a[i+1],a[i]];return a})}><ButtonIcon kind="down" /></button></td><td>{r.room_name}{r.ras_items.length>0&&<small className="crm-jk-cost-locked">Rev-A-Shelf ({r.ras_items.length})</small>}</td><td>{r.door_style||"—"}</td><td>{r.drawer_style||"—"}</td><td>{r.species||"—"}</td><td>{r.finish||"—"}</td><td>{r.construction||"—"}</td><td>{r.manufacturer||"—"}</td><td><button type="button" onClick={()=>open(i)}>Edit<ButtonIcon kind="edit" /></button><button type="button" onClick={()=>setRooms(old=>old.filter((_,n)=>n!==i))}>Delete<ButtonIcon kind="delete" /></button></td>{isAdmin&&<td className="crm-room-cost">{new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format([r,...r.section_financials].reduce((sum,cost)=>sum+Number(cost.room_cost),0))}</td>}</tr>)}</tbody></table></div>}
+  {rooms.length===0?<p className="crm-rooms-empty">No rooms added yet. Click &quot;Add Room&quot; to create one.</p>:
+   <div className="crm-rooms-scroll"><table className="contact-table crm-room-table">
+    <thead><tr><th>Order</th><th>Room</th><th>Door Style</th><th>Drawer Style</th><th>Species</th><th>Finish</th><th>Construction</th><th>Manufacturer</th><th>Actions</th>{isAdmin&&<th className="crm-room-cost">Cost</th>}</tr></thead>
+    <tbody>{rooms.map((room,index)=><Fragment key={index}>
+     <tr style={manufacturerRowStyle(manufacturers.find(option=>option.value===room.manufacturer)?.color)}>
+      <td>{([-1,1] as const).map(offset=><button key={offset} type="button"
+       aria-label={offset<0?"Move room up":"Move room down"} disabled={index+offset<0||index+offset>=rooms.length}
+       onClick={()=>setRooms(old=>{
+        const reordered=[...old];
+        [reordered[index],reordered[index+offset]]=[reordered[index+offset],reordered[index]];
+        return reordered;
+       })}><ButtonIcon kind={offset<0?"up":"down"}/></button>)}</td>
+      <td>{room.room_name}{room.ras_items.length>0&&<small className="crm-jk-cost-locked">Rev-A-Shelf ({room.ras_items.length})</small>}</td>
+      <RoomSpecCells specs={room}/>
+      <td><button type="button" onClick={()=>open(index)}>Edit<ButtonIcon kind="edit"/></button><button type="button" onClick={()=>setRooms(old=>old.filter((_,i)=>i!==index))}>Delete<ButtonIcon kind="delete"/></button></td>
+      {isAdmin&&<td className="crm-room-cost">{currency.format(Number(room.room_cost))}</td>}
+     </tr>
+     {room.cabinetry_sections.map(section=><tr key={section.id} style={manufacturerRowStyle(manufacturers.find(option=>option.value===section.manufacturer)?.color)}>
+      <td/>
+      <td><span className="crm-cabinetry-child-name">{section.name}</span></td>
+      <RoomSpecCells specs={section}/>
+      <td/>
+      {isAdmin&&<td className="crm-room-cost">{currency.format(Number(room.section_financials.find(entry=>entry.section_id===section.id)?.room_cost??0))}</td>}
+     </tr>)}
+    </Fragment>)}</tbody>
+   </table></div>}
+
   {editing!==null&&<div className="crm-room-modal-layer">
    <button type="button" className="crm-room-modal-backdrop" aria-label="Close room editor" onClick={()=>setEditing(null)}><ButtonIcon kind="close" /></button>
    <div className="crm-room-modal crm-new-room-modal" role="dialog" aria-modal="true" aria-labelledby="new-room-title">
