@@ -4,11 +4,12 @@ import Image from 'next/image';
 import {useActionState,useEffect,useRef,useState} from 'react';
 import {ButtonIcon} from '@/components/button-icon';
 import {saveProposal} from './actions';
-import {depositAmount,depositPercentages,money,maxImageBytes,maxMediaBytes,type Proposal,type ProposalProject,type ProposalMedia} from './model';
+import {depositAmount,depositPercentages,money,maxAdditionalNotesLength,maxImageBytes,maxMediaBytes,type Proposal,type ProposalProject,type ProposalMedia} from './model';
 type MediaItem=ProposalMedia&{file?:File;preview?:string};
 export function ProposalForm({proposal,initialProject,initialMedia=[]}:{proposal?:Proposal;initialProject?:ProposalProject;initialMedia?:ProposalMedia[]}) {
  const [project,setProject]=useState(initialProject);
  const [percentage,setPercentage]=useState(proposal?.deposit_percentage??50);
+ const [additionalNotes,setAdditionalNotes]=useState(proposal?.additional_notes??'');
  const [media,setMedia]=useState<MediaItem[]>(initialMedia);
  const [open,setOpen]=useState(false);
  const [query,setQuery]=useState('');
@@ -60,7 +61,12 @@ export function ProposalForm({proposal,initialProject,initialMedia=[]}:{proposal
     <label>Price<input readOnly value={project?money(project.price):''}/></label>
     <label>Deposit<input readOnly value={project?money(depositAmount(project.price,percentage)):''}/></label>
     <label>Deposit Percentage<select name="deposit_percentage" value={percentage} onChange={e=>setPercentage(Number(e.target.value))}>{depositPercentages.map(p=><option key={p} value={p}>{p}%</option>)}</select></label>
-   </div><label className="proposal-toggle"><input type="checkbox" role="switch" name="show_deposit" defaultChecked={proposal?.show_deposit??true}/>Show Deposit</label><p className="contact-help">Display the deposit amount and percentage on the proposal and PDF.</p><label className="proposal-toggle"><input type="checkbox" role="switch" name="include_room_finishes" defaultChecked={proposal?.include_room_finishes??false}/>Add Room Door Styles and Finishes</label><p className="contact-help">Show room styles, finish, species and manufacturer on room image pages in the PDF.</p></section>
+   </div>
+   <label>Additional Notes
+    <textarea name="additional_notes" rows={3} maxLength={maxAdditionalNotesLength}
+     value={additionalNotes} onChange={event=>setAdditionalNotes(event.target.value)}/>
+   </label>
+   <label className="proposal-toggle"><input type="checkbox" role="switch" name="show_deposit" defaultChecked={proposal?.show_deposit??true}/>Show Deposit</label><p className="contact-help">Display the deposit amount and percentage on the proposal and PDF.</p><label className="proposal-toggle"><input type="checkbox" role="switch" name="include_room_finishes" defaultChecked={proposal?.include_room_finishes??false}/>Add Room Door Styles and Finishes</label><p className="contact-help">Show room styles, finish, species and manufacturer on room image pages in the PDF.</p></section>
    <section className="crm-form-panel"><h2>Media</h2>
     <div className="proposal-dropzone" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(!pending)addFiles(Array.from(e.dataTransfer.files));}}>
      <p>{!project?'Select a project before adding images.':'Drag and drop room renders here'}</p><button type="button" className="proposal-button" disabled={!project} onClick={()=>upload.current?.click()}><ButtonIcon kind="upload"/>Choose Images</button>

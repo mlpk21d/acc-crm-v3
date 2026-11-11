@@ -50,7 +50,16 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
    text(`DEPOSIT (${proposal.deposit_percentage}%)`,headerLeft+414,pricingY,240,8,false,12);
    text(money(depositAmount(project.price,proposal.deposit_percentage)),headerLeft+414,pricingY+16,240,15,true,22);
   }
-  if(main)image(main,{x:36,y:153,width:720,height:435},false);
+  const notes=proposal.additional_notes?.trim();
+  let coverImageY=153;
+  if(notes){
+   const notesY=Math.max(153,pricingY+38);
+   doc.font('Helvetica').fontSize(10).fillColor('#111827');
+   const paragraph=notes.replace(/\s+/gu,' ');
+   doc.text(paragraph,36,notesY,{width:720,lineGap:2});
+   coverImageY=doc.y+12;
+  }
+  if(main)image(main,{x:36,y:coverImageY,width:720,height:588-coverImageY},false);
   const groups=groupRoomMedia(media.filter(item=>!item.is_main||item.room_id!==null));
   // Project room order first; the legacy unassigned group is retained until edited.
   const ids=[...rooms.map(room=>room.id).filter(id=>groups.has(id)),...Array.from(groups.keys()).filter(id=>!rooms.some(room=>room.id===id))];

@@ -949,3 +949,18 @@ indexes reviewed. Existing indexes cover the same queries.
 Validation: lint, TypeScript and 31 tests passed. All 21 migrations applied in
 an isolated database. Existing media was preserved, 10 MiB was accepted and
 10 MiB plus one byte was rejected.
+
+## Proposal Additional Notes — 2026-11-11
+
+The proposal form has an optional three-row Additional Notes field between the
+deposit fields and checkboxes. Migration `0022_proposal_additional_notes.sql`
+adds `proposals.additional_notes` with a blank default. The save action trims
+notes and enforces the 1,000-character limit shared with the form. PDF covers
+render the note as an unlabeled paragraph below pricing, moving the cover image
+down to fit. Blank notes leave the cover layout intact. Existing proposal
+indexes cover the same queries.
+
+Validation: lint, TypeScript and 31 tests passed. All 22 migrations ran in an
+isolated database. Verified create, update and clear behavior, the blank default
+for existing proposals, and the note length limit. Rendered PDF samples verified
+cover-only notes, full-length wrapping, image clearance and blank cover geometry.
