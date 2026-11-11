@@ -964,3 +964,14 @@ Validation: lint, TypeScript and 31 tests passed. All 22 migrations ran in an
 isolated database. Verified create, update and clear behavior, the blank default
 for existing proposals, and the note length limit. Rendered PDF samples verified
 cover-only notes, full-length wrapping, image clearance and blank cover geometry.
+
+## Combined proposal image limit
+
+Proposal media allows 25 MiB combined and 10 MiB per image. The form and save
+action share these limits. The Next.js server action request limit is 27 MiB to
+accommodate multipart overhead. The database enforces the individual image
+limit, so the combined limit change requires no migration. Existing indexes
+cover the same queries.
+
+Validation: lint, TypeScript and 31 tests passed. Verified a multipart request
+containing 25 MiB of image data fits within the server action request limit.

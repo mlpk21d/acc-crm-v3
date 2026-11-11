@@ -1,5 +1,5 @@
 export const depositPercentages = [10,20,30,40,50,60,70,80,90] as const;
-export const maxMediaBytes = 10 * 1024 * 1024;
+export const maxMediaBytes = 25 * 1024 * 1024;
 export const maxImageBytes = 10 * 1024 * 1024;
 export const maxAdditionalNotesLength = 1000;
 export type ProposalRoom = {id:string;room_name:string};
