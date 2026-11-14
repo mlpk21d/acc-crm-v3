@@ -661,3 +661,23 @@ a { color: inherit; text-decoration: none; }
 @media(max-width:640px) { .crm-cabinetry-section .crm-new-room-fields { grid-template-columns:1fr; } }
 
 .crm-cabinetry-child-name { display:inline-block; padding-inline-start:16px; }
+
+/* Door order review uses the existing CRM panels, typography and controls. */
+.door-order-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;margin-top:20px;align-items:start}
+.door-order-editor fieldset{border:0;padding:0;margin:0;min-width:0}
+.door-order-editor label{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.door-order-editor input,.door-order-editor select{font:inherit;border:1px solid #d1d5db;border-radius:6px;padding:8px;min-width:0;width:100%;background:white;color:inherit}
+.door-order-editor .button,.door-order-actions .button,.door-order-rooms .button{display:inline-flex;align-items:center;gap:8px;border:1px solid #d1d5db;border-radius:6px;padding:8px 12px}
+.door-order-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:16px 0}
+.door-order-rooms{display:flex;flex-direction:column;gap:10px}
+.door-order-rooms .button{justify-content:flex-start;flex-wrap:wrap;text-align:left}
+.door-order-rooms small{width:100%;padding-left:24px}
+.door-order-rooms .is-selected{background:#1f2937;color:white}
+.door-order-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.door-order-table{overflow:auto}.door-order-table table{width:100%;border-collapse:collapse;min-width:900px}
+.door-order-table th,.door-order-table td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:middle}
+.door-order-table th{background:#f3f4f6}.door-order-table input[type=number]{width:75px}
+.door-order-size{display:flex;align-items:center;gap:6px;min-width:180px}.door-order-size input{width:85px}
+.door-order-editor .door-order-reviewed{flex-direction:row;align-items:center;white-space:nowrap}.door-order-reviewed input{width:auto}
+.door-order-editor details{margin-top:8px;color:#4b5563}.door-order-editor summary{cursor:pointer}
+@media(max-width:900px){.door-order-layout{grid-template-columns:1fr}.door-order-fields{grid-template-columns:1fr}.door-order-rooms{flex-direction:row;flex-wrap:wrap}.door-order-rooms h2{width:100%}}

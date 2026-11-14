@@ -35,3 +35,9 @@ database is available.
 Use a dedicated development database. No automatic reset/drop/seed on application
 startup. Never run first-time migrations against a production database without
 a backup and reviewed migration plan.
+
+## Door Orders
+
+Migration `0026_door_orders.sql` adds the reviewed KCD order document store and
+updated-date listing index. Run migrations before opening `/door-orders`. See
+`docs/door-orders.md` for import, review and deployment details.

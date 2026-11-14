@@ -1,6 +1,6 @@
 # ACC CRM V3 Project Index
 
-Last updated: 2026-11-03
+Last updated: 2026-11-14
 
 This file is the fast-entry index for the repository. Update it whenever routes,
 domain boundaries, database modules, or major shared components change.
@@ -1075,3 +1075,28 @@ orientation and composites transparency on white when converting to JPEG.
 Smaller originals can be kept if conversion saves no space. The proposal PDF
 and media route use the optimized stored bytes. Existing stored images are
 preserved. Database indexes and storage schema were reviewed.
+
+## Door Orders — 2026-11-14
+
+Replaces the placeholder while preserving the existing sidebar and CRM panels.
+
+| Path / route | Responsibility |
+| --- | --- |
+| `/door-orders` | Permission-checked, paginated saved-order list |
+| `/door-orders/new` | KCD drawing/list PDF upload and draft review |
+| `/door-orders/[id]` | Saved room-by-room editor; read-only for staff |
+| `/api/door-orders/import` | Bounded authenticated two-PDF extraction |
+| `/api/door-orders/[id]/pdf` | Reviewed-order export using supplier template |
+| `src/features/door-orders/model.ts` | Zod validation, fractional dimensions, type-separated grouping |
+| `src/features/door-orders/parse.ts` | KCD list parsing, quantity reconciliation, drawing room/unit matching |
+| `src/features/door-orders/read-pdf.ts` | PDF.js text/coordinate extraction and page limits |
+| `src/features/door-orders/editor.tsx` | Left room navigation, room fields, editable grouped table, review state |
+| `src/features/door-orders/actions.ts` | Permission-checked atomic save with optimistic revision guard |
+| `src/features/door-orders/pdf.ts` | Supplier form fill, overflow and complete unit-reference pages |
+| `src/features/door-orders/templates/door-order-form.pdf` | User-provided supplier form, included in server tracing |
+| `src/db/migrations/0026_door_orders.sql` | Order documents, revision/audit fields and listing index |
+| `tests/door-orders.test.mjs` | Grouping, dimensions, cross-room splitting, ambiguous mapping and malformed rows |
+| `docs/door-orders.md` | Supported PDF format, review workflow, deployment and validation boundaries |
+
+Dependencies: `pdfjs-dist` for text extraction; `pdf-lib` for filling the existing
+supplier form. Original uploads are not persisted. No OCR or native KCD decoder.
