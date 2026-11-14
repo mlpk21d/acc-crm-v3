@@ -3,22 +3,42 @@ import {depositAmount,money,type Proposal,type ProposalProject} from './model';
 import {combinedStyles,coverMasonryBoxes,groupRoomMedia,mosaicBoxes,type MosaicBox} from './pdf-layout';
 import {loadProposalLogo,drawProposalLogo} from './pdf-logo';
 import {cabinetryComparison,roomCabinetrySections,type ProposalRoomDetails} from './pdf-cabinetry';
+type EmbeddedImage={width:number;height:number;orientation?:number};
+type ImageDocument=PDFKit.PDFDocument & {
+ openImage(source:Buffer):EmbeddedImage;
+ image(source:EmbeddedImage,x:number,y:number,options:PDFKit.Mixins.ImageOption):PDFKit.PDFDocument;
+};
 export type ProposalPdfMedia={title:string;image_data:Buffer;room_id:string|null;is_main:boolean};
 export async function createProposalPdf(proposal:Proposal,project:ProposalProject,rooms:ProposalRoomDetails[],media:ProposalPdfMedia[]) {
  const logo=await loadProposalLogo();
- const doc=new PDFDocument({size:'LETTER',layout:'landscape',margins:{top:36,right:36,bottom:16,left:36},info:{Title:project.name,Author:'ACC CRM'}});
+ const doc=new PDFDocument({size:'LETTER',layout:'landscape',margins:{top:36,right:36,bottom:16,left:36},info:{Title:project.name,Author:'ACC CRM'}}) as ImageDocument;
  const chunks:Buffer[]=[];const result=new Promise<Buffer>((resolve,reject)=>{doc.on('data',chunk=>chunks.push(chunk));doc.on('end',()=>resolve(Buffer.concat(chunks)));doc.on('error',reject);});
  function text(value:string,x:number,y:number,width:number,size=10,bold=false,height=36,align:'left'|'right'='left') {
   doc.font(bold?'Helvetica-Bold':'Helvetica').fontSize(size).fillColor('#111827').text(value,x,y,{width,height,ellipsis:true,align});
  }
+ const embeddedImages=new Map<Buffer,EmbeddedImage>();
+ function openImage(data:Buffer){
+  let source=embeddedImages.get(data);
+  if(!source){
+   source=doc.openImage(data);
+   embeddedImages.set(data,source);
+  }
+  return source;
+ }
+ function dimensions(source:EmbeddedImage){
+  return (source.orientation??1)>4
+   ? {width:source.height,height:source.width}
+   : {width:source.width,height:source.height};
+ }
  function image(item:ProposalPdfMedia,box:MosaicBox,caption=true) {
   const captionHeight=caption&&item.title?20:0;
-  const source=(doc as PDFKit.PDFDocument&{openImage(source:Buffer):{width:number;height:number}}).openImage(item.image_data);
-  const scale=Math.min(box.width/source.width,(box.height-captionHeight)/source.height);
-  const width=source.width*scale,height=source.height*scale;
+  const source=openImage(item.image_data);
+  const size=dimensions(source);
+  const scale=Math.min(box.width/size.width,(box.height-captionHeight)/size.height);
+  const width=size.width*scale,height=size.height*scale;
   const x=box.x+(box.width-width)/2;
   const y=caption?box.y:box.y+(box.height-height)/2;
-  doc.image(item.image_data,x,y,{width,height});
+  doc.image(source,x,y,{width,height});
   if(captionHeight)text(item.title,x,y+height+5,width,8,false,15);
  }
  try {
@@ -55,12 +75,12 @@ export async function createProposalPdf(proposal:Proposal,project:ProposalProjec
   if(mainImages.length===1)image(mainImages[0],coverArea,false);
   if(mainImages.length>1){
    const aspectRatios=mainImages.map(item=>{
-    const source=(doc as PDFKit.PDFDocument&{openImage(source:Buffer):{width:number;height:number;orientation?:number}}).openImage(item.image_data);
-    return (source.orientation??1)>4?source.height/source.width:source.width/source.height;
+    const {width,height}=dimensions(openImage(item.image_data));
+    return width/height;
    });
    coverMasonryBoxes(aspectRatios,coverArea).forEach((box,index)=>{
     doc.save().rect(box.x,box.y,box.width,box.height).clip();
-    doc.image(mainImages[index].image_data,box.x,box.y,{cover:[box.width,box.height],align:'center',valign:'center'});
+    doc.image(openImage(mainImages[index].image_data),box.x,box.y,{cover:[box.width,box.height],align:'center',valign:'center'});
     doc.restore();
    });
   }

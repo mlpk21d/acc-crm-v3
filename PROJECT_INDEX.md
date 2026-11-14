@@ -1065,3 +1065,13 @@ Cover masonry grids are centered vertically within the available image area.
 Comparison headers have an extra 3 pt above the label text. The table measures
 that padding when placing the room images. Existing proposal indexes and schema
 cover the same reads.
+
+
+## Proposal image optimization
+
+New proposal uploads are checked and resized to at most 2,400 pixels on the
+longest edge, with JPEG compression at quality 85. Processing honors image
+orientation and composites transparency on white when converting to JPEG.
+Smaller originals can be kept if conversion saves no space. The proposal PDF
+and media route use the optimized stored bytes. Existing stored images are
+preserved. Database indexes and storage schema were reviewed.

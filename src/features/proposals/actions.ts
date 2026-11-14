@@ -2,7 +2,7 @@
 import {z} from 'zod';
 import {revalidatePath} from 'next/cache';
 import {redirect} from 'next/navigation';
-import PDFDocument from 'pdfkit';
+import {optimizeProposalImage} from './optimize-image';
 import {requirePermission} from '@/features/auth/session';
 import {getDbPool} from '@/lib/db';
 import {depositPercentages,maxAdditionalNotesLength,maxImageBytes,maxMediaBytes} from './model';
@@ -20,14 +20,7 @@ export async function saveProposal(_state:{error:string|null},form:FormData):Pro
   for(const item of items.filter(i=>i.fresh)) {
    const file=form.get(`image_${item.id}`);
    if(!(file instanceof File)||file.size<1||file.size>maxImageBytes)throw new Error('Each image must be a PNG or JPEG up to 10 MB.');
-   const data=Buffer.from(await file.arrayBuffer());
-   const mime=data.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))?'image/png':data[0]===255&&data[1]===216&&data[2]===255?'image/jpeg':null;
-   if(!mime)throw new Error('Only PNG and JPEG images are supported.');
-   // Decode using the same image reader used by the PDF export; reject broken/oversized renders.
-   const doc=new PDFDocument({autoFirstPage:false});
-   doc.on('error',()=>{});doc.resume();
-   try {const image=(doc as PDFKit.PDFDocument & {openImage(source:Buffer):{width:number;height:number}}).openImage(data);if(image.width*image.height>24000000)throw new Error('Images must be at most 24 megapixels.');}finally{doc.end();}
-   uploads.set(item.id,{data,filename:file.name.slice(0,255)||'render',mime});
+   uploads.set(item.id,await optimizeProposalImage(Buffer.from(await file.arrayBuffer()),file.name));
   }
  }catch(error){return {error:error instanceof Error?error.message:'Unable to read images.'};}
  const client=await getDbPool().connect();

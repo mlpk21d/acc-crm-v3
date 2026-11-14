@@ -71,7 +71,7 @@ export function ProposalForm({proposal,initialProject,initialMedia=[]}:{proposal
     <div className="proposal-dropzone" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(!pending)addFiles(Array.from(e.dataTransfer.files));}}>
      <p>{!project?'Select a project before adding images.':'Drag and drop room renders here'}</p><button type="button" className="proposal-button" disabled={!project} onClick={()=>upload.current?.click()}><ButtonIcon kind="upload"/>Choose Images</button>
      <input ref={upload} type="file" disabled={!project} hidden multiple accept="image/png,image/jpeg" onChange={e=>{addFiles(Array.from(e.target.files??[]));e.target.value='';}}/>
-     <p className="contact-help">PNG or JPEG · 10 MB per image · 25 MB total · Up to 20 images</p>
+     <p className="contact-help">PNG or JPEG · 10 MB per image · 25 MB total · Up to 20 images. Images are optimized on save.</p>
     </div>
     <p className="contact-help">Mark any images you want on the cover as Main Image. A room is optional for cover images. Other images require an enabled room.</p>
     <ol className="proposal-media-list">{media.map((m,index)=><li key={m.id}>
