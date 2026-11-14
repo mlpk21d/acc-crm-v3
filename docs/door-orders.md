@@ -19,9 +19,10 @@ pages. Original PDFs are not retained; extracted source references are saved.
 - Every imported row starts unreviewed. Editing or moving it resets its review.
   Save drafts at any point. Export requires styles/species, assigned rooms and
   reviewed rows. Save changes before downloading.
-- PDF export fills the supplied supplier template and adds unit-reference pages.
-  Each form supports 20 rows per type, with additional forms when needed. The
-  blank supplier options (profiles, hinges, etc.) remain available for completion.
+- PDF export fills the supplier template stored in the repository. Each room
+  starts its own form and carries its name, door style, and species onto each
+  continuation form. Each form holds 20 door rows and 20 drawer rows. The
+  measurement cells include the unit numbers, for example `(70, 71)   16 1/4 x 44`.
 
 ## Parsing boundaries
 

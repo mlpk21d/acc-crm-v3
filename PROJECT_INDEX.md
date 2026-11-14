@@ -1092,7 +1092,7 @@ Replaces the placeholder while preserving the existing sidebar and CRM panels.
 | `src/features/door-orders/read-pdf.ts` | PDF.js text/coordinate extraction and page limits |
 | `src/features/door-orders/editor.tsx` | Left room navigation, room fields, editable grouped table, review state |
 | `src/features/door-orders/actions.ts` | Permission-checked atomic save with optimistic revision guard |
-| `src/features/door-orders/pdf.ts` | Supplier form fill, overflow and complete unit-reference pages |
+| `src/features/door-orders/pdf.ts` | Supplier form per room, repeated settings on overflow forms, and unit numbers inline with dimensions |
 | `src/features/door-orders/templates/door-order-form.pdf` | User-provided supplier form, included in server tracing |
 | `src/db/migrations/0026_door_orders.sql` | Order documents, revision/audit fields and listing index |
 | `tests/door-orders.test.mjs` | Grouping, dimensions, cross-room splitting, ambiguous mapping and malformed rows |

@@ -39,6 +39,27 @@ test('Franklin sample preserves all 80 pieces in four drawing groups',async()=>{
  assert.deepEqual(order.rooms.map(r=>[r.name,r.rows.reduce((s,row)=>s+row.quantity,0)]),[['Kitchen Perimeter',39],['Kitchen Island',16],['Primary Bath',17],['Wet Bar',8]]);
  assert.equal(order.warnings.length,1);assert.ok(orderSchema.safeParse(order).success);
 });
-test('supplier PDF includes forms and traceable references for each room',async()=>{
- const {doorOrderPdf}=await import('../src/features/door-orders/pdf.ts');const {PDFDocument}=await import('pdf-lib');const doc=await PDFDocument.load(await doorOrderPdf({name:'Test',warnings:[],rooms:[{id:randomUUID(),name:'Kitchen',style:'Shaker',species:'Oak',rows:[row()]}]}));assert.equal(doc.getPageCount(),2);
+test('supplier PDF repeats room details on continuation forms and prints unit numbers with dimensions', async () => {
+ const {doorOrderPdf} = await import('../src/features/door-orders/pdf.ts');
+ const {readPdf} = await import('../src/features/door-orders/read-pdf.ts');
+ const doors = Array.from({length: 21}, (_, i) => row({height: String(44 - i), numbers: '70,71'}));
+ const drawers = Array.from({length: 21}, (_, i) => row({kind: 'Drawer', height: String(24 - i), numbers: '82, 83'}));
+ const pdf = await doorOrderPdf({name: 'Franklin', warnings: [], rooms: [
+  {id: randomUUID(), name: 'Kitchen Perimeter', style: 'Shaker', species: 'White Oak', rows: [...doors, ...drawers]},
+  {id: randomUUID(), name: 'Wet Bar', style: 'Slab', species: 'Maple', rows: [row({numbers: '91'})]},
+ ]});
+ const pages = (await readPdf(new Uint8Array(pdf))).map(page => page.items.map(item => item.text).join(' ').replace(/\s+/g, ' '));
+ assert.equal(pages.length, 3);
+ for (const [index, heights] of [[0, [44, 24]], [1, [24, 4]]]) {
+  assert.match(pages[index], /Kitchen Perimeter/);
+  assert.match(pages[index], /Shaker/);
+  assert.match(pages[index], /White Oak/);
+  assert.ok(pages[index].includes(`(70, 71) 16 1/4 x ${heights[0]}`));
+  assert.ok(pages[index].includes(`(82, 83) 16 1/4 x ${heights[1]}`));
+ }
+ assert.match(pages[2], /Wet Bar/);
+ assert.match(pages[2], /Slab/);
+ assert.match(pages[2], /Maple/);
+ assert.ok(pages[2].includes('(91) 16 1/4 x 30'));
+ assert.doesNotMatch(pages[2], /Kitchen Perimeter/);
 });
