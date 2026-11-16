@@ -49,6 +49,28 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
  const [saving,setSaving]=useState(false);
  function openRoom(room:ProjectRoom|null){setSections(room?.cabinetry_sections??[]);setSectionFinancials(roomFinancials.find(finance=>finance.room_id===room?.id)?.section_financials??[]);setManufacturer(room?.manufacturer??"");setJkDraft(undefined);setAccessories(room?.ras_items.map(i=>({item_name:i.item_name,code:i.code??"",link:i.link??""}))??[]);setRoomError("");setCurrent(room);}
  const [confirmDelete,setConfirmDelete]=useState<ProjectRoom|null>(null);
+ const [deleteError,setDeleteError]=useState("");
+ const [deleting,setDeleting]=useState(false);
+
+ function openDelete(room: ProjectRoom) {
+  setDeleteError("");
+  setConfirmDelete(room);
+ }
+
+ async function submitDelete(data: FormData) {
+  setDeleting(true);
+  setDeleteError("");
+  try {
+   const result=await deleteProjectRoom(data);
+   if(result.error)setDeleteError(result.error);
+   else setConfirmDelete(null);
+  } catch {
+   setDeleteError("Unable to delete the room. Please try again.");
+  } finally {
+   setDeleting(false);
+  }
+ }
+
  const dialog=useRef<HTMLDivElement>(null);
  useEffect(()=>{
   if(current===undefined||jkOpen) return;
@@ -72,7 +94,7 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
    <td><strong>{room.room_name}</strong>{room.ras_items.length>0&&<div className="crm-room-accessory-preview">Rev-A-Shelf ({room.ras_items.length})</div>}</td>
    <RoomSpecCells specs={room}/>
    {isAdmin&&<td className="crm-room-cost">{currency.format(Number(finance?.room_cost??0))}</td>}
-   {canEdit&&<td className="crm-room-actions-column"><div className="crm-room-row-actions"><input type="checkbox" className="crm-room-enabled-checkbox" aria-label={`Enable ${room.room_name}`} title="Include room in financial totals" checked={room.enabled} disabled={toggling.includes(room.id)} onChange={async event=>{const enabled=event.target.checked;setToggleError("");setToggling(old=>[...old,room.id]);try{await setProjectRoomEnabled({projectId,roomId:room.id,enabled});}catch{setToggleError("Unable to update room. Please try again.");}finally{setToggling(old=>old.filter(id=>id!==room.id));}}}/><button type="button" className="crm-room-icon-action" aria-label={`Edit ${room.room_name}`} title="Edit room" onClick={()=>openRoom(room)}><ButtonIcon kind="edit"/></button><button type="button" className="crm-room-icon-action crm-room-delete-action" aria-label={`Delete ${room.room_name}`} title="Delete room" onClick={()=>setConfirmDelete(room)}><ButtonIcon kind="delete"/></button></div></td>}
+   {canEdit&&<td className="crm-room-actions-column"><div className="crm-room-row-actions"><input type="checkbox" className="crm-room-enabled-checkbox" aria-label={`Enable ${room.room_name}`} title="Include room in financial totals" checked={room.enabled} disabled={toggling.includes(room.id)} onChange={async event=>{const enabled=event.target.checked;setToggleError("");setToggling(old=>[...old,room.id]);try{await setProjectRoomEnabled({projectId,roomId:room.id,enabled});}catch{setToggleError("Unable to update room. Please try again.");}finally{setToggling(old=>old.filter(id=>id!==room.id));}}}/><button type="button" className="crm-room-icon-action" aria-label={`Edit ${room.room_name}`} title="Edit room" onClick={()=>openRoom(room)}><ButtonIcon kind="edit"/></button><button type="button" className="crm-room-icon-action crm-room-delete-action" aria-label={`Delete ${room.room_name}`} title="Delete room" onClick={()=>openDelete(room)}><ButtonIcon kind="delete"/></button></div></td>}
    </tr>
    {room.cabinetry_sections.map(section=><tr key={section.id} className={disabledClass} style={manufacturerRowStyle(section.manufacturer_color)}>
     {canEdit&&<td/>}
@@ -130,6 +152,20 @@ export function ProjectRooms({projectId,rooms,manufacturers,canEdit,isAdmin,room
    </div>
   </div>}
   {jkOpen&&<JkConfigurator projectId={projectId} roomId={current?.manufacturer==="J&K"?current.id:undefined} initialConfig={jkDraft} onApply={configuration=>{setJkDraft(configuration);setJkOpen(false);}} onClose={()=>setJkOpen(false)}/>}
-  {confirmDelete&&<div className="crm-room-modal-layer"><button type="button" className="crm-room-modal-backdrop" aria-label="Cancel room delete" onClick={()=>setConfirmDelete(null)}><ButtonIcon kind="close" /></button><div className="crm-room-modal crm-room-confirm" role="dialog" aria-modal="true"><h2>Delete Room?</h2><p>Delete {confirmDelete.room_name}? This action cannot be undone.</p><form action={async data=>{await deleteProjectRoom(data);setConfirmDelete(null)}}><input type="hidden" name="project_id" value={projectId}/><input type="hidden" name="id" value={confirmDelete.id}/><button type="button" onClick={()=>setConfirmDelete(null)}>Cancel<ButtonIcon kind="delete" /></button><button type="submit">Delete Room<ButtonIcon kind="delete" /></button></form></div></div>}
+  {confirmDelete&&<div className="crm-room-modal-layer">
+   <button type="button" className="crm-room-modal-backdrop" aria-label="Cancel room delete"
+    onClick={()=>setConfirmDelete(null)} disabled={deleting}><ButtonIcon kind="close"/></button>
+   <div className="crm-room-modal crm-room-confirm" role="dialog" aria-modal="true" aria-labelledby="crm-room-delete-title">
+    <h2 id="crm-room-delete-title">Delete Room?</h2>
+    <p>Delete {confirmDelete.room_name}? This action cannot be undone.</p>
+    {deleteError&&<p role="alert" className="contact-form-error">{deleteError}</p>}
+    <form action={submitDelete}>
+     <input type="hidden" name="project_id" value={projectId}/>
+     <input type="hidden" name="id" value={confirmDelete.id}/>
+     <button type="button" onClick={()=>setConfirmDelete(null)} disabled={deleting}>Cancel<ButtonIcon kind="close"/></button>
+     <button type="submit" disabled={deleting}>{deleting?"Deleting…":"Delete Room"}<ButtonIcon kind="delete"/></button>
+    </form>
+   </div>
+  </div>}
  </>;
 }

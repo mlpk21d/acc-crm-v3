@@ -1100,3 +1100,11 @@ Replaces the placeholder while preserving the existing sidebar and CRM panels.
 
 Dependencies: `pdfjs-dist` for text extraction; `pdf-lib` for filling the existing
 supplier form. Original uploads are not persisted. No OCR or native KCD decoder.
+
+
+## Room deletion with linked proposal images
+
+The room delete action reports the proposal image foreign-key restriction in
+the confirmation dialog and preserves the room and images. To delete the room,
+an administrator can reassign or remove the images and save the affected
+proposals first. The existing proposal media room index supports the constraint.

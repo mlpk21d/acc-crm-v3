@@ -106,14 +106,27 @@ export async function addProjectRoom(form:FormData) {
  revalidatePath("/projects");
 }
 
-export async function deleteProjectRoom(form:FormData) {
- await requirePermission("projects:write");
- const projectId=z.uuid().parse(form.get("project_id"));
- const id=z.uuid().parse(form.get("id"));
- await getDbPool().query("DELETE FROM public.project_rooms WHERE id=$1 AND project_id=$2 AND EXISTS (SELECT 1 FROM public.projects WHERE id=$2 AND deleted_at IS NULL)",[id,projectId]);
+export async function deleteProjectRoom(form: FormData): Promise<{error: string | null}> {
+ const user = await requirePermission("projects:write");
+ const projectId = z.uuid().parse(form.get("project_id"));
+ const id = z.uuid().parse(form.get("id"));
+ try {
+  await getDbPool().query(
+   "DELETE FROM public.project_rooms WHERE id=$1 AND project_id=$2 AND EXISTS (SELECT 1 FROM public.projects WHERE id=$2 AND deleted_at IS NULL)",
+   [id, projectId],
+  );
+ } catch (error) {
+  if (error instanceof Error && "constraint" in error && error.constraint === "proposal_media_room_id_fkey") {
+   return {error: can(user.role, "settings:manage")
+    ? "This room has images attached in Proposals. Reassign or remove those images, save each affected proposal, then try deleting the room again."
+    : "This room has images attached in Proposals. Ask an administrator to reassign or remove those images before deleting the room."};
+  }
+  throw error;
+ }
  revalidatePath("/projects/"+projectId);
  revalidatePath("/projects/"+projectId+"/edit");
  revalidatePath("/projects");
+ return {error: null};
 }
 
 export async function moveProjectRoom(form:FormData) {
