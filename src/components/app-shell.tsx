@@ -9,11 +9,12 @@ import { can } from "@/features/auth/permissions";
 import type { CurrentCrmUser } from "@/features/auth/session";
 import { SignOutButton } from "@/features/auth/sign-out-button";
 
-type IconName = "dashboard" | "contacts" | "projects" | "invoices" | "proposals" | "door-orders" | "files" | "users" | "settings" | "menu" | "close";
+type IconName = "dashboard" | "contacts" | "projects" | "vendors" | "invoices" | "proposals" | "door-orders" | "files" | "users" | "settings" | "menu" | "close";
 const navigation = [
   { href: "/", label: "Dashboard", icon: "dashboard" },
   { href: "/contacts", label: "Contacts", icon: "contacts", permission: "contacts:read" },
   { href: "/projects", label: "Projects", icon: "projects", permission: "projects:read" },
+  { href: "/vendors", label: "Vendors", icon: "vendors", permission: "projects:read" },
   { href: "/invoices", label: "Invoices", icon: "invoices", permission: "invoices:read" },
   { href: "/proposals", label: "Proposals", icon: "proposals", permission: "settings:manage" },
   { href: "/door-orders", label: "Door Orders", icon: "door-orders", permission: "invoices:read" },
@@ -28,6 +29,7 @@ function NavIcon({ name }: { name: IconName }) {
     case "dashboard": return <svg {...common}><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>;
     case "contacts": return <svg {...common}><rect x="5" y="3" width="16" height="18" rx="2"/><path d="M9 3v18M13 9h4M13 13h4"/></svg>;
     case "projects": return <svg {...common}><rect x="3" y="6" width="18" height="15" rx="2"/><path d="M3 10h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/></svg>;
+    case "vendors": return <svg {...common}><path d="M3 10h18l-2-7H5l-2 7zM5 10v11h14V10M9 21v-7h6v7M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></svg>;
     case "invoices": return <svg {...common}><path d="M7 3h8l4 4v14H5V3h2zM15 3v5h4M8 12h8M8 16h8"/></svg>;
     case "proposals": return <svg {...common}><path d="M14 3H5v18h14V10M9 15l1-4 8-8 3 3-8 8-4 1zM16 5l3 3M9 18h6"/></svg>;
     case "door-orders": return <svg {...common}><path d="M4 21h16M6 21V3h12v18M9 6h6v5H9zM9 14h6v4H9z"/><circle cx="16" cy="12.5" r=".5"/></svg>;

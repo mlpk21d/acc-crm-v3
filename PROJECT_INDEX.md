@@ -1,6 +1,6 @@
 # ACC CRM V3 Project Index
 
-Last updated: 2026-11-14
+Last updated: 2026-11-26
 
 This file is the fast-entry index for the repository. Update it whenever routes,
 domain boundaries, database modules, or major shared components change.
@@ -72,6 +72,7 @@ closely as practical. V3 is a platform/backend modernization, not a visual redes
 | `/contacts/[id]` | `src/app/(crm)/contacts/[id]/page.tsx` | Contact detail + soft-delete |
 | `/contacts/[id]/edit` | `src/app/(crm)/contacts/[id]/edit/page.tsx` | Update contact |
 | `/projects` | `src/app/(crm)/projects/page.tsx` | Searchable paginated list |
+| `/vendors` | `src/app/(crm)/vendors/page.tsx` | Placeholder page; sidebar entry directly below Projects, available with projects:read |
 | `/projects/new` | `src/app/(crm)/projects/new/page.tsx` | Create project |
 | `/projects/[id]` | `src/app/(crm)/projects/[id]/page.tsx` | Project detail |
 | `/projects/[id]/edit` | `src/app/(crm)/projects/[id]/edit/page.tsx` | Edit project |
